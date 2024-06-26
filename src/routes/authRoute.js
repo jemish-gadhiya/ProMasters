@@ -9,12 +9,14 @@ class AuthRoute extends AuthController {
         this.route(router);
     }
     route(router) {
-        router.post("/login", validator(jois.loginPayload),this.login);
-        router.post("/logOut",tokenValidate ,this.logOut);
-        router.post("/forgotPassword",this.forgotPassword);
-        router.post("/validateResetPasswordToken",this.validateResetPasswordToken);
-        router.post("/resetUserPassword",this.resetUserPassword);
-        router.post("/frontEndErrorLog",this.frontEndErrorLog);
+        router.post("/login", validator(jois.loginPayload), this.login);
+        router.post("/register", validator(jois.registerPayload), this.register);
+        router.post("/validateOTP", validator(jois.validateOTPPayload), this.validateOTP);
+        router.post("/logOut", tokenValidate, validator(jois.logoutPayload), this.logOut);
+        router.post("/forgotPassword", validator(jois.forgetPasswordPayload), this.forgotPassword);
+        router.post("/forgotPasswordOTPCheck", validator(jois.forgotPasswordOTPCheckPayload), this.forgotPasswordOTPCheck);
+        router.post("/resetUserPassword", tokenValidate, validator(jois.resetUserPasswordPayload), this.resetUserPassword);
+        router.post("/frontEndErrorLog", this.frontEndErrorLog);
     }
 }
 

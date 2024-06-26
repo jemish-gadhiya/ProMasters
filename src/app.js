@@ -4,11 +4,11 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 const ApiError_1 = require("./core/ApiError");
 
-var cors =require('cors');
+var cors = require('cors');
 const swaggerRoute_1 = require("./routes/swaggerRoute");
 const authRoute = require("./routes/authRoute");
 const indexRoute = require("./routes/index")
-const {ApiResponse} = require('./core/ApiResponse')
+const { ApiResponse } = require('./core/ApiResponse')
 
 
 class App {
@@ -20,29 +20,29 @@ class App {
    */
   constructor() {
 
-     
-      this.router = express.Router();
 
-      //create express js application
-      this.app = express();
-      console.log(`Worker ${process.pid} started`);
+    this.router = express.Router();
 
-      //configure application
-      this.config();
+    //create express js application
+    this.app = express();
+    console.log(`Worker ${process.pid} started`);
 
-      //add routes For Web APP
-      this.web();
+    //configure application
+    this.config();
 
-      //add api For Rest API
-      this.api();
+    //add routes For Web APP
+    this.web();
 
-      // Error handling
-      this.ErrorHandling();
+    //add api For Rest API
+    this.api();
 
-      this.swagger();
+    // Error handling
+    this.ErrorHandling();
 
-      //use router middleware
-      // this.app.use(this.router);
+    this.swagger();
+
+    //use router middleware
+    // this.app.use(this.router);
   }
   /**
    * Bootstrap the application.
@@ -50,9 +50,9 @@ class App {
    * @static
    * @return {ng.auto.IInjectorService} Returns the newly created injector for this app.
    */
-   static bootstrap() {
+  static bootstrap() {
     return new App();
-}
+  }
 
   /**
    * Create REST API routes
@@ -62,19 +62,19 @@ class App {
    */
   api() {
     //   new indexRoute(this.router);
-      new authRoute(this.router);
-      new indexRoute(this.router);
+    new authRoute(this.router);
+    new indexRoute(this.router);
 
-      //use router middleware
-      this.app.use('/api', this.router);
+    //use router middleware
+    this.app.use('/api', this.router);
   }
 
   swagger() {
     new swaggerRoute_1.SwaggerRoute(this.router);
     //use router middleware
     this.app.use('/', this.router);
-}
-  
+  }
+
   /**
    * Configure application
    *
@@ -83,54 +83,52 @@ class App {
    */
   config() {
 
-    this.app.use('/public',express.static('public'))
+    this.app.use('/public', express.static('public'))
 
-      //add static paths
-      this.app.use(express.static(path.join(__dirname, "public")));
+    //add static paths
+    this.app.use(express.static(path.join(__dirname, "public")));
 
-      //configure pug
-      this.app.set("views", path.join(__dirname, "views"));
-      this.app.set("view engine", "ejs");
+    //configure pug
+    this.app.set("views", path.join(__dirname, "views"));
+    this.app.set("view engine", "ejs");
 
+    this.app.use(express.json());
+    this.app.use(express.urlencoded({ extended: false }));
 
-      this.app.use(express.json());
-      this.app.use(express.urlencoded({ extended: false }));
-
-      this.app.use(async function (req, res, next) {
-
-          res.header("Access-Control-Allow-Origin", "*");
-          res.setHeader("Access-Control-Allow-Headers", "Access-Control-Allow-Headers, crossdomain, withcredentials, Origin, X-Requested-With, Content-Type, Accept, Authorization, Access-Control-Allow-Origin, TokenType");
-          res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
-          next();
-      });
-      this.app.use(cors({ origin: process.env.CORS_URL, optionsSuccessStatus: 200 }));
-      //mount cookie parser middleware
-      this.app.use(cookieParser("SECRET_GOES_HERE"));
-      this.app.use(express.static(path.join(__dirname, 'public')));     
-      this.app.use((req, res, next) => {
-          const start = Date.now();
-          req.startTime = start
-        next();
-      });
-  } 
+    this.app.use(async function (req, res, next) {
+      res.header("Access-Control-Allow-Origin", "*");
+      res.setHeader("Access-Control-Allow-Headers", "Access-Control-Allow-Headers, crossdomain, withcredentials, Origin, X-Requested-With, Content-Type, Accept, Authorization, Access-Control-Allow-Origin, TokenType");
+      res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+      next();
+    });
+    this.app.use(cors({ origin: process.env.CORS_URL, optionsSuccessStatus: 200 }));
+    //mount cookie parser middleware
+    this.app.use(cookieParser("SECRET_GOES_HERE"));
+    this.app.use(express.static(path.join(__dirname, 'public')));
+    this.app.use((req, res, next) => {
+      const start = Date.now();
+      req.startTime = start
+      next();
+    });
+  }
 
   ErrorHandling() {
     //error handling
     this.app.use((req, res, next) => next(new ApiError_1.NotFoundError()));
     // catch 404 and forward to error handler
     this.app.use((err, req, res, next) => {
-        if (err instanceof ApiError_1.ApiError) {
-            ApiError_1.ApiError.handle(err, res);
+      if (err instanceof ApiError_1.ApiError) {
+        ApiError_1.ApiError.handle(err, res);
+      }
+      else {
+        if (process.env.NODE_ENV === 'development') {
+          // Logger_1.default.error(err);
+          return res.status(500).send(err.message);
         }
-        else {
-            if (process.env.NODE_ENV === 'development') {
-                // Logger_1.default.error(err);
-                return res.status(500).send(err.message);
-            }
-            ApiError_1.ApiError.handle(new ApiError_1.InternalError(), res);
-        }
+        ApiError_1.ApiError.handle(new ApiError_1.InternalError(), res);
+      }
     });
-}
+  }
 
   /**
    * Create and return Router.
@@ -140,9 +138,8 @@ class App {
    * @return void
    */
   web() {
-
-      //IndexRoute 
-      this.app.use('/', this.router);
+    //IndexRoute 
+    this.app.use('/', this.router);
   }
 }
 
