@@ -1,0 +1,185 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "kukwo",
+    "description": "",
+    "termsOfService": "",
+    "contact": {
+      "email": ""
+    },
+    "license": {
+      "name": "",
+      "url": ""
+    },
+    "version": "1.0.0"
+  },
+  "host": "https://",
+  "externalDocs": {
+    "description": "",
+    "url": ""
+  },
+  "servers": [
+    {
+      "url": "http://192.168.1.133:8085"
+    }
+  ],
+  
+  "tags": [
+    {
+      "name": "authentication",
+      "description": "authentication APIs"
+    }
+  ],
+  "paths": {
+    "/api/login": {
+      "post": {
+        "tags": [
+          "authentication"
+        ],
+        "summary": "Login ",
+        "requestBody": {
+          "description": "Login",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "example": {
+                  "email": "d@gmail.com",
+                  "password": "12345678"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {}
+            }
+          },
+          "400": {
+              "description": "Failed. Bad post data."
+          },
+          "401": {
+            "description": "Unauthorized access or invalid token"
+        }
+        }
+      }
+    },
+    "/api/logOut": {
+      "post": {
+        "tags": [
+          "authentication"
+        ],
+        "summary": "Log Out",
+        "requestBody": {
+          "description": "Log Out",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "example": {
+                  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxLCJzdGF0dXMiOjEsImlhdCI6MTY3ODc5MDI0OSwiZXhwIjoxNjc4ODc2NjQ5fQ.f6zLZYFN0mwpWdZH6Jcj0GgRZBlgL63ugFC-t_c69K4"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {}
+            }
+          },
+          "400": {
+              "description": "Failed. Bad post data."
+          },
+          "401": {
+            "description": "Unauthorized access or invalid token"
+        }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas":{
+    "login": {
+      "type": "object",
+      "properties": {
+          "email": {
+              "type": "string"
+          },
+          "password": {
+              "type": "string"
+          }
+      },
+      "xml": {
+          "name": "Category"
+      }
+  },
+  "SuccessResponse": {
+      "type": "object",
+      "properties": {
+          "code": {
+              "type": "integer",
+              "format": "int32"
+          },
+          "message": {
+              "type": "string"
+          },
+          "data": {
+              "type": "object",
+              "properties": {
+                  "token": {
+                      "type": "string"
+                  },
+                  "user": {
+                      "type": "object"
+                  }
+              }
+          }
+      }
+  },
+  "ErrorResponse": {
+      "type": "object",
+      "properties": {
+          "code": {
+              "type": "integer",
+              "format": "int32"
+          },
+          "message": {
+              "type": "string"
+          },
+          "data": {
+              "type": "object",
+              "properties": {
+                  "token": {
+                      "type": "string"
+                  },
+                  "user": {
+                      "type": "object"
+                  }
+              }
+          }
+      }
+  }
+},
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "name": "Authorization",
+        "in": "header"
+      }
+    }
+  }
+}
