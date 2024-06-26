@@ -36,7 +36,7 @@ class AuthController {
                 // attributes: ["user_id", "first_name", "last_name", "password", "email", "created_at", "status"],
                 where: {
                     email: email,
-                    is_deleted:0
+                    is_deleted: 0
                 }
             })
             userExistData = JSON.parse(JSON.stringify(userExistData))
@@ -48,7 +48,7 @@ class AuthController {
                     const UA = new UAParser(UA_string);
                     let userData = {
                         user_id: userExistData.user_id,
-                        status: userExistData.status,
+                        role: userExistData.user_id,
                     };
                     let userAgent = {
                         browser_name: UA.getBrowser().name,
@@ -67,14 +67,16 @@ class AuthController {
                     await dbWriter.usersLoginLogs.create({
                         user_id: userExistData.user_id,
                         access_token: access_token,
-                        system_info: JSON.stringify(userAgent),
-                        login_ip_address: await remoteIP(req),
-                        access_token_expire_at: moment().add('24', 'hours')
+                        device_info: JSON.stringify(userAgent),
+                        platform: platform,
+                        device_token: device_token,
+                        created_at:new Date()
                     })
                     let responseData = {
-                        first_name: userExistData.first_name,
-                        last_name: userExistData.last_name,
+                        name:userExistData.name,
                         email: userExistData.email,
+                        username:userExistData.username,
+                        role:userExistData.role,
                         created_at: userExistData.created_at
                     }
                     res.send({

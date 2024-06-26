@@ -43,6 +43,5 @@ module.exports = function (sequelize, DataTypes) {
         // For example, if there's a relationship with users:
         // LoginLog.belongsTo(models.User, { foreignKey: 'user_id' });
     };
-    
     return LoginLog;
 };
