@@ -16,6 +16,8 @@ class AuthRoute extends AuthController {
         router.post("/forgotPassword", validator(jois.forgetPasswordPayload), this.forgotPassword);
         router.post("/forgotPasswordOTPCheck", validator(jois.forgotPasswordOTPCheckPayload), this.forgotPasswordOTPCheck);
         router.post("/resetUserPassword", tokenValidate, validator(jois.resetUserPasswordPayload), this.resetUserPassword);
+        router.post("/resendEmailOTP", validator(jois.resendEmailOTPPayload), this.resendEmailOTP);
+        router.post("/resendSMSOTP", validator(jois.resendSMSOTPPayload), this.resendSMSOTP);
         router.post("/frontEndErrorLog", this.frontEndErrorLog);
     }
 }

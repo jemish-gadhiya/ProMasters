@@ -28,10 +28,9 @@ const enumerationController = require("./enumurationController");
 var ObjectMail = new nodeMailerController_1();
 var EnumObject = new enumerationController();
 class AuthController {
-
     register = async (req, res) => {
         try {
-            let { name, username, email, contact, password, google_signup = "", latitude = "", longitude = "", role = "", photo = "", address = "", city = "", state = "", country = "", experience = "" } = req.body;
+            let { name, username, email, contact, password, google_signup = "", latitude = "", longitude = "", role, photo = "", address = "", city = "", state = "", country = "", experience = "" } = req.body;
             password = crypto.encrypt(password.toString(), true).toString();
 
             let userData = await dbReader.users.findOne({
@@ -87,6 +86,8 @@ class AuthController {
                         templateIdentifier: EnumObject.templateIdentifier.get('registerEmailOTP').value,
                     }
                     await ObjectMail.ConvertData(payload, function (data) { });
+
+                    //Need to delevop the sms otp send flow here. this is pending as client confirmation is pending
 
                     res.send({
                         status_code: 200,
@@ -335,14 +336,85 @@ class AuthController {
                     })
                     new SuccessResponse("Password changed successfully.", {}).send(res);
                 } else {
-                    ApiError.handle(new BadRequestError("Password is not matching"), res);
+                    ApiError.handle(new BadRequestError("Password is not matching."), res);
                 }
                 // res.send({
                 //     status_code: 200,
                 //     message: "Logout successfully.",
                 // })
             } else {
-                ApiError.handle(new BadRequestError("Email Does not exist"), res);
+                ApiError.handle(new BadRequestError("Email Does not exist."), res);
+            }
+
+        } catch (e) {
+            ApiError.handle(new BadRequestError(e.message), res);
+        }
+    }
+
+
+
+    resendEmailOTP = async (req, res) => {
+        try {
+            let { email } = req.body;
+
+            let ExistUser = await dbReader.users.findOne({
+                where: {
+                    email: email
+                }
+            })
+            ExistUser = JSON.parse(JSON.stringify(ExistUser))
+            if (ExistUser) {
+                let email_otp = await generateRandomNo(6).toString();
+                await dbWriter.users.update({
+                    email_otp: email_otp
+                }, {
+                    where: {
+                        email: email,
+                    }
+                });
+
+
+                let payload = {
+                    user_id: ExistUser.user_id,
+                    email: ExistUser.email,
+                    first_name: ExistUser.first_name,
+                    email_otp: email_otp,
+                    templateIdentifier: EnumObject.templateIdentifier.get('resetPassword').value,
+                };
+                await ObjectMail.ConvertData(payload, function (data) { });
+
+                new SuccessResponse("OTP send successfully.", {}).send(res);
+            } else {
+                ApiError.handle(new BadRequestError("User does not exist."), res);
+            }
+
+        } catch (e) {
+            ApiError.handle(new BadRequestError(e.message), res);
+        }
+    }
+
+    resendSMSOTP = async (req, res) => {
+        try {
+            let { email, contact } = req.body;
+
+            let ExistUser = await dbReader.users.findOne({
+                where: {
+                    email: email
+                }
+            });
+            ExistUser = JSON.parse(JSON.stringify(ExistUser))
+            if (ExistUser) {
+                let sms_otp = await generateRandomNo(6).toString();
+                await dbWriter.users.update({
+                    sms_otp: sms_otp
+                }, {
+                    where: {
+                        email: email,
+                    }
+                })
+                new SuccessResponse("OTP send successfully.", {}).send(res);
+            } else {
+                ApiError.handle(new BadRequestError("User does not exist."), res);
             }
 
         } catch (e) {

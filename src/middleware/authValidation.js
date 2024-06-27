@@ -13,11 +13,11 @@ exports.jois = {
         email: Joi.string().email().required(),
         contact: Joi.string().required(),
         password: Joi.string().required().min(8),
+        role: Joi.number().required(),
 
         google_signup: Joi.string(),
         latitude: Joi.string(),
         longitude: Joi.string(),
-        role: Joi.string(),
         photo: Joi.string(),
         address: Joi.string(),
         city: Joi.string(),
@@ -65,6 +65,14 @@ exports.jois = {
             })
     }),
 
+    resendEmailOTPPayload: Joi.object().keys({
+        email: Joi.string().email().required(),
+    }),
+
+    resendSMSOTPPayload: Joi.object().keys({
+        email: Joi.string().email().required(),
+        contact: Joi.string().required(),
+    }),
 
 
 

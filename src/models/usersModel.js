@@ -26,7 +26,7 @@ module.exports = function (sequelize, DataTypes) {
         latitude: DataTypes.STRING(256),
         longitude: DataTypes.STRING(256),
         role: {
-            type: DataTypes.ENUM('user', 'provider', 'handyman'),
+            type: DataTypes.INTEGER, // 1-user, 2-provider, 3-handyman,
             allowNull: false,
         },
         photo: DataTypes.STRING(256),
