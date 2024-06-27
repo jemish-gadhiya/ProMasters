@@ -27,6 +27,7 @@ var EnumObject = new enumerationController();
 
 class ProviderController {
 
+    //Service address module API's
     addEditServiceAddress = async (req, res) => {
         try {
             let { service_address_id = 0, address, latitude = "", longitude = "" } = req.body;
@@ -182,6 +183,134 @@ class ProviderController {
             ApiError.handle(new BadRequestError(e.message), res);
         }
     }
+
+
+    //Category module API's
+    addEditCategory = async (req, res) => {
+        try {
+            let { category_id = 0, name, image } = req.body;
+            let { user_id, role } = req;
+
+            if (category_id === 0) {
+                await dbWriter.category.create({
+                    name: name,
+                    image: image
+                });
+
+                new SuccessResponse("Category added successfully.", {}).send(res);
+            } else {
+                let categoryData = await dbReader.category.findOne({
+                    where: {
+                        category_id: category_id,
+                        is_deleted: 0
+                    }
+                });
+                categoryData = JSON.parse(JSON.stringify(categoryData));
+                if (!categoryData) {
+                    throw new Error("Category not found.");
+                } else {
+                    await dbWriter.category.update({
+                        name: name,
+                        image: image
+                    }, {
+                        where: { category_id: category_id }
+                    });
+
+                    new SuccessResponse("Category updated successfully.", {}).send(res);
+                }
+            }
+        } catch (e) {
+            ApiError.handle(new BadRequestError(e.message), res);
+        }
+    }
+
+    getAllCategory = async (req, res) => {
+        try {
+            let { user_id, role } = req;
+            let categoryData = await dbReader.category.findAll({
+                where: {
+                    is_deleted: 0
+                }
+            });
+            categoryData = JSON.parse(JSON.stringify(categoryData));
+            new SuccessResponse("Category get successfully.", { data: categoryData }).send(res);
+        } catch (e) {
+            ApiError.handle(new BadRequestError(e.message), res);
+        }
+    }
+
+    getActiveCategory = async (req, res) => {
+        try {
+            let { user_id, role } = req;
+            let categoryData = await dbReader.category.findAll({
+                where: {
+                    is_enable: 1,
+                    is_deleted: 0
+                }
+            });
+            categoryData = JSON.parse(JSON.stringify(categoryData));
+            new SuccessResponse("Category get successfully.", { data: categoryData }).send(res);
+        } catch (e) {
+            ApiError.handle(new BadRequestError(e.message), res);
+        }
+    }
+
+    deleteCategory = async (req, res) => {
+        try {
+            let { category_id } = req.body;
+            let { user_id, role } = req;
+
+            let categoryData = await dbReader.category.findOne({
+                where: {
+                    category_id: category_id,
+                    is_deleted: 0
+                }
+            });
+            categoryData = JSON.parse(JSON.stringify(categoryData));
+            if (!categoryData) {
+                throw new Error("Category data not found.");
+            } else {
+                await dbWriter.category.update({
+                    is_deleted: 1
+                }, {
+                    where: { category_id: category_id }
+                });
+
+                new SuccessResponse("Category deleted successfully.", {}).send(res);
+            }
+        } catch (e) {
+            ApiError.handle(new BadRequestError(e.message), res);
+        }
+    }
+
+    dactiveCategory = async (req, res) => {
+        try {
+            let { category_id } = req.body;
+            let { user_id, role } = req;
+
+            let categoryData = await dbReader.category.findOne({
+                where: {
+                    category_id: category_id,
+                    is_deleted: 0
+                }
+            });
+            categoryData = JSON.parse(JSON.stringify(categoryData));
+            if (!categoryData) {
+                throw new Error("Category data not found.");
+            } else {
+                await dbWriter.category.update({
+                    is_enable: (categoryData?.is_enable === 0) ? 1 : 0
+                }, {
+                    where: { category_id: category_id }
+                });
+
+                new SuccessResponse("Category updated successfully.", {}).send(res);
+            }
+        } catch (e) {
+            ApiError.handle(new BadRequestError(e.message), res);
+        }
+    }
+
 
 }
 

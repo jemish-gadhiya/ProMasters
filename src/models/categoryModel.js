@@ -10,7 +10,10 @@ module.exports = function (sequelize, DataTypes) {
         },
         name: DataTypes.STRING(256),
         image: DataTypes.STRING(256),
-        is_enable: DataTypes.TINYINT,
+        is_enable: {
+            type: DataTypes.INTEGER,
+            defaultValue: 1,
+        },
         is_deleted: {
             type: DataTypes.INTEGER,
             defaultValue: 0,
@@ -32,6 +35,6 @@ module.exports = function (sequelize, DataTypes) {
     Category.associate = function (models) {
         // Define associations here if needed
     };
-    
+
     return Category;
 };

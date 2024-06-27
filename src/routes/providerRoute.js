@@ -9,11 +9,22 @@ class ProviderRoute extends ProviderController {
         this.route(router);
     }
     route(router) {
+
+        //Service address related API's
         router.post("/addEditServiceAddress", tokenValidate, validator(jois.addEditServiceAddressPayload), this.addEditServiceAddress);
         router.get("/getAllServiceAddress", tokenValidate, this.getAllServiceAddress);
         router.get("/getActiveServiceAddress", tokenValidate, this.getActiveServiceAddress);
         router.post("/deleteServiceAddress", tokenValidate, validator(jois.deleteServiceAddressPayload), this.deleteServiceAddress);
         router.post("/dactiveServiceAddress", tokenValidate, validator(jois.dactiveServiceAddressPayload), this.dactiveServiceAddress);
+
+        //Category related API's
+        router.post("/addEditCategory", tokenValidate, validator(jois.addEditCategoryPayload), this.addEditCategory);
+        router.get("/getAllCategory", tokenValidate, this.getAllCategory);
+        router.get("/getActiveCategory", tokenValidate, this.getActiveCategory);
+        router.post("/deleteCategory", tokenValidate, validator(jois.deleteCategoryPayload), this.deleteCategory);
+        router.post("/dactiveCategory", tokenValidate, validator(jois.dactiveCategoryPayload), this.dactiveCategory);
+
+
     }
 }
 

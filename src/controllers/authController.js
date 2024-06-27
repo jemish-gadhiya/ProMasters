@@ -371,7 +371,6 @@ class AuthController {
                     }
                 });
 
-
                 let payload = {
                     user_id: ExistUser.user_id,
                     email: ExistUser.email,
