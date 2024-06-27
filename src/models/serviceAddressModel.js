@@ -8,6 +8,7 @@ module.exports = function (sequelize, DataTypes) {
             allowNull: false,
             unique: true,
         },
+        user_id: DataTypes.INTEGER,
         address: DataTypes.STRING(256),
         latitude: DataTypes.STRING(256),
         longitude: DataTypes.STRING(256),
@@ -36,6 +37,6 @@ module.exports = function (sequelize, DataTypes) {
     ServiceAddress.associate = function (models) {
         // Define associations here if needed
     };
-    
+
     return ServiceAddress;
 };

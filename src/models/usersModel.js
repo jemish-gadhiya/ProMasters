@@ -26,7 +26,7 @@ module.exports = function (sequelize, DataTypes) {
         latitude: DataTypes.STRING(256),
         longitude: DataTypes.STRING(256),
         role: {
-            type: DataTypes.ENUM('user', 'provider', 'handyman'),
+            type: DataTypes.INTEGER, // 1-user, 2-provider, 3-handyman,
             allowNull: false,
         },
         photo: DataTypes.STRING(256),
@@ -36,6 +36,8 @@ module.exports = function (sequelize, DataTypes) {
         country: DataTypes.STRING(256),
         experience: DataTypes.STRING(256),
         provider_id: DataTypes.INTEGER,
+        email_otp: DataTypes.STRING(256),
+        sms_otp: DataTypes.STRING(256),
         is_email_verified: {
             type: DataTypes.INTEGER,
             defaultValue: 0,
@@ -65,6 +67,6 @@ module.exports = function (sequelize, DataTypes) {
     User.associate = function (models) {
         // Define associations here if needed
     };
-    
+
     return User;
 };

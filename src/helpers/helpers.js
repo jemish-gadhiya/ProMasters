@@ -9,4 +9,11 @@ async function timestamp(days = 0) {
 async function remoteIP(req) {
     return requestIp.getClientIp(req)
 }
-module.exports = {timestamp ,remoteIP }
+
+
+async function generateRandomNo(length) {
+    const min = Math.pow(10, length - 1);
+    const max = Math.pow(10, length) - 1;
+    return await Math.floor(Math.random() * (max - min + 1)) + min;
+}
+module.exports = { timestamp, remoteIP, generateRandomNo }
