@@ -73,8 +73,8 @@ class NodeMailerController {
             port: 587,
             secure: false,
             auth: {
-              user: process.env.EMAIL, //'dadhich@differenzsystem.com',
-              pass: process.env.PASS//'md-QfLKfs1OZBdJsB_6SaXFog'
+              user: process.env.EMAIL_USERNAME, //'dadhich@differenzsystem.com',
+              pass: process.env.EMAIL_PASSWORD//'md-QfLKfs1OZBdJsB_6SaXFog'
             }
           });
 

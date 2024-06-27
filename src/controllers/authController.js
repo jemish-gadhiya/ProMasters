@@ -267,7 +267,7 @@ class AuthController {
                     email: ExistUser.email,
                     first_name: ExistUser.first_name,
                     email_otp: email_otp,
-                    templateIdentifier: EnumObject.templateIdentifier.get('resetPassword').value,
+                    templateIdentifier: EnumObject.templateIdentifier.get('forgotPassword').value,
                 };
 
                 await dbWriter.users.update({
@@ -351,8 +351,6 @@ class AuthController {
         }
     }
 
-
-
     resendEmailOTP = async (req, res) => {
         try {
             let { email } = req.body;
@@ -379,7 +377,7 @@ class AuthController {
                     email: ExistUser.email,
                     first_name: ExistUser.first_name,
                     email_otp: email_otp,
-                    templateIdentifier: EnumObject.templateIdentifier.get('resetPassword').value,
+                    templateIdentifier: EnumObject.templateIdentifier.get('registerEmailOTP').value,
                 };
                 await ObjectMail.ConvertData(payload, function (data) { });
 
@@ -387,7 +385,6 @@ class AuthController {
             } else {
                 ApiError.handle(new BadRequestError("User does not exist."), res);
             }
-
         } catch (e) {
             ApiError.handle(new BadRequestError(e.message), res);
         }
@@ -445,7 +442,6 @@ class AuthController {
             ApiError.handle(new BadRequestError(e.message), res);
         }
     }
-
 }
 
 module.exports = AuthController;
