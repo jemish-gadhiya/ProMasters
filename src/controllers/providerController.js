@@ -311,6 +311,162 @@ class ProviderController {
         }
     }
 
+    //Service Module
+    addEditService = async (req, res) => {
+        try {
+            let { service_id = 0, service_name, category_id, service_address_id, service_type, price, discount, duration_hours, duration_mins, image_link, is_featured, gallery_images = [] } = req.body;
+            let { user_id, role } = req;
+
+            if (role !== 2) {
+                throw new Error("User don't have permission to perform this action.");
+            } else {
+                if (service_id === 0) {
+                    let newService = await dbWriter.service.create({
+                        service_name: service_name,
+                        category_id: category_id,
+                        service_address_id: service_address_id,
+                        service_type: service_type,
+                        price: price,
+                        discount: discount,
+                        duration_hours: duration_hours,
+                        duration_mins: duration_mins,
+                        image_link: image_link,
+                        is_featured: is_featured,
+                        status: 0,
+                    });
+                    newService = JSON.parse(JSON.stringify(newService))
+                    let arr = []
+                    if (gallery_images.length) {
+                        gallery_images.forEach((element) => {
+                            arr.push({
+                                service_id: newService.service_id,
+                                url: element.url
+                            })
+                        });
+                        await dbWriter.serviceAttachment.bulkCreate(arr);
+                    }
+                    new SuccessResponse("Service added successfully.", {}).send(res);
+                } else {
+                    let serviceData = await dbReader.service.findOne({
+                        where: {
+                            service_id: service_id,
+                            user_id: user_id,
+                            is_deleted: 0
+                        }
+                    });
+                    serviceData = JSON.parse(JSON.stringify(serviceData));
+                    if (!serviceData) {
+                        throw new Error("Service address not found.");
+                    } else {
+                        await dbWriter.service.update({
+                            service_name: service_name,
+                            category_id: category_id,
+                            service_address_id: service_address_id,
+                            service_type: service_type,
+                            price: price,
+                            discount: discount,
+                            duration_hours: duration_hours,
+                            duration_mins: duration_mins,
+                            image_link: image_link,
+                            is_featured: is_featured,
+                        }, {
+                            where: {
+                                service_id: service_id,
+                                user_id: user_id,
+                            }
+                        });
+                        let arr = []
+                        if (gallery_images.length) {
+                            await dbWriter.serviceAttachment.update({
+                                is_deleted: 1
+                            }, {
+                                where: {
+                                    service_id: service_id
+                                }
+                            })
+                            gallery_images.forEach((element) => {
+                                arr.push({
+                                    service_id: service_id,
+                                    url: element.url
+                                })
+                            });
+                            await dbWriter.serviceAttachment.bulkCreate(arr);
+                        }
+                        new SuccessResponse("Service updated successfully.", {}).send(res);
+                    }
+                }
+            }
+
+        } catch (e) {
+            ApiError.handle(new BadRequestError(e.message), res);
+        }
+    }
+    deleteService = async (req, res) => {
+        try {
+            let { service_id } = req.body;
+            let { user_id, role } = req;
+
+            let serviceData = await dbReader.service.findOne({
+                where: {
+                    service_id: service_id,
+                    is_deleted: 0
+                }
+            });
+            serviceData = JSON.parse(JSON.stringify(serviceData));
+            if (!serviceData) {
+                throw new Error("Service data not found.");
+            } else {
+                await dbWriter.service.update({
+                    is_deleted: 1
+                }, {
+                    where: { service_id: service_id, }
+                });
+
+                new SuccessResponse("Service deleted successfully.", {}).send(res);
+            }
+        } catch (e) {
+            ApiError.handle(new BadRequestError(e.message), res);
+        }
+    }
+    getServiceByCategory = async (req, res) => {
+        try {
+            let { category_id } = req.body
+            let { user_id, role } = req;
+            let serviceData = await dbReader.service.findAll({
+                where: {
+                    category_id: category_id,
+                    is_deleted: 0
+                }
+            });
+            serviceData = JSON.parse(JSON.stringify(serviceData));
+            new SuccessResponse("Service get successfully.", { data: serviceData }).send(res);
+        } catch (e) {
+            ApiError.handle(new BadRequestError(e.message), res);
+        }
+    }
+    getServiceById = async (req, res) => {
+        try {
+            let { service_id } = req.body
+            let { user_id, role } = req;
+            let serviceData = await dbReader.service.findOne({
+                where: {
+                    service_id: service_id,
+                    user_id:user_id,
+                    is_deleted: 0
+                },
+                include: [{
+                    model: dbReader.serviceAttachment,
+                    where: {
+                        is_deleted: 0
+                    }
+                }]
+            });
+            serviceData = JSON.parse(JSON.stringify(serviceData));
+            new SuccessResponse("Service get successfully.", { ...serviceData }).send(res);
+        } catch (e) {
+            ApiError.handle(new BadRequestError(e.message), res);
+        }
+    }
 
 }
 
