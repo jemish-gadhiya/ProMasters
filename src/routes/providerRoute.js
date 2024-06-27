@@ -15,14 +15,14 @@ class ProviderRoute extends ProviderController {
         router.get("/getAllServiceAddress", tokenValidate, this.getAllServiceAddress);
         router.get("/getActiveServiceAddress", tokenValidate, this.getActiveServiceAddress);
         router.post("/deleteServiceAddress", tokenValidate, validator(jois.deleteServiceAddressPayload), this.deleteServiceAddress);
-        router.post("/dactiveServiceAddress", tokenValidate, validator(jois.dactiveServiceAddressPayload), this.dactiveServiceAddress);
+        router.post("/deactiveServiceAddress", tokenValidate, validator(jois.deactiveServiceAddressPayload), this.deactiveServiceAddress);
 
         //Category related API's
         router.post("/addEditCategory", tokenValidate, validator(jois.addEditCategoryPayload), this.addEditCategory);
         router.get("/getAllCategory", tokenValidate, this.getAllCategory);
         router.get("/getActiveCategory", tokenValidate, this.getActiveCategory);
         router.post("/deleteCategory", tokenValidate, validator(jois.deleteCategoryPayload), this.deleteCategory);
-        router.post("/dactiveCategory", tokenValidate, validator(jois.dactiveCategoryPayload), this.dactiveCategory);
+        router.post("/deactiveCategory", tokenValidate, validator(jois.deactiveCategoryPayload), this.deactiveCategory);
 
 
     }

@@ -151,7 +151,7 @@ class ProviderController {
         }
     }
 
-    dactiveServiceAddress = async (req, res) => {
+    deactiveServiceAddress = async (req, res) => {
         try {
             let { service_address_id } = req.body;
             let { user_id, role } = req;
@@ -283,7 +283,7 @@ class ProviderController {
         }
     }
 
-    dactiveCategory = async (req, res) => {
+    deactiveCategory = async (req, res) => {
         try {
             let { category_id } = req.body;
             let { user_id, role } = req;

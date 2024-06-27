@@ -13,7 +13,7 @@ exports.jois = {
         service_address_id: Joi.number().required(),
     }),
 
-    dactiveServiceAddressPayload: Joi.object().keys({
+    deactiveServiceAddressPayload: Joi.object().keys({
         service_address_id: Joi.number().required(),
     }),
 
@@ -29,7 +29,7 @@ exports.jois = {
         category_id: Joi.number().required(),
     }),
 
-    dactiveCategoryPayload: Joi.object().keys({
+    deactiveCategoryPayload: Joi.object().keys({
         category_id: Joi.number().required(),
     }),
 
