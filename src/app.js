@@ -6,10 +6,10 @@ const ApiError_1 = require("./core/ApiError");
 
 var cors = require('cors');
 const swaggerRoute_1 = require("./routes/swaggerRoute");
-const authRoute = require("./routes/authRoute");
-const indexRoute = require("./routes/index")
-const { ApiResponse } = require('./core/ApiResponse')
-
+const AuthRoute = require("./routes/authRoute");
+const ProviderRoute = require("./routes/providerRoute");
+const indexRoute = require("./routes/index");
+const { ApiResponse } = require('./core/ApiResponse');
 
 class App {
   /**
@@ -61,8 +61,8 @@ class App {
    * @method api
    */
   api() {
-    //   new indexRoute(this.router);
-    new authRoute(this.router);
+    new AuthRoute(this.router);
+    new ProviderRoute(this.router);
     new indexRoute(this.router);
 
     //use router middleware
@@ -82,8 +82,7 @@ class App {
    * @method config
    */
   config() {
-
-    this.app.use('/public', express.static('public'))
+    this.app.use('/public', express.static('public'));
 
     //add static paths
     this.app.use(express.static(path.join(__dirname, "public")));

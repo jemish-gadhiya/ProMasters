@@ -22,4 +22,4 @@ class AuthRoute extends AuthController {
     }
 }
 
-module.exports = AuthRoute
+module.exports = AuthRoute;

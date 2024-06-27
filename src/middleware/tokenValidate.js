@@ -16,7 +16,8 @@ module.exports = async function tokenValidate(req, res, next) {
                         where: { access_token: access_token.toString(), is_logout: 0 },
                     });
                     if (user) {
-                        req.user_id = decoded.user_id
+                        req.user_id = decoded.user_id;
+                        req.role = decoded.role;
                         next();
                     } else {
                         ApiError.handle(new AuthFailureError("Invalid Token, Please re-login."), res);
