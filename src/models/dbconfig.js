@@ -1,4 +1,4 @@
-const {Sequelize} = require('sequelize');
+const { Sequelize } = require('sequelize');
 var path = require('path');
 
 
@@ -55,6 +55,7 @@ DbInstance.forEach(element => {
     element.name['category'] = require(path.join(__dirname, './categoryModel'))(element.name['sequelize'], Sequelize);
     element.name['comission'] = require(path.join(__dirname, './comissionModel'))(element.name['sequelize'], Sequelize);
     element.name['coupan'] = require(path.join(__dirname, './coupanModel'))(element.name['sequelize'], Sequelize);
+    element.name['emailDesignTemplate'] = require(path.join(__dirname, './emailDesignTemplate'))(element.name['sequelize'], Sequelize);
     element.name['favouritedService'] = require(path.join(__dirname, './favouritedServiceModel'))(element.name['sequelize'], Sequelize);
     element.name['notification'] = require(path.join(__dirname, './notificationModel'))(element.name['sequelize'], Sequelize);
     element.name['providerComission'] = require(path.join(__dirname, './providerComissionModel'))(element.name['sequelize'], Sequelize);
@@ -71,8 +72,8 @@ DbInstance.forEach(element => {
     element.name['userAvailibility'] = require(path.join(__dirname, './userAvailibilityModel'))(element.name['sequelize'], Sequelize);
     element.name['subscriptionPlan'] = require(path.join(__dirname, './subscriptionPlanModel'))(element.name['sequelize'], Sequelize);
     element.name['wallet'] = require(path.join(__dirname, './walletModel'))(element.name['sequelize'], Sequelize);
-   
-    
+
+
     // Model Association
     Object.keys(element.name).forEach(function (modelName) {
         if ('associate' in element.name[modelName]) {
@@ -84,6 +85,5 @@ DbInstance.forEach(element => {
 
 dbReader.Sequelize = Sequelize
 dbWriter.Sequelize = Sequelize
-
 
 module.exports = { dbReader, dbWriter };

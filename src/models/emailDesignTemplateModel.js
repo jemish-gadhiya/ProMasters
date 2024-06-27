@@ -1,19 +1,16 @@
 'use strict';
 module.exports = function (sequelize, DataTypes) {
-    var Category = sequelize.define('Category', {
-        category_id: {
+    var EmailDesignTemplate = sequelize.define('EmailDesignTemplate', {
+        email_design_template_id: {
             type: DataTypes.INTEGER,
             primaryKey: true,
             autoIncrement: true,
             allowNull: false,
             unique: true,
         },
-        name: DataTypes.STRING(256),
-        image: DataTypes.STRING(256),
-        is_enable: {
-            type: DataTypes.INTEGER,
-            defaultValue: 1,
-        },
+        title: DataTypes.STRING(256),
+        template_html_text: DataTypes.TEXT,
+        subject: DataTypes.STRING(512),
         is_deleted: {
             type: DataTypes.INTEGER,
             defaultValue: 0,
@@ -27,14 +24,17 @@ module.exports = function (sequelize, DataTypes) {
             defaultValue: DataTypes.NOW,
         },
     }, {
-        tableName: 'category',
+        tableName: 'email_design_template',
         timestamps: false,
         underscored: true,
     });
 
-    Category.associate = function (models) {
+    EmailDesignTemplate.associate = function (models) {
         // Define associations here if needed
+        // For example, if there's a relationship with providers or services:
+        // Wallet.belongsTo(models.Provider, { foreignKey: 'provider_id' });
+        // Wallet.belongsTo(models.Service, { foreignKey: 'service_id' });
     };
 
-    return Category;
+    return EmailDesignTemplate;
 };

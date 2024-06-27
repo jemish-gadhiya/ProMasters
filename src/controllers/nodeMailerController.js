@@ -3,104 +3,109 @@ const { dbReader, dbWriter } = require('./../models/dbconfig');
 const fromDisplayName = 'Kukwo';
 const S = require('string');
 const Bluebird = require('bluebird');
- class NodeMailerController {
+class NodeMailerController {
 
   // Email Template Convert Function
   async ConvertData(ReqData, callback) {
     console.log(ReqData);
     if (ReqData.templateIdentifier != 0) {
-    var getEmailTemplate = await dbReader.emailDesignTemplate.findOne({
-      where: { email_design_template_id: ReqData.templateIdentifier }
-    });
-    getEmailTemplate = JSON.parse(JSON.stringify(getEmailTemplate));
-    if (getEmailTemplate) {
-      var mainData = getEmailTemplate.template_html_text;
-      ReqData.subjectMail = getEmailTemplate.subject;
-      var promiseWhile = async function (condition, action) {
-        var resolver = Bluebird.defer();
-        var loop = function () {
-          if (!condition()) return resolver.resolve();
-          return Bluebird.cast(action())
-            .then(loop)
-            .catch(resolver.reject);
+      var getEmailTemplate = await dbReader.emailDesignTemplate.findOne({
+        where: { email_design_template_id: ReqData.templateIdentifier }
+      });
+      getEmailTemplate = JSON.parse(JSON.stringify(getEmailTemplate));
+      if (getEmailTemplate) {
+        var mainData = getEmailTemplate.template_html_text;
+        ReqData.subjectMail = getEmailTemplate.subject;
+        var promiseWhile = async function (condition, action) {
+          var resolver = Bluebird.defer();
+          var loop = function () {
+            if (!condition()) return resolver.resolve();
+            return Bluebird.cast(action())
+              .then(loop)
+              .catch(resolver.reject);
+          };
+          process.nextTick(loop);
+          return resolver.promise;
         };
-        process.nextTick(loop);
-        return resolver.promise;
-      };
 
- // $ Variable $
- var gv = [];
- const regex = /\$([0-9a-zA-Z-_\/\']+)\$/gm;
- let s;
- while ((s = regex.exec(getEmailTemplate.template_html_text)) !== null) {
-   if (s.index === regex.lastIndex) {
-     regex.lastIndex++;
-   }
-   gv.push(s[0]);
- }
- var gvCount = 0, stop = gv.length, gvd = {};
- await promiseWhile(function () {
-  return gvCount < stop;
-}, function () {
-  var cntData = gv[gvCount++];
-  return new Promise(async function (resolve, reject) {
-    switch (cntData) {
-      case '$ChangePasswordLink$':
-        gvd[cntData] = ReqData.redirect_url;
-        resolve(true);
-        break;
-      default:
-        resolve(true);
-    }
-  });
-}).then(async function () {
-  var dts = mainData;
-  Object.keys(gvd).forEach(function (key) {
-    if (!gvd[key]) gvd[key] = "";
-    gvd[key] = S(gvd[key]).unescapeHTML().s
-    dts = S(dts).replaceAll(key, S(gvd[key]).escapeHTML().s).s;
-  });
-  ReqData.htmlContent = S(dts).unescapeHTML().s;
+        // $ Variable $
+        var gv = [];
+        const regex = /\$([0-9a-zA-Z-_\/\']+)\$/gm;
+        let s;
+        while ((s = regex.exec(getEmailTemplate.template_html_text)) !== null) {
+          if (s.index === regex.lastIndex) {
+            regex.lastIndex++;
+          }
+          gv.push(s[0]);
+        }
+        var gvCount = 0, stop = gv.length, gvd = {};
+        await promiseWhile(function () {
+          return gvCount < stop;
+        }, function () {
+          var cntData = gv[gvCount++];
+          return new Promise(async function (resolve, reject) {
+            switch (cntData) {
+              case '$ChangePasswordLink$':
+                gvd[cntData] = ReqData.redirect_url;
+                resolve(true);
+                break;
 
-  // Getting mail server 
-  const transporter = nodemailer.createTransport({
-    host: 'smtp.mandrillapp.com',
-    port: 587,
-    secure: false,
-    auth: {
-      user: 'dadhich@differenzsystem.com',
-      pass: 'md-QfLKfs1OZBdJsB_6SaXFog'
+              case '$email_OTP$':
+                gvd[cntData] = ReqData.email_otp;
+                resolve(true);
+                break;
+              default:
+                resolve(true);
+            }
+          });
+        }).then(async function () {
+          var dts = mainData;
+          Object.keys(gvd).forEach(function (key) {
+            if (!gvd[key]) gvd[key] = "";
+            gvd[key] = S(gvd[key]).unescapeHTML().s
+            dts = S(dts).replaceAll(key, S(gvd[key]).escapeHTML().s).s;
+          });
+          ReqData.htmlContent = S(dts).unescapeHTML().s;
+
+          // Getting mail server 
+          const transporter = nodemailer.createTransport({
+            host: 'smtp.mandrillapp.com',
+            port: 587,
+            secure: false,
+            auth: {
+              user: process.env.EMAIL_USERNAME, //'dadhich@differenzsystem.com',
+              pass: process.env.EMAIL_PASSWORD//'md-QfLKfs1OZBdJsB_6SaXFog'
+            }
+          });
+
+          const mailOptions = {
+            from: '',
+            // to: 'deep.panchal@differenzsystem.com',
+            to: ReqData.email,
+            // subject: 'Test Email',
+            subject: ReqData.subjectMail,
+            html: ReqData.htmlContent
+          };
+
+
+          // send email using nodemailer transporter
+          transporter.sendMail(mailOptions, function (error, info) {
+            if (error) {
+              console.log(error);
+            } else {
+              console.log('Email sent: ' + info.response);
+            }
+          });
+        });
+      } else {
+        console.log("Email Template Not Found.");
+      }
+    } else {
+      console.log("Method Not Found.");
     }
-  });
-  
-  const mailOptions = {
-    from: '',
-    // to: 'deep.panchal@differenzsystem.com',
-    to: ReqData.email,
-    // subject: 'Test Email',
-    subject: ReqData.subjectMail,
-    html:ReqData.htmlContent
-  };
-  
-  
-  // send email using nodemailer transporter
-  transporter.sendMail(mailOptions, function(error, info){
-    if(error){
-      console.log(error);
-    }else{
-      console.log('Email sent: ' + info.response);
-    }
-  });
-});
-    }else{
-      console.log("Email Template Not Found.");
-    }
-  }else{
-    console.log("Method Not Found.");
   }
-  }
 
-async sendDirectMail(ReqData) {
+  async sendDirectMail(ReqData) {
     try {
       var body = {
         status: 1,
