@@ -411,6 +411,9 @@ class AuthController {
             ExistUser = JSON.parse(JSON.stringify(ExistUser))
             if (ExistUser) {
                 let sms_otp = await generateRandomNo(6).toString();
+
+                //Need to develop the OTP send in sms flow here
+
                 await dbWriter.users.update({
                     sms_otp: sms_otp
                 }, {
