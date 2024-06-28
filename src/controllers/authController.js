@@ -31,7 +31,7 @@ class AuthController {
     register = async (req, res) => {
         try {
             let { name, username, email, contact, password, google_signup = "", latitude = "", longitude = "", role, photo = "", address = "", city = "", state = "", country = "", experience = "" } = req.body;
-            password = crypto.encrypt(password.toString(), true).toString();
+            password = crypto.encrypt(password.toString(), false).toString();
 
             let userData = await dbReader.users.findOne({
                 attributes: ["user_id", "email", "username", "is_deleted"],
@@ -56,7 +56,7 @@ class AuthController {
                 if (userNameData) {
                     ApiError.handle(new BadRequestError("Username already registered."), res);
                 } else {
-                    password = crypto.encrypt(password.toString(), true).toString();
+                    password = crypto.encrypt(password.toString(), false).toString();
                     let email_otp = generateRandomNo(6).toString(),
                         sms_otp = "123456"//await generateRandomNo(6).toString();
 
@@ -103,7 +103,7 @@ class AuthController {
     login = async (req, res) => {
         try {
             let { email, password } = req.body;
-            password = crypto.encrypt(password.toString(), true).toString();
+            password = crypto.encrypt(password.toString(), false).toString();
             let userExistData = await dbReader.users.findOne({
                 // attributes: ["user_id", "first_name", "last_name", "password", "email", "created_at", "status"],
                 where: {
