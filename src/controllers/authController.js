@@ -57,7 +57,7 @@ class AuthController {
                     ApiError.handle(new BadRequestError("Username already registered."), res);
                 } else {
                     password = crypto.encrypt(password.toString(), true).toString();
-                    let email_otp = await generateRandomNo(6).toString(),
+                    let email_otp = generateRandomNo(6).toString(),
                         sms_otp = "123456"//await generateRandomNo(6).toString();
 
                     await dbWriter.users.create({
