@@ -291,7 +291,7 @@ class AuthController {
                 //     status_code: 200,
                 //     message: "Logout successfully.",
                 // })
-                new SuccessResponse("Reset password link has been sent to your email address", {}).send(res);
+                new SuccessResponse("Reset password OTP has been sent to your email address", {}).send(res);
             } else {
                 ApiError.handle(new BadRequestError("User does not exist"), res);
             }
@@ -311,6 +311,11 @@ class AuthController {
 
             if (data) {
                 if (data?.email_otp === otp.toString()) {
+                    await dbWriter.users.update({
+                        email_otp: ""
+                    }, {
+                        where: { user_id: data.user_id }
+                    });
                     return new SuccessResponse("OTP verified successfully.", { otp_verified: true }).send(res);
                 } else {
                     throw new Error("Invalid OTP.");
