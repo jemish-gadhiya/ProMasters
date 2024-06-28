@@ -31,10 +31,8 @@ class AuthController {
     register = async (req, res) => {
         try {
             let { name, username, email, contact, password, google_signup = "", latitude = "", longitude = "", role, photo = "", address = "", city = "", state = "", country = "", experience = "" } = req.body;
-            password = crypto.encrypt(password.toString(), true).toString();
-
             let userData = await dbReader.users.findOne({
-                attributes: ["user_id", "email", "username", "is_delete"],
+                attributes: ["user_id", "email", "username", "is_deleted"],
                 where: {
                     email: email,
                     is_deleted: 0
@@ -46,7 +44,7 @@ class AuthController {
             } else {
 
                 let userNameData = await dbReader.users.findOne({
-                    attributes: ["user_id", "email", "username", "is_delete"],
+                    attributes: ["user_id", "email", "username", "is_deleted"],
                     where: {
                         username: username,
                         is_deleted: 0
@@ -57,7 +55,7 @@ class AuthController {
                     ApiError.handle(new BadRequestError("Username already registered."), res);
                 } else {
                     password = crypto.encrypt(password.toString(), true).toString();
-                    let email_otp = await generateRandomNo(6).toString(),
+                    let email_otp = generateRandomNo(6).toString(),
                         sms_otp = "123456"//await generateRandomNo(6).toString();
 
                     await dbWriter.users.create({
@@ -82,7 +80,7 @@ class AuthController {
 
                     let payload = {
                         email: email,
-                        email_otp,
+                        email_otp: email_otp,
                         templateIdentifier: EnumObject.templateIdentifier.get('registerEmailOTP').value,
                     }
                     await ObjectMail.ConvertData(payload, function (data) { });
@@ -102,8 +100,9 @@ class AuthController {
 
     login = async (req, res) => {
         try {
-            let { email, password } = req.body
-            password = crypto.encrypt(password.toString(), true).toString();
+            let { email, password, platform, device_token, device_info } = req.body;
+            var encryptedPassword = crypto.encrypt(password.toString(), true).toString();
+
             let userExistData = await dbReader.users.findOne({
                 // attributes: ["user_id", "first_name", "last_name", "password", "email", "created_at", "status"],
                 where: {
@@ -116,23 +115,23 @@ class AuthController {
                 ApiError.handle(new BadRequestError("Invalid email or password."), res);
             } else {
                 if (userExistData?.is_email_verified && userExistData?.is_sms_verified) {
-                    if (userExistData.password == password) {
+                    if (userExistData.password == encryptedPassword) {
                         let UA_string = req.headers['user-agent'];
                         const UA = new UAParser(UA_string);
                         let userData = {
                             user_id: userExistData.user_id,
-                            role: userExistData.user_id,
+                            role: userExistData.role,
                         };
-                        let userAgent = {
-                            browser_name: UA.getBrowser().name,
-                            browser_version: UA.getBrowser().version,
-                            engine_name: UA.getEngine().name,
-                            engine_version: UA.getEngine().version,
-                            os: UA.getOS().name,
-                            os_ver: UA.getOS().version,
-                            cpu: UA.getCPU().architecture,
-                            ua: UA.getUA()
-                        }
+                        // let userAgent = {
+                        //     browser_name: UA.getBrowser().name,
+                        //     browser_version: UA.getBrowser().version,
+                        //     engine_name: UA.getEngine().name,
+                        //     engine_version: UA.getEngine().version,
+                        //     os: UA.getOS().name,
+                        //     os_ver: UA.getOS().version,
+                        //     cpu: UA.getCPU().architecture,
+                        //     ua: UA.getUA()
+                        // }
                         let access_token = jwt.sign(userData, process.env.SECRET_KEY, {
                             // expiresIn: '24h' // expires in 24 hours
                         });
@@ -140,7 +139,7 @@ class AuthController {
                         await dbWriter.usersLoginLogs.create({
                             user_id: userExistData.user_id,
                             access_token: access_token,
-                            device_info: JSON.stringify(userAgent),
+                            device_info: JSON.stringify(device_info),
                             platform: platform,
                             device_token: device_token,
                             created_at: new Date()
@@ -230,12 +229,23 @@ class AuthController {
                         verify = 1;
                     }
                 }
+
+                let is_email_verified = data.is_email_verified, is_sms_verified = data.is_sms_verified, email_otp = data.email_otp, sms_otp = data.sms_otp;
+                if (type === "email") {
+                    is_email_verified = 1;
+                    email_otp = "";
+                } else {
+                    is_sms_verified = 1;
+                    sms_otp = "";
+                }
+
                 if (verify === 1) {
                     await dbWriter.users.update({
-                        is_email_verified: (type === "email") ? 1 : 0,
-                        is_sms_verified: (type === "sms") ? 1 : 0
+                        email_otp: "",
+                        is_email_verified: is_email_verified,
+                        is_sms_verified: is_sms_verified
                     }, {
-                        where: { user_id: ExistUser.user_id }
+                        where: { user_id: data.user_id }
                     });
                     return new SuccessResponse("OTP verified successfully.", {}).send(res);
                 } else {
@@ -281,7 +291,7 @@ class AuthController {
                 //     status_code: 200,
                 //     message: "Logout successfully.",
                 // })
-                new SuccessResponse("Reset password link has been sent to your email address", {}).send(res);
+                new SuccessResponse("Reset password OTP has been sent to your email address", {}).send(res);
             } else {
                 ApiError.handle(new BadRequestError("User does not exist"), res);
             }
@@ -301,6 +311,11 @@ class AuthController {
 
             if (data) {
                 if (data?.email_otp === otp.toString()) {
+                    await dbWriter.users.update({
+                        email_otp: ""
+                    }, {
+                        where: { user_id: data.user_id }
+                    });
                     return new SuccessResponse("OTP verified successfully.", { otp_verified: true }).send(res);
                 } else {
                     throw new Error("Invalid OTP.");
@@ -336,16 +351,11 @@ class AuthController {
                     })
                     new SuccessResponse("Password changed successfully.", {}).send(res);
                 } else {
-                    ApiError.handle(new BadRequestError("Password is not matching."), res);
+                    throw new Error("Password is not matching.");
                 }
-                // res.send({
-                //     status_code: 200,
-                //     message: "Logout successfully.",
-                // })
             } else {
-                ApiError.handle(new BadRequestError("Email Does not exist."), res);
+                throw new Error("Email Does not exist.");
             }
-
         } catch (e) {
             ApiError.handle(new BadRequestError(e.message), res);
         }
@@ -401,6 +411,9 @@ class AuthController {
             ExistUser = JSON.parse(JSON.stringify(ExistUser))
             if (ExistUser) {
                 let sms_otp = await generateRandomNo(6).toString();
+
+                //Need to develop the OTP send in sms flow here
+
                 await dbWriter.users.update({
                     sms_otp: sms_otp
                 }, {

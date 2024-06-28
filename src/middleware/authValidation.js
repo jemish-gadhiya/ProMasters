@@ -5,6 +5,9 @@ exports.jois = {
     loginPayload: Joi.object().keys({
         email: Joi.string().email().required(),
         password: Joi.string().label("password").required(),
+        platform: Joi.string().allow(''),
+        device_token: Joi.string().allow(''),
+        device_info: Joi.object().allow({}).required()
     }),
 
     registerPayload: Joi.object().keys({
@@ -15,15 +18,15 @@ exports.jois = {
         password: Joi.string().required().min(8),
         role: Joi.number().required(),
 
-        google_signup: Joi.string(),
-        latitude: Joi.string(),
-        longitude: Joi.string(),
-        photo: Joi.string(),
-        address: Joi.string(),
-        city: Joi.string(),
-        state: Joi.string(),
-        country: Joi.string(),
-        experience: Joi.string()
+        google_signup: Joi.string().allow(''),
+        latitude: Joi.string().allow(''),
+        longitude: Joi.string().allow(''),
+        photo: Joi.string().allow(''),
+        address: Joi.string().allow(''),
+        city: Joi.string().allow(''),
+        state: Joi.string().allow(''),
+        country: Joi.string().allow(''),
+        experience: Joi.string().allow('')
     }),
 
     validateOTPPayload: Joi.object().keys({
@@ -48,21 +51,7 @@ exports.jois = {
     resetUserPasswordPayload: Joi.object().keys({
         email: Joi.string().required(),
         newPassword: Joi.string().required(),
-        confirmPassword: Joi.string()
-            .valid(Joi.ref('password'))
-            .required()
-            .error(errors => {
-                return errors.map(error => {
-                    switch (error.type) {
-                        case 'any.empty':
-                            return { message: 'Confirm password is required' };
-                        case 'any.only':
-                            return { message: 'Passwords do not match' };
-                        default:
-                            return error;
-                    }
-                });
-            })
+        confirmPassword: Joi.string().required()
     }),
 
     resendEmailOTPPayload: Joi.object().keys({

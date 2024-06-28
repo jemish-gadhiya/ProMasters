@@ -7,7 +7,6 @@ class NodeMailerController {
 
   // Email Template Convert Function
   async ConvertData(ReqData, callback) {
-    console.log(ReqData);
     if (ReqData.templateIdentifier != 0) {
       var getEmailTemplate = await dbReader.emailDesignTemplate.findOne({
         where: { email_design_template_id: ReqData.templateIdentifier }
@@ -50,7 +49,7 @@ class NodeMailerController {
                 resolve(true);
                 break;
 
-              case '$email_OTP$':
+              case '$email_otp$':
                 gvd[cntData] = ReqData.email_otp;
                 resolve(true);
                 break;
@@ -69,7 +68,7 @@ class NodeMailerController {
 
           // Getting mail server 
           const transporter = nodemailer.createTransport({
-            host: 'smtp.mandrillapp.com',
+            host: 'smtp.gmail.com',
             port: 587,
             secure: false,
             auth: {
