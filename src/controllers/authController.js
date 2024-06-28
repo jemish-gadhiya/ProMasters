@@ -100,7 +100,7 @@ class AuthController {
 
     login = async (req, res) => {
         try {
-            let { email, password } = req.body;
+            let { email, password, platform, device_token } = req.body;
             var encryptedPassword = crypto.encrypt(password.toString(), true).toString();
 
             let userExistData = await dbReader.users.findOne({
