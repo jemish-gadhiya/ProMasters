@@ -402,6 +402,7 @@ class ProviderController {
             ApiError.handle(new BadRequestError(e.message), res);
         }
     }
+
     deleteService = async (req, res) => {
         try {
             let { service_id } = req.body;
@@ -429,6 +430,7 @@ class ProviderController {
             ApiError.handle(new BadRequestError(e.message), res);
         }
     }
+
     getServiceByCategory = async (req, res) => {
         try {
             let { category_id } = req.body
@@ -445,6 +447,7 @@ class ProviderController {
             ApiError.handle(new BadRequestError(e.message), res);
         }
     }
+
     getServiceById = async (req, res) => {
         try {
             let { service_id } = req.body
