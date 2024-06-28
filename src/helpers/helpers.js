@@ -14,6 +14,6 @@ async function remoteIP(req) {
 async function generateRandomNo(length) {
     const min = Math.pow(10, length - 1);
     const max = Math.pow(10, length) - 1;
-    return await Math.floor(Math.random() * (max - min + 1)) + min;
+    return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 module.exports = { timestamp, remoteIP, generateRandomNo }
