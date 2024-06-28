@@ -232,6 +232,7 @@ class AuthController {
                 }
                 if (verify === 1) {
                     await dbWriter.users.update({
+                        email_otp: "",
                         is_email_verified: (type === "email") ? 1 : 0,
                         is_sms_verified: (type === "sms") ? 1 : 0
                     }, {
