@@ -102,7 +102,7 @@ class AuthController {
 
     login = async (req, res) => {
         try {
-            let { email, password } = req.body
+            let { email, password } = req.body;
             password = crypto.encrypt(password.toString(), true).toString();
             let userExistData = await dbReader.users.findOne({
                 // attributes: ["user_id", "first_name", "last_name", "password", "email", "created_at", "status"],
@@ -116,6 +116,8 @@ class AuthController {
                 ApiError.handle(new BadRequestError("Invalid email or password."), res);
             } else {
                 if (userExistData?.is_email_verified && userExistData?.is_sms_verified) {
+                    console.log("userExistData.password :: ", userExistData.password);
+                    console.log("password :: ", password);
                     if (userExistData.password == password) {
                         let UA_string = req.headers['user-agent'];
                         const UA = new UAParser(UA_string);
