@@ -230,11 +230,19 @@ class AuthController {
                         verify = 1;
                     }
                 }
+
+                let is_email_verified = data.is_email_verified, is_sms_verified = data.is_sms_verified;
+                if (type === "email") {
+                    is_email_verified = 1;
+                } else {
+                    is_sms_verified = 1;
+                }
+
                 if (verify === 1) {
                     await dbWriter.users.update({
                         email_otp: "",
-                        is_email_verified: (type === "email") ? 1 : 0,
-                        is_sms_verified: (type === "sms") ? 1 : 0
+                        is_email_verified: is_email_verified,
+                        is_sms_verified: is_sms_verified
                     }, {
                         where: { user_id: data.user_id }
                     });
