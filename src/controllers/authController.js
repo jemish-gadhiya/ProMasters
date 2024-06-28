@@ -82,7 +82,7 @@ class AuthController {
 
                     let payload = {
                         email: email,
-                        email_otp,
+                        email_otp: email_otp,
                         templateIdentifier: EnumObject.templateIdentifier.get('registerEmailOTP').value,
                     }
                     await ObjectMail.ConvertData(payload, function (data) { });
