@@ -69,10 +69,9 @@ class NodeMailerController {
 
           // Getting mail server 
           const transporter = nodemailer.createTransport({
-            // host: 'smtp.mandrillapp.com',
-            // port: 587,
-            // secure: false,
-            service: 'gmail',
+            host: 'smtp.mandrillapp.com',
+            port: 587,
+            secure: false,
             auth: {
               user: process.env.EMAIL_USERNAME, //'dadhich@differenzsystem.com',
               pass: process.env.EMAIL_PASSWORD//'md-QfLKfs1OZBdJsB_6SaXFog'
