@@ -103,7 +103,10 @@ class AuthController {
     login = async (req, res) => {
         try {
             let { email, password } = req.body;
+            console.log("password is :: ", password);
             password = crypto.encrypt(password.toString(), false).toString();
+
+
             let userExistData = await dbReader.users.findOne({
                 // attributes: ["user_id", "first_name", "last_name", "password", "email", "created_at", "status"],
                 where: {
@@ -233,11 +236,13 @@ class AuthController {
                     }
                 }
 
-                let is_email_verified = data.is_email_verified, is_sms_verified = data.is_sms_verified;
+                let is_email_verified = data.is_email_verified, is_sms_verified = data.is_sms_verified, email_otp = data.email_otp, sms_otp = data.sms_otp;
                 if (type === "email") {
                     is_email_verified = 1;
+                    email_otp = "";
                 } else {
                     is_sms_verified = 1;
+                    sms_otp = "";
                 }
 
                 if (verify === 1) {
