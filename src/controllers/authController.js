@@ -351,16 +351,11 @@ class AuthController {
                     })
                     new SuccessResponse("Password changed successfully.", {}).send(res);
                 } else {
-                    ApiError.handle(new BadRequestError("Password is not matching."), res);
+                    throw new Error("Password is not matching.");
                 }
-                // res.send({
-                //     status_code: 200,
-                //     message: "Logout successfully.",
-                // })
             } else {
-                ApiError.handle(new BadRequestError("Email Does not exist."), res);
+                throw new Error("Email Does not exist.");
             }
-
         } catch (e) {
             ApiError.handle(new BadRequestError(e.message), res);
         }

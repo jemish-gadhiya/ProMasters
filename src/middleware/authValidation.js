@@ -51,21 +51,7 @@ exports.jois = {
     resetUserPasswordPayload: Joi.object().keys({
         email: Joi.string().required(),
         newPassword: Joi.string().required(),
-        confirmPassword: Joi.string()
-            .valid(Joi.ref('newPassword'))
-            .required()
-            .error(errors => {
-                return errors.map(error => {
-                    switch (error.type) {
-                        case 'any.empty':
-                            return { message: 'Confirm password is required' };
-                        case 'any.only':
-                            return { message: 'Passwords do not match' };
-                        default:
-                            return error;
-                    }
-                });
-            })
+        confirmPassword: Joi.string().required()
     }),
 
     resendEmailOTPPayload: Joi.object().keys({
