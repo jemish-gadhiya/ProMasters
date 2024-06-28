@@ -1,6 +1,6 @@
 'use strict';
 module.exports = function (sequelize, DataTypes) {
-    var LoginLog = sequelize.define('LoginLog', {
+    var UserLoginLog = sequelize.define('UserLoginLog', {
         login_logs_id: {
             type: DataTypes.INTEGER,
             primaryKey: true,
@@ -33,15 +33,15 @@ module.exports = function (sequelize, DataTypes) {
             defaultValue: DataTypes.NOW,
         },
     }, {
-        tableName: 'login_logs',
+        tableName: 'user_login_logs',
         timestamps: false,
         underscored: true,
     });
 
-    LoginLog.associate = function (models) {
+    UserLoginLog.associate = function (models) {
         // Define associations here if needed
         // For example, if there's a relationship with users:
         // LoginLog.belongsTo(models.User, { foreignKey: 'user_id' });
     };
-    return LoginLog;
+    return UserLoginLog;
 };

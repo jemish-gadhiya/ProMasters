@@ -32,21 +32,21 @@ class ApiResponse {
             let apiResponse = JSON.stringify(response);
             let endTime = Date.now();
             let startTime = res.req.startTime
-            let executionTime = endTime-startTime
-            console.log(executionTime);
-            let data =  dbWriter.apiLogs.create({
-                api_name:res.req.originalUrl,
-                request:  JSON.stringify(res.req.body) || JSON.stringify(res.req.params),
+            let executionTime = endTime - startTime
+            // console.log(executionTime);
+            let data = dbWriter.apiLogs.create({
+                api_name: res.req.originalUrl,
+                request: JSON.stringify(res.req.body) || JSON.stringify(res.req.params),
                 response: apiResponse,
                 user_id: res.req.user_id || 0,
-                execution_time:executionTime
+                execution_time: executionTime
             })
 
         }
         catch (e) {
             console.log(e);
         }
-         return res.status(this.status).json(ApiResponse.sanitize(response));
+        return res.status(this.status).json(ApiResponse.sanitize(response));
     }
     send(res) {
         return this.prepare(res, this);
@@ -95,7 +95,7 @@ class InternalErrorResponse extends ApiResponse {
     constructor(message = 'Internal Error') {
         super(status_code.INTERNAL_ERROR, ResponseStatus.INTERNAL_ERROR, message);
     }
-}               
+}
 exports.InternalErrorResponse = InternalErrorResponse;
 class SuccessMsgResponse extends ApiResponse {
     constructor(message) {
