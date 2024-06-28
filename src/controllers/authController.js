@@ -235,7 +235,7 @@ class AuthController {
                         is_email_verified: (type === "email") ? 1 : 0,
                         is_sms_verified: (type === "sms") ? 1 : 0
                     }, {
-                        where: { user_id: ExistUser.user_id }
+                        where: { user_id: data.user_id }
                     });
                     return new SuccessResponse("OTP verified successfully.", {}).send(res);
                 } else {
