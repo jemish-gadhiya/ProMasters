@@ -34,7 +34,7 @@ class AuthController {
             password = crypto.encrypt(password.toString(), true).toString();
 
             let userData = await dbReader.users.findOne({
-                attributes: ["user_id", "email", "username", "is_delete"],
+                attributes: ["user_id", "email", "username", "is_deleted"],
                 where: {
                     email: email,
                     is_deleted: 0
@@ -46,7 +46,7 @@ class AuthController {
             } else {
 
                 let userNameData = await dbReader.users.findOne({
-                    attributes: ["user_id", "email", "username", "is_delete"],
+                    attributes: ["user_id", "email", "username", "is_deleted"],
                     where: {
                         username: username,
                         is_deleted: 0

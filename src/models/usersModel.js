@@ -29,7 +29,7 @@ module.exports = function (sequelize, DataTypes) {
             type: DataTypes.INTEGER, // 1-user, 2-provider, 3-handyman,
             allowNull: false,
         },
-        photo: DataTypes.STRING(256),
+        photo: DataTypes.TEXT,
         address: DataTypes.STRING(256),
         city: DataTypes.STRING(256),
         state: DataTypes.STRING(256),

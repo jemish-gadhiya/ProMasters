@@ -15,15 +15,15 @@ exports.jois = {
         password: Joi.string().required().min(8),
         role: Joi.number().required(),
 
-        google_signup: Joi.string(),
-        latitude: Joi.string(),
-        longitude: Joi.string(),
-        photo: Joi.string(),
-        address: Joi.string(),
-        city: Joi.string(),
-        state: Joi.string(),
-        country: Joi.string(),
-        experience: Joi.string()
+        google_signup: Joi.string().allow(''),
+        latitude: Joi.string().allow(''),
+        longitude: Joi.string().allow(''),
+        photo: Joi.string().allow(''),
+        address: Joi.string().allow(''),
+        city: Joi.string().allow(''),
+        state: Joi.string().allow(''),
+        country: Joi.string().allow(''),
+        experience: Joi.string().allow('')
     }),
 
     validateOTPPayload: Joi.object().keys({
