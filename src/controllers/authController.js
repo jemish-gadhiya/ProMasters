@@ -100,7 +100,7 @@ class AuthController {
 
     login = async (req, res) => {
         try {
-            let { email, password, platform, device_token } = req.body;
+            let { email, password, platform, device_token, device_info } = req.body;
             var encryptedPassword = crypto.encrypt(password.toString(), true).toString();
 
             let userExistData = await dbReader.users.findOne({
@@ -122,16 +122,16 @@ class AuthController {
                             user_id: userExistData.user_id,
                             role: userExistData.user_id,
                         };
-                        let userAgent = {
-                            browser_name: UA.getBrowser().name,
-                            browser_version: UA.getBrowser().version,
-                            engine_name: UA.getEngine().name,
-                            engine_version: UA.getEngine().version,
-                            os: UA.getOS().name,
-                            os_ver: UA.getOS().version,
-                            cpu: UA.getCPU().architecture,
-                            ua: UA.getUA()
-                        }
+                        // let userAgent = {
+                        //     browser_name: UA.getBrowser().name,
+                        //     browser_version: UA.getBrowser().version,
+                        //     engine_name: UA.getEngine().name,
+                        //     engine_version: UA.getEngine().version,
+                        //     os: UA.getOS().name,
+                        //     os_ver: UA.getOS().version,
+                        //     cpu: UA.getCPU().architecture,
+                        //     ua: UA.getUA()
+                        // }
                         let access_token = jwt.sign(userData, process.env.SECRET_KEY, {
                             // expiresIn: '24h' // expires in 24 hours
                         });
@@ -139,7 +139,7 @@ class AuthController {
                         await dbWriter.usersLoginLogs.create({
                             user_id: userExistData.user_id,
                             access_token: access_token,
-                            device_info: JSON.stringify(userAgent),
+                            device_info: JSON.stringify(device_info),
                             platform: platform,
                             device_token: device_token,
                             created_at: new Date()

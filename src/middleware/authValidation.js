@@ -6,7 +6,8 @@ exports.jois = {
         email: Joi.string().email().required(),
         password: Joi.string().label("password").required(),
         platform: Joi.string().allow(''),
-        device_token: Joi.string().allow('')
+        device_token: Joi.string().allow(''),
+        device_info: Joi.object().allow({}).required()
     }),
 
     registerPayload: Joi.object().keys({
