@@ -54,7 +54,7 @@ class AuthController {
                 if (userNameData) {
                     ApiError.handle(new BadRequestError("Username already registered."), res);
                 } else {
-                    password = crypto.encrypt(password.toString(), false).toString();
+                    password = crypto.encrypt(password.toString(), true).toString();
                     let email_otp = generateRandomNo(6).toString(),
                         sms_otp = "123456"//await generateRandomNo(6).toString();
 
@@ -102,7 +102,6 @@ class AuthController {
         try {
             let { email, password } = req.body;
             var encryptedPassword = crypto.encrypt(password.toString(), true).toString();
-
 
             let userExistData = await dbReader.users.findOne({
                 // attributes: ["user_id", "first_name", "last_name", "password", "email", "created_at", "status"],

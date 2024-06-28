@@ -7,7 +7,6 @@ class NodeMailerController {
 
   // Email Template Convert Function
   async ConvertData(ReqData, callback) {
-    console.log(ReqData);
     if (ReqData.templateIdentifier != 0) {
       var getEmailTemplate = await dbReader.emailDesignTemplate.findOne({
         where: { email_design_template_id: ReqData.templateIdentifier }
