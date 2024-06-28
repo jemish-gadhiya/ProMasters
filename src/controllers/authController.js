@@ -120,7 +120,7 @@ class AuthController {
                         const UA = new UAParser(UA_string);
                         let userData = {
                             user_id: userExistData.user_id,
-                            role: userExistData.user_id,
+                            role: userExistData.role,
                         };
                         // let userAgent = {
                         //     browser_name: UA.getBrowser().name,
