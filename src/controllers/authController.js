@@ -104,7 +104,7 @@ class AuthController {
         try {
             let { email, password } = req.body;
             console.log("password is :: ", password);
-            password = crypto.encrypt(password.toString(), false).toString();
+            var encryptedPassword = crypto.encrypt(password.toString(), false).toString();
 
 
             let userExistData = await dbReader.users.findOne({
@@ -120,8 +120,8 @@ class AuthController {
             } else {
                 if (userExistData?.is_email_verified && userExistData?.is_sms_verified) {
                     console.log("userExistData.password :: ", userExistData.password);
-                    console.log("password :: ", password);
-                    if (userExistData.password == password) {
+                    console.log("password :: ", encryptedPassword);
+                    if (userExistData.password == encryptedPassword) {
                         let UA_string = req.headers['user-agent'];
                         const UA = new UAParser(UA_string);
                         let userData = {
