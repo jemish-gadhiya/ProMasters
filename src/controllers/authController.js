@@ -31,8 +31,6 @@ class AuthController {
     register = async (req, res) => {
         try {
             let { name, username, email, contact, password, google_signup = "", latitude = "", longitude = "", role, photo = "", address = "", city = "", state = "", country = "", experience = "" } = req.body;
-            password = crypto.encrypt(password.toString(), false).toString();
-
             let userData = await dbReader.users.findOne({
                 attributes: ["user_id", "email", "username", "is_deleted"],
                 where: {
@@ -103,8 +101,7 @@ class AuthController {
     login = async (req, res) => {
         try {
             let { email, password } = req.body;
-            console.log("password is :: ", password);
-            var encryptedPassword = crypto.encrypt(password.toString(), false).toString();
+            var encryptedPassword = crypto.encrypt(password.toString(), true).toString();
 
 
             let userExistData = await dbReader.users.findOne({
@@ -119,8 +116,6 @@ class AuthController {
                 ApiError.handle(new BadRequestError("Invalid email or password."), res);
             } else {
                 if (userExistData?.is_email_verified && userExistData?.is_sms_verified) {
-                    console.log("userExistData.password :: ", userExistData.password);
-                    console.log("password :: ", encryptedPassword);
                     if (userExistData.password == encryptedPassword) {
                         let UA_string = req.headers['user-agent'];
                         const UA = new UAParser(UA_string);

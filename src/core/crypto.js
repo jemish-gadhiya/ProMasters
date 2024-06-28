@@ -5,7 +5,7 @@ var { generateKeyPairSync, } = require('crypto-js');
 var encryptionMethod = 'AES-256-CBC';
 var secret = "7pp0OERpjFs3nRDWNKmkNCSQH9gjvDum";
 
- class Crypto {
+class Crypto {
     constructor() {
         this.key = CryptoJS.enc.Utf8.parse('7061737323313233');
         this.iv = CryptoJS.enc.Utf8.parse('7061737323313233');
@@ -35,7 +35,7 @@ var secret = "7pp0OERpjFs3nRDWNKmkNCSQH9gjvDum";
         let obj = { 'decrypt_code': byteCode, 'value': decryptedString };
         return (typeof JSON.parse(decryptedString) === 'object' && decryptedString !== null) ? decryptedString : false;
     }
-     encodeData(key, data) {
+    encodeData(key, data) {
         try {
             const buffer = Buffer.from(JSON.stringify(data), 'utf8')
             const encrypted = crypto.publicEncrypt(key, buffer)
@@ -44,9 +44,7 @@ var secret = "7pp0OERpjFs3nRDWNKmkNCSQH9gjvDum";
             throw new Error(err.message)
         }
     }
- decodeData(key, token) {
-    console.log(key);
-    console.log(token);
+    decodeData(key, token) {
         try {
             const buffer = Buffer.from(token, 'base64')
             const decrypted = CryptoJS.AES.privateDecrypt({
@@ -59,11 +57,9 @@ var secret = "7pp0OERpjFs3nRDWNKmkNCSQH9gjvDum";
         }
     }
     aesDecrypt(cipherText, key) {
-    console.log(key);
-    console.log(cipherText);
         try {
-           const iv = key.substring(0, 16) 
-           return CryptoJS.AES.decrypt(cipherText,  CryptoJS.enc.Utf8.parse(key), { iv:  CryptoJS.enc.Utf8.parse(iv), }) .toString( CryptoJS.enc.Utf8)
+            const iv = key.substring(0, 16)
+            return CryptoJS.AES.decrypt(cipherText, CryptoJS.enc.Utf8.parse(key), { iv: CryptoJS.enc.Utf8.parse(iv), }).toString(CryptoJS.enc.Utf8)
         } catch (err) {
             throw new Error(err.message)
         }
