@@ -52,7 +52,7 @@ exports.jois = {
         email: Joi.string().required(),
         newPassword: Joi.string().required(),
         confirmPassword: Joi.string()
-            .valid(Joi.ref('password'))
+            .valid(Joi.ref('newPassword'))
             .required()
             .error(errors => {
                 return errors.map(error => {
