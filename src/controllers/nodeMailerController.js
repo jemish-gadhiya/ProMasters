@@ -50,7 +50,7 @@ class NodeMailerController {
                 resolve(true);
                 break;
 
-              case '$email_OTP$':
+              case '$email_otp$':
                 gvd[cntData] = ReqData.email_otp;
                 resolve(true);
                 break;
