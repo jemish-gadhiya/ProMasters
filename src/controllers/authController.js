@@ -437,11 +437,9 @@ class AuthController {
             if (!req.files || req.files.length === 0) {
                 return res.status(400).send('No files were uploaded.');
             }
-            const filePaths = req.files.map(file => file.path);
-            console.log('Files uploaded:', filePaths);
+            const filePaths = req.files.map(file => file.path.replace(/^uploads\\/i, ''));
 
             new SuccessResponse("File uploadd succesfuly.", { files: filePaths }).send(res);
-
         } catch (e) {
             console.log("Error  is:: ", e)
             ApiError.handle(new BadRequestError(e.message), res);

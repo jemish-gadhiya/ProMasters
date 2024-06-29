@@ -6,14 +6,10 @@ const path = require('path');
 // Set storage for uploaded files
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        cb(null, './uploads/') // Directory where files will be stored
+        cb(null, './uploads') // Directory where files will be stored
     },
     filename: function (req, file, cb) {
-        const extension = path.extname(file.originalname);
-
-        console.log("===> file name are :: ", file.originalname)
-        console.log("===> file extension are :: ", extension)
-
+        const extension = path.extname(file.originalname.replaceAll("/", ""));
         cb(null, Date.now() + "_" + generateRandomNo(6) + extension); // Unique file name
     }
 });
