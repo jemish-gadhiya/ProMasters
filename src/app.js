@@ -67,6 +67,10 @@ class App {
 
     //use router middleware
     this.app.use('/api', this.router);
+
+    const uploadsDirectory = path.join(__dirname, './uploads');
+    console.log('Uploads Directory:', uploadsDirectory);
+    this.app.use('/uploads', express.static(uploadsDirectory));
   }
 
   swagger() {
@@ -83,10 +87,6 @@ class App {
    */
   config() {
     this.app.use('/public', express.static('public'));
-
-    const uploadsDirectory = path.join(__dirname, 'uploads');
-    console.log('Uploads Directory:', uploadsDirectory);
-    this.app.use('/uploads', express.static(uploadsDirectory));
 
     //add static paths
     this.app.use(express.static(path.join(__dirname, "public")));
