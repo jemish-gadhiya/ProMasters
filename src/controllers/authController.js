@@ -439,7 +439,7 @@ class AuthController {
             }
             const filePaths = req.files.map(file => file.path.replace(/^uploads\\/i, '').replace(/^uploads\//i, ''));
 
-            new SuccessResponse("File uploadd succesfuly.", { files: filePaths }).send(res);
+            new SuccessResponse("File uploaded succesfully.", { files: filePaths }).send(res);
         } catch (e) {
             console.log("Error  is:: ", e)
             ApiError.handle(new BadRequestError(e.message), res);
