@@ -7,7 +7,12 @@ var sql = {
     username: process.env.DB_USER,
     password: process.env.DB_USER_PWD,
     dialect: 'mysql',
-    logging: true
+    logging: ((e) => {
+        console.log("*******************************************");
+        console.log("--> ", e);
+        console.log("*******************************************");
+        console.log("");
+    })
 };
 
 var sqlReader, sqlWriter;
