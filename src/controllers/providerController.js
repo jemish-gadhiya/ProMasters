@@ -33,7 +33,6 @@ class ProviderController {
             let { service_address_id = 0, address, latitude = "", longitude = "" } = req.body;
             let { user_id, role } = req;
 
-            console.log("user role is :", role);
             if (role !== 2) {
                 throw new Error("User don't have permission to perform this action.");
             } else {
