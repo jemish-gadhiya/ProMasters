@@ -91,8 +91,6 @@ class App {
     //add static paths
     this.app.use(express.static(path.join(__dirname, "public")));
 
-
-
     //configure pug
     this.app.set("views", path.join(__dirname, "views"));
     this.app.set("view engine", "ejs");
