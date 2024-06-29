@@ -69,7 +69,7 @@ class App {
     this.app.use('/api', this.router);
 
     const uploadsDirectory = path.join(__dirname, 'uploads');
-    this.app.use('/uploads', express.static('uploads'));
+    this.app.use('/uploads', express.static(uploadsDirectory));
   }
 
   swagger() {
