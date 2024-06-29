@@ -67,6 +67,7 @@ class App {
 
     //use router middleware
     this.app.use('/api', this.router);
+    app.use('/uploads', express.static('uploads'));
   }
 
   swagger() {
