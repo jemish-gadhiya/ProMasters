@@ -1,6 +1,7 @@
 const AuthController = require('../controllers/authController');
 const validator = require("../helpers/validator");
 const tokenValidate = require('../middleware/tokenValidate');
+const { upload } = require('../helpers/helpers');
 const { jois } = require('../middleware/authValidation');
 
 class AuthRoute extends AuthController {
@@ -18,6 +19,7 @@ class AuthRoute extends AuthController {
         router.post("/resetUserPassword", tokenValidate, validator(jois.resetUserPasswordPayload), this.resetUserPassword);
         router.post("/resendEmailOTP", validator(jois.resendEmailOTPPayload), this.resendEmailOTP);
         router.post("/resendSMSOTP", validator(jois.resendSMSOTPPayload), this.resendSMSOTP);
+        router.post("/fileUpload", tokenValidate, upload.array('files'), this.fileUpload);
         router.post("/frontEndErrorLog", this.frontEndErrorLog);
     }
 }

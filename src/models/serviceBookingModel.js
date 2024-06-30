@@ -36,7 +36,8 @@ module.exports = function (sequelize, DataTypes) {
             defaultValue: 0,
         },
         booking_service_status: {
-            type: DataTypes.ENUM('pending', 'in_progress', 'completed', 'cancelled'), // Example ENUM values, adjust as needed
+            type: DataTypes.INTEGER,
+            // ENUM('pending', 'in_progress', 'completed', 'cancelled'), // Example ENUM values, adjust as needed
             allowNull: false,
         },
         booking_service_status_updated_by: {

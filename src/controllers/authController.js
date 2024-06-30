@@ -100,13 +100,14 @@ class AuthController {
 
     login = async (req, res) => {
         try {
-            let { email, password, platform, device_token, device_info } = req.body;
+            let { email, password, role, platform, device_token, device_info } = req.body;
             var encryptedPassword = crypto.encrypt(password.toString(), true).toString();
 
             let userExistData = await dbReader.users.findOne({
                 // attributes: ["user_id", "first_name", "last_name", "password", "email", "created_at", "status"],
                 where: {
                     email: email,
+                    role: role,
                     is_deleted: 0
                 }
             })
@@ -392,7 +393,7 @@ class AuthController {
 
                 new SuccessResponse("OTP send successfully.", {}).send(res);
             } else {
-                ApiError.handle(new BadRequestError("User does not exist."), res);
+                throw new Error("Email does not exist.");
             }
         } catch (e) {
             ApiError.handle(new BadRequestError(e.message), res);
@@ -427,6 +428,20 @@ class AuthController {
             }
 
         } catch (e) {
+            ApiError.handle(new BadRequestError(e.message), res);
+        }
+    }
+
+    fileUpload = async (req, res) => {
+        try {
+            if (!req.files || req.files.length === 0) {
+                return res.status(400).send('No files were uploaded.');
+            }
+            const filePaths = req.files.map(file => file.path.replace(/^uploads\\/i, '').replace(/^uploads\//i, ''));
+
+            new SuccessResponse("File uploaded succesfully.", { files: filePaths }).send(res);
+        } catch (e) {
+            console.log("Error  is:: ", e)
             ApiError.handle(new BadRequestError(e.message), res);
         }
     }

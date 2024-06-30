@@ -67,6 +67,12 @@ class App {
 
     //use router middleware
     this.app.use('/api', this.router);
+
+    // const uploadsDirectory = path.join(__dirname, '../uploads/');
+    this.app.use(express.static(path.join(__dirname, "uploads")));
+    // console.log('Uploads Directory:', uploadsDirectory);
+    this.app.use('/uploads', express.static('uploads'));
+    // express.static('public')
   }
 
   swagger() {
