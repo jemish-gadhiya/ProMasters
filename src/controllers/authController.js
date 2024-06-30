@@ -115,58 +115,58 @@ class AuthController {
             if (!userExistData) {
                 ApiError.handle(new BadRequestError("Invalid email or password."), res);
             } else {
-                if (userExistData?.is_email_verified && userExistData?.is_sms_verified) {
-                    if (userExistData.password == encryptedPassword) {
-                        let UA_string = req.headers['user-agent'];
-                        const UA = new UAParser(UA_string);
-                        let userData = {
-                            user_id: userExistData.user_id,
-                            role: userExistData.role,
-                        };
-                        // let userAgent = {
-                        //     browser_name: UA.getBrowser().name,
-                        //     browser_version: UA.getBrowser().version,
-                        //     engine_name: UA.getEngine().name,
-                        //     engine_version: UA.getEngine().version,
-                        //     os: UA.getOS().name,
-                        //     os_ver: UA.getOS().version,
-                        //     cpu: UA.getCPU().architecture,
-                        //     ua: UA.getUA()
-                        // }
-                        let access_token = jwt.sign(userData, process.env.SECRET_KEY, {
-                            // expiresIn: '24h' // expires in 24 hours
-                        });
-
-                        await dbWriter.usersLoginLogs.create({
-                            user_id: userExistData.user_id,
-                            access_token: access_token,
-                            device_info: JSON.stringify(device_info),
-                            platform: platform,
-                            device_token: device_token,
-                            created_at: new Date()
-                        })
-                        let responseData = {
-                            name: userExistData.name,
-                            email: userExistData.email,
-                            username: userExistData.username,
-                            role: userExistData.role,
-                            created_at: userExistData.created_at
-                        }
-                        res.send({
-                            status_code: 200,
-                            message: "Login successfully.",
-                            token: access_token,
-                            data: responseData
-                        })
-                        //  new SuccessResponse("Login successfully.", {
-                        //     token: access_token,
-                        //     ...responseData
-                        // }).send(res);
-                    } else {
-                        ApiError.handle(new BadRequestError("Invalid email or password."), res);
-                    }
+                if (userExistData?.is_active === 0) {
+                    throw new Error("User is activated.");
                 } else {
-                    throw new Error("User not veryfied.");
+                    if (userExistData?.is_email_verified && userExistData?.is_sms_verified) {
+                        if (userExistData.password == encryptedPassword) {
+                            let UA_string = req.headers['user-agent'];
+                            const UA = new UAParser(UA_string);
+                            let userData = {
+                                user_id: userExistData.user_id,
+                                role: userExistData.role,
+                            };
+                            // let userAgent = {
+                            //     browser_name: UA.getBrowser().name,
+                            //     browser_version: UA.getBrowser().version,
+                            //     engine_name: UA.getEngine().name,
+                            //     engine_version: UA.getEngine().version,
+                            //     os: UA.getOS().name,
+                            //     os_ver: UA.getOS().version,
+                            //     cpu: UA.getCPU().architecture,
+                            //     ua: UA.getUA()
+                            // }
+                            let access_token = jwt.sign(userData, process.env.SECRET_KEY, {
+                                // expiresIn: '24h' // expires in 24 hours
+                            });
+
+                            await dbWriter.usersLoginLogs.create({
+                                user_id: userExistData.user_id,
+                                access_token: access_token,
+                                device_info: JSON.stringify(device_info),
+                                platform: platform,
+                                device_token: device_token,
+                                created_at: new Date()
+                            })
+                            let responseData = {
+                                name: userExistData.name,
+                                email: userExistData.email,
+                                username: userExistData.username,
+                                role: userExistData.role,
+                                created_at: userExistData.created_at
+                            }
+                            res.send({
+                                status_code: 200,
+                                message: "Login successfully.",
+                                token: access_token,
+                                data: responseData
+                            });
+                        } else {
+                            throw new Error("Invalid email or password.");
+                        }
+                    } else {
+                        throw new Error("User not veryfied.");
+                    }
                 }
             }
         } catch (e) {
