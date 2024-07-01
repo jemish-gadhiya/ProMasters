@@ -430,24 +430,36 @@ class ProviderController {
     }
     getServiceByCategory = async (req, res) => {
         try {
-            let { category_id } = req.body
-            let { user_id, role } = req;
+            let {
+                category_id
+            } = req.body
+            let {
+                user_id,
+                role
+            } = req;
             let serviceData = await dbReader.service.findAll({
                 where: {
                     category_id: category_id,
                     is_deleted: 0
-                }
+                },
             });
             serviceData = JSON.parse(JSON.stringify(serviceData));
-            new SuccessResponse("Service get successfully.", { data: serviceData }).send(res);
+            new SuccessResponse("Service get successfully.", {
+                data: serviceData
+            }).send(res);
         } catch (e) {
             ApiError.handle(new BadRequestError(e.message), res);
         }
     }
     getServiceById = async (req, res) => {
         try {
-            let { service_id } = req.body
-            let { user_id, role } = req;
+            let {
+                service_id
+            } = req.body
+            let {
+                user_id,
+                role
+            } = req;
             let serviceData = await dbReader.service.findOne({
                 where: {
                     service_id: service_id,
@@ -462,7 +474,206 @@ class ProviderController {
                 }]
             });
             serviceData = JSON.parse(JSON.stringify(serviceData));
-            new SuccessResponse("Service get successfully.", { ...serviceData }).send(res);
+            new SuccessResponse("Service get successfully.", {
+                ...serviceData
+            }).send(res);
+        } catch (e) {
+            ApiError.handle(new BadRequestError(e.message), res);
+        }
+    }
+    listServiceForProvider = async (req, res) => {
+        try {
+            let {
+                user_id,
+                role
+            } = req;
+            let serviceData = await dbReader.service.findAll({
+                where: {
+                    user_id: user_id,
+                    is_deleted: 0
+                },
+                include: [{
+                    model: dbReader.serviceAttachment,
+                    where: {
+                        is_deleted: 0
+                    }
+                }]
+            });
+            serviceData = JSON.parse(JSON.stringify(serviceData));
+            new SuccessResponse("Service get successfully.", {
+                data: serviceData
+            }).send(res);
+        } catch (e) {
+            ApiError.handle(new BadRequestError(e.message), res);
+        }
+    }
+    listServiceForUser = async (req, res) => {
+        try {
+
+            let {
+                user_id,
+                role
+            } = req;
+            let serviceData = await dbReader.service.findAll({
+                where: {
+                    user_id: user_id,
+                    is_deleted: 0
+                },
+                include: [{
+                    model: dbReader.serviceAttachment,
+                    where: {
+                        is_deleted: 0
+                    }
+                }]
+            });
+            serviceData = JSON.parse(JSON.stringify(serviceData));
+            new SuccessResponse("Service get successfully.", {
+                data: serviceData
+            }).send(res);
+        } catch (e) {
+            ApiError.handle(new BadRequestError(e.message), res);
+        }
+    }
+    addServiceBooking = async (req, res) => {
+        try {
+            let {
+                booking_id,
+                booking_date_time,
+                service_id,
+                booking_address,
+                booking_latitude,
+                booking_longitude,
+                service_booking_qty,
+                coupan_id
+            } = req.body
+            let {
+                user_id,
+                role
+            } = req;
+            const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let code = '';
+            for (let i = 0; i < 4; i++) {
+                const randomIndex = Math.floor(Math.random() * characters.length);
+                code += characters[randomIndex];
+            }
+            let serviceData = await dbReader.service.findOne({
+                where: {
+                    service_id: service_id,
+                    is_deleted: 0
+                }
+            })
+            serviceData = JSON.parse(JSON.stringify(serviceData))
+            let serviceAmount = 0
+            if (serviceData && serviceData.price) {
+                let price = serviceData.price;
+                let discount = serviceData.discount / 100; // Convert discount percentage to a decimal
+                serviceAmount = price - (price * discount);
+            }
+
+            let comissionData = await dbReader.providerComission.findOne({
+                where: {
+                    provider_id: serviceData.user_id,
+                    is_deleted: 0
+                },
+                include: [{
+                    model: dbReader.comission,
+                    where: {
+                        is_deleted: 0
+                    }
+                }]
+            })
+            comissionData = JSON.parse(JSON.stringify(comissionData))
+            if (booking_id == 0) {
+                let serviceBookingData = await dbReader.serviceBooking.create({
+                    service_id: service_id,
+                    booking_no: code,
+                    booked_by: user_id,
+                    booking_datetime: booking_date_time,
+                    booking_address: booking_address,
+                    booking_address_latitude: booking_latitude,
+                    booking_address_longitude: booking_longitude,
+                    booking_service_qty: service_booking_qty,
+                    coupen_id: coupan_id,
+                    service_amount: serviceAmount,
+                    commission_amount: comissionData.comission.comission_amount,
+                    booking_service_status: 0,
+                    created_at: new Date()
+                });
+                serviceData = JSON.parse(JSON.stringify(serviceData));
+                new SuccessResponse("Service booked successfully.", {
+                    data: serviceData
+                }).send(res);
+            } else {
+                await dbReader.serviceBooking.update({
+                    booking_datetime: booking_date_time,
+                }, {
+                    where: {
+                        booking_id: booking_id,
+                        is_deleted: 0
+                    }
+                })
+                new SuccessResponse("Service booking updated successfully.", {}).send(res);
+            }
+        } catch (e) {
+            ApiError.handle(new BadRequestError(e.message), res);
+        }
+    }
+    saveUserAvailibility = async (req, res) => {
+        try {
+            let {
+                availibility_date = []
+            } = req.body
+            let {
+                user_id,
+                role
+            } = req;
+            let arr = []
+            await dbReader.userAvailibility.update({
+                is_deleted: 0
+            }, {
+                where: {
+                    user_id: user_id,
+                    is_deleted: 0
+                }
+            })
+            if (availibility_date.length) {
+                availibility_date.forEach((e) => {
+                    arr.push({
+                        user_id: user_id,
+                        date: e.date
+                    })
+                })
+            }
+            let availibilityData = await dbWriter.userAvailibility.bulkCreate(arr)
+            availibilityData = JSON.parse(JSON.stringify(availibilityData))
+
+            new SuccessResponse("Request Successful.", {
+                data: availibilityData
+            }).send(res);
+        } catch (e) {
+            ApiError.handle(new BadRequestError(e.message), res);
+        }
+    }
+    assignServiceHandyman = async (req, res) => {
+        try {
+            let {
+                handyman_user_id,
+                service_id
+            } = req.body
+            let {
+                user_id,
+                role
+            } = req;
+
+            let serviceHandymanData = await dbWriter.serviceBookingHandyman.create({
+                service_id: service_id,
+                user_id: handyman_user_id,
+                created_at: new Date()
+            })
+            serviceHandymanData = JSON.parse(JSON.stringify(serviceHandymanData))
+            new SuccessResponse("Request Successful.", {
+                data: serviceHandymanData
+            }).send(res);
         } catch (e) {
             ApiError.handle(new BadRequestError(e.message), res);
         }

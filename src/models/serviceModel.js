@@ -52,7 +52,10 @@ module.exports = function (sequelize, DataTypes) {
     });
 
     Service.associate = function (models) {
-      
+        Service.hasMany(models.serviceAttachment, {
+            foreignKey: 'service_id',
+            sourceKey: 'service_id'
+        });
     };
     
     return Service;
