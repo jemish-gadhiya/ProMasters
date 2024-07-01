@@ -380,7 +380,7 @@ class ProviderController {
     addEditService = async (req, res) => {
         try {
             let {
-                service_id = 0, service_name, category_id, service_address_id, service_type, price, discount, duration_hours, duration_mins, image_link, is_featured, gallery_images = []
+                service_id = 0, service_name, category_id,description, service_address_id, service_type, price, discount, duration_hours, duration_mins, image_link, is_featured, gallery_images = []
             } = req.body;
             let {
                 user_id,
@@ -393,6 +393,7 @@ class ProviderController {
                 if (service_id === 0) {
                     let newService = await dbWriter.service.create({
                         name: service_name,
+                        description:description,
                         category_id: category_id,
                         user_id:user_id,
                         service_address_id: service_address_id,
@@ -431,6 +432,7 @@ class ProviderController {
                     } else {
                         await dbWriter.service.update({
                             name: service_name,
+                            description:description,
                             category_id: category_id,
                             service_address_id: service_address_id,
                             service_type: service_type,
