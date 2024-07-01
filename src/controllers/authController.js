@@ -116,7 +116,7 @@ class AuthController {
                 ApiError.handle(new BadRequestError("Invalid email or password."), res);
             } else {
                 if (userExistData?.is_active === 0) {
-                    throw new Error("User is activated.");
+                    throw new Error("User is deactivated.");
                 } else {
                     if (userExistData?.is_email_verified && userExistData?.is_sms_verified) {
                         if (userExistData.password == encryptedPassword) {
