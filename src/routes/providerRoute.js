@@ -25,15 +25,15 @@ class ProviderRoute extends ProviderController {
         router.post("/deactiveCategory", tokenValidate, validator(jois.deactiveCategoryPayload), this.deactiveCategory);
 
 
-        router.post("/addEditService", tokenValidate, validator(jois.deactiveCategoryPayload), this.addEditService);
-        router.post("/deleteService", tokenValidate, validator(jois.deactiveCategoryPayload), this.deleteService);
-        router.post("/getServiceByCategory", tokenValidate, validator(jois.deactiveCategoryPayload), this.getServiceByCategory);
-        router.post("/getServiceById", tokenValidate, validator(jois.deactiveCategoryPayload), this.getServiceById);
-        router.get("/listServiceForProvider", tokenValidate, validator(jois.deactiveCategoryPayload), this.listServiceForProvider);
-        router.post("/listServiceForUser", tokenValidate, validator(jois.deactiveCategoryPayload), this.listServiceForUser);
-        router.post("/addServiceBooking", tokenValidate, validator(jois.deactiveCategoryPayload), this.addServiceBooking);
-        router.post("/saveUserAvailibility", tokenValidate, validator(jois.deactiveCategoryPayload), this.saveUserAvailibility);
-        router.post("/assignServiceHandyman", tokenValidate, validator(jois.deactiveCategoryPayload), this.assignServiceHandyman);
+        router.post("/addEditService", tokenValidate,  this.addEditService);
+        router.post("/deleteService", tokenValidate,  this.deleteService);
+        router.post("/getServiceByCategory", tokenValidate,  this.getServiceByCategory);
+        router.post("/getServiceById", tokenValidate,  this.getServiceById);
+        router.get("/listServiceForProvider", tokenValidate,  this.listServiceForProvider);
+        router.post("/listServiceForUser", tokenValidate,  this.listServiceForUser);
+        router.post("/addServiceBooking", tokenValidate,  this.addServiceBooking);
+        router.post("/saveUserAvailibility", tokenValidate,  this.saveUserAvailibility);
+        router.post("/assignServiceHandyman", tokenValidate,  this.assignServiceHandyman);
 
 
     }
