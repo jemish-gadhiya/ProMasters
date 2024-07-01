@@ -18,7 +18,8 @@ module.exports = function (sequelize, DataTypes) {
         },
         rating: DataTypes.DOUBLE,
         rating_type: {
-            type: DataTypes.ENUM('service', 'provider', 'handyman'),
+            type: DataTypes.INTEGER,
+            // ENUM('service', 'provider', 'handyman'),
             allowNull: false,
         },
         description: DataTypes.STRING(256),
