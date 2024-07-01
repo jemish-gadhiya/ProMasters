@@ -46,6 +46,10 @@ module.exports = function (sequelize, DataTypes) {
             type: DataTypes.INTEGER,
             defaultValue: 0,
         },
+        is_active: {
+            type: DataTypes.INTEGER,
+            defaultValue: 1,
+        },
         is_deleted: {
             type: DataTypes.INTEGER,
             defaultValue: 0,
