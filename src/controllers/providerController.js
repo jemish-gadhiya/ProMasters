@@ -392,7 +392,7 @@ class ProviderController {
             } else {
                 if (service_id === 0) {
                     let newService = await dbWriter.service.create({
-                        service_name: service_name,
+                        name: service_name,
                         category_id: category_id,
                         user_id:user_id,
                         service_address_id: service_address_id,
@@ -430,7 +430,7 @@ class ProviderController {
                         throw new Error("Service address not found.");
                     } else {
                         await dbWriter.service.update({
-                            service_name: service_name,
+                            name: service_name,
                             category_id: category_id,
                             service_address_id: service_address_id,
                             service_type: service_type,
