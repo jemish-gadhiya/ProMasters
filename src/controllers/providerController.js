@@ -394,6 +394,7 @@ class ProviderController {
                     let newService = await dbWriter.service.create({
                         service_name: service_name,
                         category_id: category_id,
+                        user_id:user_id,
                         service_address_id: service_address_id,
                         service_type: service_type,
                         price: price,

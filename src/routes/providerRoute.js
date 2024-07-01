@@ -25,7 +25,7 @@ class ProviderRoute extends ProviderController {
         router.post("/deactiveCategory", tokenValidate, validator(jois.deactiveCategoryPayload), this.deactiveCategory);
 
 
-        router.post("/addEditService", tokenValidate,  this.addEditService);
+       router.post("/addEditService", tokenValidate,  this.addEditService);
         router.post("/deleteService", tokenValidate,  this.deleteService);
         router.post("/getServiceByCategory", tokenValidate,  this.getServiceByCategory);
         router.post("/getServiceById", tokenValidate,  this.getServiceById);
@@ -34,8 +34,6 @@ class ProviderRoute extends ProviderController {
         router.post("/addServiceBooking", tokenValidate,  this.addServiceBooking);
         router.post("/saveUserAvailibility", tokenValidate,  this.saveUserAvailibility);
         router.post("/assignServiceHandyman", tokenValidate,  this.assignServiceHandyman);
-
-
     }
 }
 
