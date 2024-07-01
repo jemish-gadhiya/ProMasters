@@ -518,7 +518,7 @@ class ProviderController {
                 where: {
                     category_id: category_id,
                     is_deleted: 0
-                }
+                },
             });
             serviceData = JSON.parse(JSON.stringify(serviceData));
             new SuccessResponse("Service get successfully.", {
