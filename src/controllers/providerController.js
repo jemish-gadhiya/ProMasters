@@ -30,13 +30,8 @@ class ProviderController {
     //Service address module API's
     addEditServiceAddress = async (req, res) => {
         try {
-            let {
-                service_address_id = 0, address, latitude = "", longitude = ""
-            } = req.body;
-            let {
-                user_id,
-                role
-            } = req;
+            let { service_address_id = 0, address, latitude = "", longitude = "" } = req.body;
+            let { user_id, role } = req;
 
             if (role !== 2) {
                 throw new Error("User don't have permission to perform this action.");
@@ -67,10 +62,7 @@ class ProviderController {
                             latitude: latitude,
                             longitude: longitude
                         }, {
-                            where: {
-                                service_address_id: service_address_id,
-                                user_id: user_id
-                            }
+                            where: { service_address_id: service_address_id, user_id: user_id }
                         });
 
                         new SuccessResponse("Address updated successfully.", {}).send(res);
@@ -85,10 +77,7 @@ class ProviderController {
 
     getAllServiceAddress = async (req, res) => {
         try {
-            let {
-                user_id,
-                role
-            } = req;
+            let { user_id, role } = req;
 
             if (role !== 2) {
                 throw new Error("User don't have permission to perform this action.");
@@ -100,9 +89,7 @@ class ProviderController {
                     }
                 });
                 addressData = JSON.parse(JSON.stringify(addressData));
-                new SuccessResponse("Service address get successfully.", {
-                    data: addressData
-                }).send(res);
+                new SuccessResponse("Service address get successfully.", { data: addressData }).send(res);
             }
         } catch (e) {
             ApiError.handle(new BadRequestError(e.message), res);
@@ -111,10 +98,7 @@ class ProviderController {
 
     getActiveServiceAddress = async (req, res) => {
         try {
-            let {
-                user_id,
-                role
-            } = req;
+            let { user_id, role } = req;
 
             if (role !== 2) {
                 throw new Error("User don't have permission to perform this action.");
@@ -127,9 +111,7 @@ class ProviderController {
                     }
                 });
                 addressData = JSON.parse(JSON.stringify(addressData));
-                new SuccessResponse("Service address get successfully.", {
-                    data: addressData
-                }).send(res);
+                new SuccessResponse("Service address get successfully.", { data: addressData }).send(res);
             }
         } catch (e) {
             ApiError.handle(new BadRequestError(e.message), res);
@@ -138,13 +120,8 @@ class ProviderController {
 
     deleteServiceAddress = async (req, res) => {
         try {
-            let {
-                service_address_id
-            } = req.body;
-            let {
-                user_id,
-                role
-            } = req;
+            let { service_address_id } = req.body;
+            let { user_id, role } = req;
 
             if (role !== 2) {
                 throw new Error("User don't have permission to perform this action.");
@@ -163,10 +140,7 @@ class ProviderController {
                     await dbWriter.serviceAddress.update({
                         is_deleted: 1
                     }, {
-                        where: {
-                            service_address_id: service_address_id,
-                            user_id: user_id
-                        }
+                        where: { service_address_id: service_address_id, user_id: user_id }
                     });
 
                     new SuccessResponse("Address deleted successfully.", {}).send(res);
@@ -179,13 +153,8 @@ class ProviderController {
 
     deactiveServiceAddress = async (req, res) => {
         try {
-            let {
-                service_address_id
-            } = req.body;
-            let {
-                user_id,
-                role
-            } = req;
+            let { service_address_id } = req.body;
+            let { user_id, role } = req;
 
             if (role !== 2) {
                 throw new Error("User don't have permission to perform this action.");
@@ -204,10 +173,7 @@ class ProviderController {
                     await dbWriter.serviceAddress.update({
                         is_active: (addressData?.is_active === 0) ? 1 : 0
                     }, {
-                        where: {
-                            service_address_id: service_address_id,
-                            user_id: user_id
-                        }
+                        where: { service_address_id: service_address_id, user_id: user_id }
                     });
 
                     new SuccessResponse("Address updated successfully.", {}).send(res);
@@ -222,13 +188,8 @@ class ProviderController {
     //Category module API's
     addEditCategory = async (req, res) => {
         try {
-            let {
-                category_id = 0, name, image
-            } = req.body;
-            let {
-                user_id,
-                role
-            } = req;
+            let { category_id = 0, name, image } = req.body;
+            let { user_id, role } = req;
 
             if (category_id === 0) {
                 await dbWriter.category.create({
@@ -252,9 +213,7 @@ class ProviderController {
                         name: name,
                         image: image
                     }, {
-                        where: {
-                            category_id: category_id
-                        }
+                        where: { category_id: category_id }
                     });
 
                     new SuccessResponse("Category updated successfully.", {}).send(res);
@@ -267,19 +226,14 @@ class ProviderController {
 
     getAllCategory = async (req, res) => {
         try {
-            let {
-                user_id,
-                role
-            } = req;
+            let { user_id, role } = req;
             let categoryData = await dbReader.category.findAll({
                 where: {
                     is_deleted: 0
                 }
             });
             categoryData = JSON.parse(JSON.stringify(categoryData));
-            new SuccessResponse("Category get successfully.", {
-                data: categoryData
-            }).send(res);
+            new SuccessResponse("Category get successfully.", { data: categoryData }).send(res);
         } catch (e) {
             ApiError.handle(new BadRequestError(e.message), res);
         }
@@ -287,10 +241,7 @@ class ProviderController {
 
     getActiveCategory = async (req, res) => {
         try {
-            let {
-                user_id,
-                role
-            } = req;
+            let { user_id, role } = req;
             let categoryData = await dbReader.category.findAll({
                 where: {
                     is_enable: 1,
@@ -298,9 +249,7 @@ class ProviderController {
                 }
             });
             categoryData = JSON.parse(JSON.stringify(categoryData));
-            new SuccessResponse("Category get successfully.", {
-                data: categoryData
-            }).send(res);
+            new SuccessResponse("Category get successfully.", { data: categoryData }).send(res);
         } catch (e) {
             ApiError.handle(new BadRequestError(e.message), res);
         }
@@ -308,13 +257,8 @@ class ProviderController {
 
     deleteCategory = async (req, res) => {
         try {
-            let {
-                category_id
-            } = req.body;
-            let {
-                user_id,
-                role
-            } = req;
+            let { category_id } = req.body;
+            let { user_id, role } = req;
 
             let categoryData = await dbReader.category.findOne({
                 where: {
@@ -329,9 +273,7 @@ class ProviderController {
                 await dbWriter.category.update({
                     is_deleted: 1
                 }, {
-                    where: {
-                        category_id: category_id
-                    }
+                    where: { category_id: category_id }
                 });
 
                 new SuccessResponse("Category deleted successfully.", {}).send(res);
@@ -343,13 +285,8 @@ class ProviderController {
 
     deactiveCategory = async (req, res) => {
         try {
-            let {
-                category_id
-            } = req.body;
-            let {
-                user_id,
-                role
-            } = req;
+            let { category_id } = req.body;
+            let { user_id, role } = req;
 
             let categoryData = await dbReader.category.findOne({
                 where: {
@@ -364,9 +301,7 @@ class ProviderController {
                 await dbWriter.category.update({
                     is_enable: (categoryData?.is_enable === 0) ? 1 : 0
                 }, {
-                    where: {
-                        category_id: category_id
-                    }
+                    where: { category_id: category_id }
                 });
 
                 new SuccessResponse("Category updated successfully.", {}).send(res);
@@ -476,13 +411,8 @@ class ProviderController {
     }
     deleteService = async (req, res) => {
         try {
-            let {
-                service_id
-            } = req.body;
-            let {
-                user_id,
-                role
-            } = req;
+            let { service_id } = req.body;
+            let { user_id, role } = req;
 
             let serviceData = await dbReader.service.findOne({
                 where: {
@@ -497,9 +427,7 @@ class ProviderController {
                 await dbWriter.service.update({
                     is_deleted: 1
                 }, {
-                    where: {
-                        service_id: service_id,
-                    }
+                    where: { service_id: service_id, }
                 });
 
                 new SuccessResponse("Service deleted successfully.", {}).send(res);

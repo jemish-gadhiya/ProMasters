@@ -8,6 +8,7 @@ var cors = require('cors');
 const swaggerRoute_1 = require("./routes/swaggerRoute");
 const AuthRoute = require("./routes/authRoute");
 const ProviderRoute = require("./routes/providerRoute");
+const HandymanRoute = require("./routes/handymanRoute");
 const indexRoute = require("./routes/index");
 const { ApiResponse } = require('./core/ApiResponse');
 
@@ -63,16 +64,14 @@ class App {
   api() {
     new AuthRoute(this.router);
     new ProviderRoute(this.router);
+    new HandymanRoute(this.router);
     new indexRoute(this.router);
 
     //use router middleware
     this.app.use('/api', this.router);
 
-    // const uploadsDirectory = path.join(__dirname, '../uploads/');
-    this.app.use(express.static(path.join(__dirname, "uploads")));
-    // console.log('Uploads Directory:', uploadsDirectory);
-    this.app.use('/uploads', express.static('uploads'));
-    // express.static('public')
+     this.app.use(express.static(path.join(__dirname, "uploads")));
+        this.app.use('/uploads', express.static('uploads'));
   }
 
   swagger() {
