@@ -213,7 +213,7 @@ class AuthController {
         try {
             let { email, otp, type, device_info, platform, device_token } = req.body;
             let data = await dbReader.users.findOne({
-                attributes: ["user_id", "email", "email_otp", "sms_otp", "name", "username", "role", "created_at"],
+                attributes: ["user_id", "email", "email_otp", "sms_otp", "name", "username", "role", "created_at", "is_email_verified", "is_sms_verified"],
                 where: { email: email }
             });
             data = JSON.parse(JSON.stringify(data));
