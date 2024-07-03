@@ -239,15 +239,18 @@ class AuthController {
                     is_sms_verified = 1;
                     sms_otp = "";
                 }
-
+                console.log("===> is_email_verified : ", is_email_verified, " verify : ", verify);
                 if (verify === 1) {
                     await dbWriter.users.update({
-                        email_otp: "",
+                        email_otp: email_otp,
+                        sms_otp: sms_otp,
                         is_email_verified: is_email_verified,
                         is_sms_verified: is_sms_verified
                     }, {
                         where: { user_id: data.user_id }
                     });
+
+
 
                     if (is_email_verified === 1 && is_sms_verified === 1) {
                         let userData = {
@@ -519,7 +522,7 @@ class AuthController {
                 role
             } = req;
             let userData = await dbReader.users.findOne({
-                attributes:['name','username','email','contact','photo','address','experience','created_at','role','city','state','country'],
+                attributes: ['name', 'username', 'email', 'contact', 'photo', 'address', 'experience', 'created_at', 'role', 'city', 'state', 'country'],
                 where: {
                     user_id: user_id,
                     is_deleted: 0
