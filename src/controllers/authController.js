@@ -512,6 +512,27 @@ class AuthController {
             ApiError.handle(new BadRequestError(e.message), res);
         }
     }
+    getUserDetail = async (req, res) => {
+        try {
+            let {
+                user_id,
+                role
+            } = req;
+            let userData = await dbReader.users.findOne({
+                attributes:['name','username','email','contact','photo','address','experience','created_at','role','city','state','country'],
+                where: {
+                    user_id: user_id,
+                    is_deleted: 0
+                },
+            });
+            userData = JSON.parse(JSON.stringify(userData));
+            new SuccessResponse("Get user detail successfully.", {
+                ...userData
+            }).send(res);
+        } catch (e) {
+            ApiError.handle(new BadRequestError(e.message), res);
+        }
+    }
 }
 
 module.exports = AuthController;
