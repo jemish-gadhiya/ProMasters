@@ -213,7 +213,7 @@ class AuthController {
         try {
             let { email, otp, type } = req.body;
             let data = await dbReader.users.findOne({
-                attributes: ["user_id", "email", "email_otp", "sms_otp"],
+                attributes: ["user_id", "email", "email_otp", "sms_otp","name","username","role","created_at"],
                 where: { email: email }
             });
             data = JSON.parse(JSON.stringify(data));
@@ -248,7 +248,7 @@ class AuthController {
                     }, {
                         where: { user_id: data.user_id }
                     });
-                    return new SuccessResponse("OTP verified successfully.", {}).send(res);
+                    return new SuccessResponse("OTP verified successfully.", {data:data}).send(res);
                 } else {
                     throw new Error("Invalid OTP.");
                 }
@@ -305,7 +305,7 @@ class AuthController {
         try {
             let { email, otp } = req.body;
             let data = await dbReader.users.findOne({
-                attributes: ["user_id", "email", "email_otp"],
+                attributes: ["user_id", "email", "email_otp","name","username","role","created_at"],
                 where: { email: email }
             });
             data = JSON.parse(JSON.stringify(data));
@@ -317,7 +317,7 @@ class AuthController {
                     }, {
                         where: { user_id: data.user_id }
                     });
-                    return new SuccessResponse("OTP verified successfully.", { otp_verified: true }).send(res);
+                    return new SuccessResponse("OTP verified successfully.", { otp_verified: true,data: data }).send(res);
                 } else {
                     throw new Error("Invalid OTP.");
                 }
