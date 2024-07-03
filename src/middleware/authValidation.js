@@ -34,6 +34,9 @@ exports.jois = {
         email: Joi.string().email(),
         otp: Joi.string().required(),
         type: Joi.string().required(),
+        platform: Joi.string().allow('').required(),
+        device_token: Joi.string().allow('').required(),
+        device_info: Joi.object().allow({}).required(),
     }),
 
     logoutPayload: Joi.object().keys({
@@ -46,7 +49,10 @@ exports.jois = {
 
     forgotPasswordOTPCheckPayload: Joi.object().keys({
         email: Joi.string().email(),
-        otp: Joi.string().required()
+        otp: Joi.string().required(),
+        platform: Joi.string().allow('').required(),
+        device_token: Joi.string().allow('').required(),
+        device_info: Joi.object().allow({}).required(),
     }),
 
     resetUserPasswordPayload: Joi.object().keys({
