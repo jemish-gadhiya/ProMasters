@@ -21,7 +21,8 @@ class AuthRoute extends AuthController {
         router.post("/resendSMSOTP", validator(jois.resendSMSOTPPayload), this.resendSMSOTP);
         router.post("/fileUpload", upload.array('files'), this.fileUpload);
         router.post("/frontEndErrorLog", this.frontEndErrorLog);
-
+        router.get("/getUserDetail", tokenValidate , this.getUserDetail);
+        
         //Manage tax from admin panel
         router.post("/addEditServiceTax", tokenValidate, validator(jois.addEditServiceTaxPayload), this.addEditServiceTax);
         router.get("/getAllServiceTax", tokenValidate, this.getAllServiceTax);
