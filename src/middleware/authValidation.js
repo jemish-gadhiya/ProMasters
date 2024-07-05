@@ -64,6 +64,32 @@ exports.jois = {
         contact: Joi.string().required(),
     }),
 
+    addEditServiceTaxPayload: Joi.object().keys({
+        tax_id: Joi.number().allow(0).required(),
+        tax_name: Joi.string().required(),
+        tax_amount: Joi.number().allow(0).required(),
+        tax_amount_type: Joi.number().required(),
+    }),
+
+    deleteServiceTaxPayload: Joi.object().keys({
+        tax_id: Joi.number().required()
+    }),
 
 
+    addEditComissionPayload: Joi.object().keys({
+        comission_id: Joi.number().allow(0).required(),
+        description: Joi.string().required(),
+        comission_amount: Joi.number().allow(0).required(),
+        comission_amount_type: Joi.number().required(),
+    }),
+
+    deleteComissionPayload: Joi.object().keys({
+        comission_id: Joi.number().required()
+    }),
+
+
+    addEditProviderComissionPayload: Joi.object().keys({
+        comission_id: Joi.number().required(),
+        provider_id: Joi.number().required()
+    }),
 }

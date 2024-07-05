@@ -191,32 +191,36 @@ class ProviderController {
             let { category_id = 0, name, image } = req.body;
             let { user_id, role } = req;
 
-            if (category_id === 0) {
-                await dbWriter.category.create({
-                    name: name,
-                    image: image
-                });
-
-                new SuccessResponse("Category added successfully.", {}).send(res);
+            if (role !== 4) {
+                throw new Error("User don't have permission to perform this action.");
             } else {
-                let categoryData = await dbReader.category.findOne({
-                    where: {
-                        category_id: category_id,
-                        is_deleted: 0
-                    }
-                });
-                categoryData = JSON.parse(JSON.stringify(categoryData));
-                if (!categoryData) {
-                    throw new Error("Category not found.");
-                } else {
-                    await dbWriter.category.update({
+                if (category_id === 0) {
+                    await dbWriter.category.create({
                         name: name,
                         image: image
-                    }, {
-                        where: { category_id: category_id }
                     });
 
-                    new SuccessResponse("Category updated successfully.", {}).send(res);
+                    new SuccessResponse("Category added successfully.", {}).send(res);
+                } else {
+                    let categoryData = await dbReader.category.findOne({
+                        where: {
+                            category_id: category_id,
+                            is_deleted: 0
+                        }
+                    });
+                    categoryData = JSON.parse(JSON.stringify(categoryData));
+                    if (!categoryData) {
+                        throw new Error("Category not found.");
+                    } else {
+                        await dbWriter.category.update({
+                            name: name,
+                            image: image
+                        }, {
+                            where: { category_id: category_id }
+                        });
+
+                        new SuccessResponse("Category updated successfully.", {}).send(res);
+                    }
                 }
             }
         } catch (e) {
@@ -260,23 +264,27 @@ class ProviderController {
             let { category_id } = req.body;
             let { user_id, role } = req;
 
-            let categoryData = await dbReader.category.findOne({
-                where: {
-                    category_id: category_id,
-                    is_deleted: 0
-                }
-            });
-            categoryData = JSON.parse(JSON.stringify(categoryData));
-            if (!categoryData) {
-                throw new Error("Category data not found.");
+            if (role !== 4) {
+                throw new Error("User don't have permission to perform this action.");
             } else {
-                await dbWriter.category.update({
-                    is_deleted: 1
-                }, {
-                    where: { category_id: category_id }
+                let categoryData = await dbReader.category.findOne({
+                    where: {
+                        category_id: category_id,
+                        is_deleted: 0
+                    }
                 });
+                categoryData = JSON.parse(JSON.stringify(categoryData));
+                if (!categoryData) {
+                    throw new Error("Category data not found.");
+                } else {
+                    await dbWriter.category.update({
+                        is_deleted: 1
+                    }, {
+                        where: { category_id: category_id }
+                    });
 
-                new SuccessResponse("Category deleted successfully.", {}).send(res);
+                    new SuccessResponse("Category deleted successfully.", {}).send(res);
+                }
             }
         } catch (e) {
             ApiError.handle(new BadRequestError(e.message), res);
@@ -288,23 +296,27 @@ class ProviderController {
             let { category_id } = req.body;
             let { user_id, role } = req;
 
-            let categoryData = await dbReader.category.findOne({
-                where: {
-                    category_id: category_id,
-                    is_deleted: 0
-                }
-            });
-            categoryData = JSON.parse(JSON.stringify(categoryData));
-            if (!categoryData) {
-                throw new Error("Category data not found.");
+            if (role !== 4) {
+                throw new Error("User don't have permission to perform this action.");
             } else {
-                await dbWriter.category.update({
-                    is_enable: (categoryData?.is_enable === 0) ? 1 : 0
-                }, {
-                    where: { category_id: category_id }
+                let categoryData = await dbReader.category.findOne({
+                    where: {
+                        category_id: category_id,
+                        is_deleted: 0
+                    }
                 });
+                categoryData = JSON.parse(JSON.stringify(categoryData));
+                if (!categoryData) {
+                    throw new Error("Category data not found.");
+                } else {
+                    await dbWriter.category.update({
+                        is_enable: (categoryData?.is_enable === 0) ? 1 : 0
+                    }, {
+                        where: { category_id: category_id }
+                    });
 
-                new SuccessResponse("Category updated successfully.", {}).send(res);
+                    new SuccessResponse("Category updated successfully.", {}).send(res);
+                }
             }
         } catch (e) {
             ApiError.handle(new BadRequestError(e.message), res);
@@ -315,7 +327,7 @@ class ProviderController {
     addEditService = async (req, res) => {
         try {
             let {
-                service_id = 0, service_name, category_id,description, service_address_id, service_type, price, discount, duration_hours, duration_mins, image_link, is_featured, gallery_images = []
+                service_id = 0, service_name, category_id, description, service_address_id, service_type, price, discount, duration_hours, duration_mins, image_link, is_featured, gallery_images = []
             } = req.body;
             let {
                 user_id,
@@ -328,9 +340,9 @@ class ProviderController {
                 if (service_id === 0) {
                     let newService = await dbWriter.service.create({
                         name: service_name,
-                        description:description,
+                        description: description,
                         category_id: category_id,
-                        user_id:user_id,
+                        user_id: user_id,
                         service_address_id: service_address_id,
                         service_type: service_type,
                         price: price,
@@ -367,7 +379,7 @@ class ProviderController {
                     } else {
                         await dbWriter.service.update({
                             name: service_name,
-                            description:description,
+                            description: description,
                             category_id: category_id,
                             service_address_id: service_address_id,
                             service_type: service_type,

@@ -469,6 +469,301 @@ class AuthController {
             ApiError.handle(new BadRequestError(e.message), res);
         }
     }
+
+
+
+    //Manage tax details rom admin panel 
+    addEditServiceTax = async (req, res) => {
+        try {
+            let { tax_id = 0, tax_name = "", tax_amount = 0, tax_amount_type = 1, } = req.body;
+            let { user_id, role } = req;
+
+            if (role !== 4) {
+                throw new Error("User don't have permission to perform this action.");
+            } else {
+                if (tax_id === 0) {
+                    await dbWriter.tax.create({
+                        user_id: user_id,
+                        tax_name: tax_name,
+                        tax_amount: tax_amount,
+                        tax_amount_type: tax_amount_type
+                    });
+
+                    new SuccessResponse("Tax data added successfully.", {}).send(res);
+                } else {
+                    let taxData = await dbReader.serviceAddress.findOne({
+                        where: {
+                            tax_id: tax_id,
+                            is_deleted: 0
+                        }
+                    });
+                    taxData = JSON.parse(JSON.stringify(taxData));
+                    if (!taxData) {
+                        throw new Error("Tax data not found.");
+                    } else {
+                        await dbWriter.tax.update({
+                            tax_name: tax_name,
+                            tax_amount: tax_amount,
+                            tax_amount_type: tax_amount_type
+                        }, {
+                            where: { tax_id: tax_id }
+                        });
+
+                        new SuccessResponse("Tax data updated successfully.", {}).send(res);
+                    }
+                }
+            }
+        } catch (e) {
+            ApiError.handle(new BadRequestError(e.message), res);
+        }
+    }
+
+    getAllServiceTax = async (req, res) => {
+        try {
+            let { user_id, role } = req;
+
+            if (role !== 4) {
+                throw new Error("User don't have permission to perform this action.");
+            } else {
+                let taxData = await dbReader.tax.findAll({
+                    where: {
+                        user_id: user_id,
+                        is_deleted: 0
+                    }
+                });
+                taxData = JSON.parse(JSON.stringify(taxData));
+                new SuccessResponse("Tax data get successfully.", { data: taxData }).send(res);
+            }
+        } catch (e) {
+            ApiError.handle(new BadRequestError(e.message), res);
+        }
+    }
+
+    deleteServiceTax = async (req, res) => {
+        try {
+            let { tax_id } = req.body;
+            let { user_id, role } = req;
+
+            if (role !== 4) {
+                throw new Error("User don't have permission to perform this action.");
+            } else {
+                let taxData = await dbReader.tax.findOne({
+                    where: {
+                        tax_id: tax_id,
+                        is_deleted: 0
+                    }
+                });
+                taxData = JSON.parse(JSON.stringify(taxData));
+                if (!taxData) {
+                    throw new Error("Tax data not found.");
+                } else {
+                    await dbWriter.tax.update({
+                        is_deleted: 1
+                    }, {
+                        where: { tax_id: tax_id }
+                    });
+
+                    new SuccessResponse("Tax data deleted successfully.", {}).send(res);
+                }
+            }
+        } catch (e) {
+            ApiError.handle(new BadRequestError(e.message), res);
+        }
+    }
+
+
+    //Manage comission details rom admin panel 
+    addEditComission = async (req, res) => {
+        try {
+            let { comission_id = 0, description = "", comission_amount = 0, comission_amount_type = 1, } = req.body;
+            let { user_id, role } = req;
+
+            if (role !== 4) {
+                throw new Error("User don't have permission to perform this action.");
+            } else {
+                if (comission_id === 0) {
+                    await dbWriter.comission.create({
+                        user_id: user_id,
+                        description: description,
+                        comission_amount: comission_amount,
+                        comission_amount_type: comission_amount_type
+                    });
+
+                    new SuccessResponse("Comission data added successfully.", {}).send(res);
+                } else {
+                    let comissionData = await dbReader.comission.findOne({
+                        where: {
+                            comission_id: comission_id,
+                            is_deleted: 0
+                        }
+                    });
+                    comissionData = JSON.parse(JSON.stringify(comissionData));
+                    if (!comissionData) {
+                        throw new Error("Comission data not found.");
+                    } else {
+                        await dbWriter.comission.update({
+                            description: description,
+                            comission_amount: comission_amount,
+                            comission_amount_type: comission_amount_type
+                        }, {
+                            where: { comission_id: comission_id }
+                        });
+
+                        new SuccessResponse("Comission data updated successfully.", {}).send(res);
+                    }
+                }
+            }
+        } catch (e) {
+            ApiError.handle(new BadRequestError(e.message), res);
+        }
+    }
+
+    getAllComission = async (req, res) => {
+        try {
+            let { user_id, role } = req;
+
+            if (role !== 4) {
+                throw new Error("User don't have permission to perform this action.");
+            } else {
+                let comissionData = await dbReader.comission.findAll({
+                    where: {
+                        user_id: user_id,
+                        is_deleted: 0
+                    }
+                });
+                comissionData = JSON.parse(JSON.stringify(comissionData));
+                new SuccessResponse("Comission data get successfully.", { data: comissionData }).send(res);
+            }
+        } catch (e) {
+            ApiError.handle(new BadRequestError(e.message), res);
+        }
+    }
+
+    deleteComission = async (req, res) => {
+        try {
+            let { comission_id } = req.body;
+            let { user_id, role } = req;
+
+            if (role !== 4) {
+                throw new Error("User don't have permission to perform this action.");
+            } else {
+                let comissionData = await dbReader.comission.findOne({
+                    where: {
+                        comission_id: comission_id,
+                        is_deleted: 0
+                    }
+                });
+                comissionData = JSON.parse(JSON.stringify(comissionData));
+                if (!comissionData) {
+                    throw new Error("Comission data not found.");
+                } else {
+                    await dbWriter.comission.update({
+                        is_deleted: 1
+                    }, {
+                        where: { comission_id: comission_id }
+                    });
+
+                    new SuccessResponse("Comission data deleted successfully.", {}).send(res);
+                }
+            }
+        } catch (e) {
+            ApiError.handle(new BadRequestError(e.message), res);
+        }
+    }
+
+
+
+    //Manage providers from the admin panel
+    listAllProviders = async (req, res) => {
+        try {
+            let { user_id, role } = req;
+
+            if (role !== 4) {
+                throw new Error("User don't have permission to perform this action.");
+            } else {
+                let providersData = await dbReader.users.findAll({
+                    attributes: ["user_id", "username", "email", "contact", "email", "role", "photo", "address", "city", "state", "country", "experience", "is_active"],
+                    where: {
+                        role: 2,
+                        is_deleted: 0
+                    }
+                });
+                providersData = JSON.parse(JSON.stringify(providersData));
+
+                let responseData = {
+                    user_id: providersData?.user_id,
+                    username: providersData?.username,
+                    email: providersData?.email,
+                    contact: providersData?.contact,
+                    email: providersData?.email,
+                    role: providersData?.role,
+                    photo: providersData?.photo,
+                    address: providersData?.address,
+                    city: providersData?.city,
+                    state: providersData?.state,
+                    country: providersData?.country,
+                    experience: providersData?.experience,
+                    is_active: providersData?.is_active
+                }
+
+                new SuccessResponse("Provider data get successfully.", { data: responseData }).send(res);
+            }
+        } catch (e) {
+            ApiError.handle(new BadRequestError(e.message), res);
+        }
+    }
+
+    addEditProviderComission = async (req, res) => {
+        try {
+            let { comission_id = 0, provider_id = 0 } = req.body;
+            let { user_id, role } = req;
+
+            if (role !== 4) {
+                throw new Error("User don't have permission to perform this action.");
+            } else {
+                let comissionData = await dbReader.comission.findOne({
+                    where: {
+                        comission_id: comission_id,
+                        is_deleted: 0
+                    }
+                });
+                comissionData = JSON.parse(JSON.stringify(comissionData));
+                if (!comissionData) {
+                    throw new Error("Comission data not found.");
+                } else {
+                    let providerData = await dbReader.users.findOne({
+                        where: {
+                            user_id: provider_id,
+                            is_deleted: 0
+                        }
+                    });
+                    providerData = JSON.parse(JSON.stringify(providerData));
+                    if (!providerData) {
+                        throw new Error("Provider data not found.");
+                    } else {
+                        await dbWriter.providerComission.update({
+                            is_deleted: 1
+                        }, {
+                            where: {
+                                comission_id: comission_id,
+                                provider_id: provider_id
+                            }
+                        });
+
+                        await dbWriter.providerComission.create({
+                            comission_id: comission_id,
+                            provider_id: provider_id
+                        });
+                        new SuccessResponse("Provider comission data updated successfully.", {}).send(res);
+
+                    }
+                }
+            }
+        } catch (e) {
+            ApiError.handle(new BadRequestError(e.message), res);
+        }
+    }
+
 }
 
 module.exports = AuthController;
