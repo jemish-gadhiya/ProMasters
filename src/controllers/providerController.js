@@ -24,6 +24,7 @@ require('dotenv').config()
 const enumerationController = require("./enumurationController");
 var ObjectMail = new nodeMailerController_1();
 var EnumObject = new enumerationController();
+const { Op } = require('sequelize');
 
 class ProviderController {
 
@@ -315,7 +316,7 @@ class ProviderController {
     addEditService = async (req, res) => {
         try {
             let {
-                service_id = 0, service_name, category_id,description, service_address_id, service_type, price, discount, duration_hours, duration_mins, image_link, is_featured, gallery_images = []
+                service_id = 0, service_name, category_id, description, service_address_id, service_type, price, discount, duration_hours, duration_mins, image_link, is_featured, gallery_images = []
             } = req.body;
             let {
                 user_id,
@@ -328,9 +329,9 @@ class ProviderController {
                 if (service_id === 0) {
                     let newService = await dbWriter.service.create({
                         name: service_name,
-                        description:description,
+                        description: description,
                         category_id: category_id,
-                        user_id:user_id,
+                        user_id: user_id,
                         service_address_id: service_address_id,
                         service_type: service_type,
                         price: price,
@@ -367,7 +368,7 @@ class ProviderController {
                     } else {
                         await dbWriter.service.update({
                             name: service_name,
-                            description:description,
+                            description: description,
                             category_id: category_id,
                             service_address_id: service_address_id,
                             service_type: service_type,
@@ -471,13 +472,19 @@ class ProviderController {
             let serviceData = await dbReader.service.findOne({
                 where: {
                     service_id: service_id,
-                    user_id: user_id,
                     is_deleted: 0
                 },
                 include: [{
                     model: dbReader.serviceAttachment,
                     where: {
                         is_deleted: 0
+                    }
+                }, {
+                    as: "service_rating",
+                    model: dbReader.serviceRating,
+                    where: {
+                        is_deleted: 0,
+                        rating_type: 0
                     }
                 }]
             });
@@ -515,33 +522,74 @@ class ProviderController {
             ApiError.handle(new BadRequestError(e.message), res);
         }
     }
+    
     listServiceForUser = async (req, res) => {
         try {
+            let { user_id, role } = req;
+            let { service_user_id, rating, min_amount, max_amount, category } = req.body;
 
-            let {
-                user_id,
-                role
-            } = req;
+            // Build the where conditions
+            let serviceWhereConditions = {
+                is_deleted: 0
+            };
+
+            if (service_user_id) {
+                serviceWhereConditions.user_id = service_user_id;
+            }
+
+            if (min_amount && max_amount) {
+                serviceWhereConditions.price = {
+                    [Op.between]: [min_amount, max_amount]
+                };
+            } else if (min_amount) {
+                serviceWhereConditions.price = {
+                    [Op.gte]: min_amount
+                };
+            } else if (max_amount) {
+                serviceWhereConditions.price = {
+                    [Op.lte]: max_amount
+                };
+            }
+
+            if (category) {
+                serviceWhereConditions.category_id = category;
+            }
+
+            let serviceRatingWhereConditions = {
+                is_deleted: 0,
+                rating_type: 0
+            };
+
+            if (rating) {
+                serviceRatingWhereConditions.rating = rating;
+            }
+
             let serviceData = await dbReader.service.findAll({
-                where: {
-                    user_id: user_id,
-                    is_deleted: 0
-                },
-                include: [{
-                    model: dbReader.serviceAttachment,
-                    where: {
-                        is_deleted: 0
+                where: serviceWhereConditions,
+                include: [
+                    {
+                        model: dbReader.serviceAttachment,
+                        where: {
+                            is_deleted: 0
+                        }
+                    },
+                    {
+                        as: "service_rating",
+                        model: dbReader.serviceRating,
+                        where: serviceRatingWhereConditions
                     }
-                }]
+                ]
             });
+
             serviceData = JSON.parse(JSON.stringify(serviceData));
-            new SuccessResponse("Service get successfully.", {
+            new SuccessResponse("Service retrieved successfully.", {
                 data: serviceData
             }).send(res);
         } catch (e) {
             ApiError.handle(new BadRequestError(e.message), res);
         }
-    }
+    };
+
     addServiceBooking = async (req, res) => {
         try {
             let {
@@ -687,6 +735,76 @@ class ProviderController {
         }
     }
 
+    listServiceBookingForProvider = async (req, res) => {
+        try {
+            let {
+                user_id,
+                role
+            } = req;
+            let serviceData = await dbReader.service.findAll({
+                where: {
+                    user_id: user_id,
+                    is_deleted: 0
+                },
+                include: [{
+                    required: true,
+                    model: dbReader.serviceBooking,
+                    where: {
+                        is_deleted: 0
+                    }
+                }]
+            });
+            serviceData = JSON.parse(JSON.stringify(serviceData));
+            new SuccessResponse("Service get successfully.", {
+                data: serviceData
+            }).send(res);
+        } catch (e) {
+            ApiError.handle(new BadRequestError(e.message), res);
+        }
+    }
+    updateServiceBookingStatus = async (req, res) => {
+        try {
+            let {
+                status,
+                service_id
+            } = req.body
+            let {
+                user_id,
+                role
+            } = req;
+
+            let data = await dbReader.service.findOne({
+                where: {
+                    service_id: service_id,
+                    is_deleted: 0
+                },
+                include: [{
+                    required: true,
+                    model: dbReader.serviceBooking,
+                    where: {
+                        is_deleted: 0
+                    }
+                }]
+            })
+            data = JSON.parse(JSON.stringify(data))
+            if (data) {
+                await dbWriter.serviceBooking.update({
+                    booking_status: status
+                }, {
+                    where: {
+                        service_id: service_id,
+                        is_deleted: 0
+                    }
+                })
+                new SuccessResponse("Request Successful.", {
+                }).send(res);
+            } else {
+                throw new BadRequestError("Service Booking not found.")
+            }
+        } catch (e) {
+            ApiError.handle(new BadRequestError(e.message), res);
+        }
+    }
 }
 
 module.exports = ProviderController;
