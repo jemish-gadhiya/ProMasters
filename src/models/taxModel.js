@@ -15,8 +15,8 @@ module.exports = function (sequelize, DataTypes) {
         tax_name: DataTypes.STRING(256),
         tax_amount: DataTypes.DOUBLE,
         tax_amount_type: {
-            type: DataTypes.ENUM('fixed', 'percentage'), // Example ENUM values, adjust as needed
-            allowNull: false,
+            type: DataTypes.INTEGER, // 1-fixed, 2-percentage
+            defaultValue: 1,
         },
         is_deleted: {
             type: DataTypes.INTEGER,
@@ -41,6 +41,6 @@ module.exports = function (sequelize, DataTypes) {
         // For example, if there's a relationship with users:
         // Tax.belongsTo(models.User, { foreignKey: 'user_id' });
     };
-    
+
     return Tax;
 };

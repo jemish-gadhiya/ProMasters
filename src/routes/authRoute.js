@@ -22,6 +22,23 @@ class AuthRoute extends AuthController {
         router.post("/fileUpload", upload.array('files'), this.fileUpload);
         router.post("/frontEndErrorLog", this.frontEndErrorLog);
         router.get("/getUserDetail", tokenValidate , this.getUserDetail);
+        
+        //Manage tax from admin panel
+        router.post("/addEditServiceTax", tokenValidate, validator(jois.addEditServiceTaxPayload), this.addEditServiceTax);
+        router.get("/getAllServiceTax", tokenValidate, this.getAllServiceTax);
+        router.post("/deleteServiceTax", tokenValidate, validator(jois.deleteServiceTaxPayload), this.deleteServiceTax);
+
+
+        //Manage comission from admin panel
+        router.post("/addEditComission", tokenValidate, validator(jois.addEditComissionPayload), this.addEditComission);
+        router.get("/getAllComission", tokenValidate, this.getAllComission);
+        router.post("/deleteComission", tokenValidate, validator(jois.deleteComissionPayload), this.deleteComission);
+
+
+        //manage the providers fro the admin panel
+        router.get("/listAllProviders", tokenValidate, this.listAllProviders);
+        router.post("/addEditProviderComission", tokenValidate, validator(jois.addEditProviderComissionPayload), this.addEditProviderComission);
+
     }
 }
 

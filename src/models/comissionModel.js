@@ -9,6 +9,10 @@ module.exports = function (sequelize, DataTypes) {
             unique: true,
         },
         comission_amount: DataTypes.INTEGER,
+        comission_amount_type: {
+            type: DataTypes.INTEGER, // 1-fixed, 2-percentage
+            defaultValue: 1,
+        },
         description: DataTypes.STRING, // Assuming description is a string
         is_deleted: {
             type: DataTypes.INTEGER,
