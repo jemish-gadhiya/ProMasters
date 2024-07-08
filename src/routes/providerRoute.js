@@ -21,19 +21,20 @@ class ProviderRoute extends ProviderController {
         router.post("/addEditCategory", tokenValidate, validator(jois.addEditCategoryPayload), this.addEditCategory);
         router.get("/getAllCategory", tokenValidate, this.getAllCategory);
         router.get("/getActiveCategory", tokenValidate, this.getActiveCategory);
+        router.post("/getCategoryById", tokenValidate, validator(jois.getCategoryByIdPayload), this.getCategoryById);
         router.post("/deleteCategory", tokenValidate, validator(jois.deleteCategoryPayload), this.deleteCategory);
         router.post("/deactiveCategory", tokenValidate, validator(jois.deactiveCategoryPayload), this.deactiveCategory);
 
 
-       router.post("/addEditService", tokenValidate,  this.addEditService);
-        router.post("/deleteService", tokenValidate,  this.deleteService);
-        router.post("/getServiceByCategory", tokenValidate,  this.getServiceByCategory);
-        router.post("/getServiceById", tokenValidate,  this.getServiceById);
-        router.get("/listServiceForProvider", tokenValidate,  this.listServiceForProvider);
-        router.post("/listServiceForUser", tokenValidate,  this.listServiceForUser);
-        router.post("/addServiceBooking", tokenValidate,  this.addServiceBooking);
-        router.post("/saveUserAvailibility", tokenValidate,  this.saveUserAvailibility);
-        router.post("/assignServiceHandyman", tokenValidate,  this.assignServiceHandyman);
+        router.post("/addEditService", tokenValidate, this.addEditService);
+        router.post("/deleteService", tokenValidate, this.deleteService);
+        router.post("/getServiceByCategory", tokenValidate, this.getServiceByCategory);
+        router.post("/getServiceById", tokenValidate, this.getServiceById);
+        router.get("/listServiceForProvider", tokenValidate, this.listServiceForProvider);
+        router.post("/listServiceForUser", tokenValidate, this.listServiceForUser);
+        router.post("/addServiceBooking", tokenValidate, this.addServiceBooking);
+        router.post("/saveUserAvailibility", tokenValidate, this.saveUserAvailibility);
+        router.post("/assignServiceHandyman", tokenValidate, this.assignServiceHandyman);
     }
 }
 

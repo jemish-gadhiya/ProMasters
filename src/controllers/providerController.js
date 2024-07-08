@@ -259,6 +259,23 @@ class ProviderController {
         }
     }
 
+    getCategoryById = async (req, res) => {
+        try {
+            let { category_id } = req.body;
+            let { user_id, role } = req;
+            let categoryData = await dbReader.category.findOne({
+                where: {
+                    category_id: category_id,
+                    is_deleted: 0
+                }
+            });
+            categoryData = JSON.parse(JSON.stringify(categoryData));
+            new SuccessResponse("Category get successfully.", { data: categoryData }).send(res);
+        } catch (e) {
+            ApiError.handle(new BadRequestError(e.message), res);
+        }
+    }
+
     deleteCategory = async (req, res) => {
         try {
             let { category_id } = req.body;
