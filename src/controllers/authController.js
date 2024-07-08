@@ -775,23 +775,7 @@ class AuthController {
                 });
                 providersData = JSON.parse(JSON.stringify(providersData));
 
-                let responseData = {
-                    user_id: providersData?.user_id,
-                    username: providersData?.username,
-                    email: providersData?.email,
-                    contact: providersData?.contact,
-                    email: providersData?.email,
-                    role: providersData?.role,
-                    photo: providersData?.photo,
-                    address: providersData?.address,
-                    city: providersData?.city,
-                    state: providersData?.state,
-                    country: providersData?.country,
-                    experience: providersData?.experience,
-                    is_active: providersData?.is_active
-                }
-
-                new SuccessResponse("Provider data get successfully.", { data: responseData }).send(res);
+                new SuccessResponse("Provider data get successfully.", { data: providersData }).send(res);
             }
         } catch (e) {
             ApiError.handle(new BadRequestError(e.message), res);
