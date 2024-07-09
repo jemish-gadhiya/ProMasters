@@ -71,8 +71,8 @@ module.exports = function (sequelize, DataTypes) {
     User.associate = function (models) {
         // Define associations here if needed
         User.hasMany(models.providerComission, {
-            foreignKey: 'provider_id',
-            targetKey: 'user_id'
+            foreignKey: 'user_id',
+            targetKey: 'provider_id'
         });
     };
 

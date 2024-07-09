@@ -889,6 +889,9 @@ class AuthController {
             if (role !== 4) {
                 throw new Error("User don't have permission to perform this action.");
             } else {
+
+
+
                 let providersData = await dbReader.users.findOne({
                     attributes: ["user_id", "username", "email", "contact", "email", "role", "photo", "address", "city", "state", "country", "experience", "is_active"],
                     where: {
@@ -911,6 +914,9 @@ class AuthController {
                         }]
                     }]
                 });
+
+
+
                 // providersData = JSON.parse(JSON.stringify(providersData));
 
                 new SuccessResponse("Provider data get successfully.", { data: providersData }).send(res);
