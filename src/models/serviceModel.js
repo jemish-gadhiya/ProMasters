@@ -56,6 +56,19 @@ module.exports = function (sequelize, DataTypes) {
             foreignKey: 'service_id',
             sourceKey: 'service_id'
         });
+        Service.belongsTo(models.users, {
+            foreignKey: 'user_id',
+            targetKey: 'user_id'
+        });
+        Service.belongsTo(models.serviceBookingHandyman, {
+            foreignKey: 'service_id',
+            targetKey: 'service_id'
+        });
+        Service.hasMany(models.serviceRating, {
+            as: "service_rating",
+            foreignKey: 'rating_reciever_id',
+            sourceKey: 'service_id'
+        });
     };
     
     return Service;

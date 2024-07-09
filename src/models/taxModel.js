@@ -45,6 +45,6 @@ module.exports = function (sequelize, DataTypes) {
         // For example, if there's a relationship with users:
         // Tax.belongsTo(models.User, { foreignKey: 'user_id' });
     };
-
+    
     return Tax;
 };
