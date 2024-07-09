@@ -505,7 +505,7 @@ const { Op } = require('sequelize');
                     is_deleted: 0
                 },
                 include: [{
-                    model: dbReader.user,
+                    model: dbReader.users,
                     where: {
                         role:2,
                         is_deleted: 0
@@ -615,7 +615,7 @@ const { Op } = require('sequelize');
                         }
                     },
                     {
-                        model: dbReader.user,
+                        model: dbReader.users,
                         where: {
                             role:2,
                             is_deleted: 0
@@ -859,7 +859,7 @@ const { Op } = require('sequelize');
                 user_id,
                 role
             } = req;
-            let providerData = await dbReader.user.findAll({
+            let providerData = await dbReader.users.findAll({
                 where: {
                     role:2,
                         is_deleted: 0
