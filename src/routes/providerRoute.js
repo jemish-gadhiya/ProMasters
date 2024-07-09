@@ -34,6 +34,16 @@ class ProviderRoute extends ProviderController {
         router.post("/addServiceBooking", tokenValidate,  this.addServiceBooking);
         router.post("/saveUserAvailibility", tokenValidate,  this.saveUserAvailibility);
         router.post("/assignServiceHandyman", tokenValidate,  this.assignServiceHandyman);
+
+        router.get("/listServiceBookingForProvider", tokenValidate,  this.listServiceBookingForProvider);
+        router.post("/updateServiceBookingStatus", tokenValidate,  this.updateServiceBookingStatus);
+        router.get("/listProviderForFilter", tokenValidate,  this.listProviderForFilter);
+
+        
+
+
+
+
     }
 }
 

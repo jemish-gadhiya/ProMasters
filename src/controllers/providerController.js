@@ -26,7 +26,7 @@ var ObjectMail = new nodeMailerController_1();
 var EnumObject = new enumerationController();
 const { Op } = require('sequelize');
 
-class ProviderController {
+ class ProviderController {
 
     //Service address module API's
     addEditServiceAddress = async (req, res) => {
@@ -475,7 +475,19 @@ class ProviderController {
                     is_deleted: 0
                 },
                 include: [{
+                    model: dbReader.user,
+                    where: {
+                        role:2,
+                        is_deleted: 0
+                    }
+                },{
                     model: dbReader.serviceAttachment,
+                    where: {
+                        is_deleted: 0
+                    }
+                },{
+                    required:false,
+                    model: dbReader.serviceBookingHandyman,
                     where: {
                         is_deleted: 0
                     }
@@ -570,6 +582,13 @@ class ProviderController {
                     {
                         model: dbReader.serviceAttachment,
                         where: {
+                            is_deleted: 0
+                        }
+                    },
+                    {
+                        model: dbReader.user,
+                        where: {
+                            role:2,
                             is_deleted: 0
                         }
                     },
@@ -801,6 +820,26 @@ class ProviderController {
             } else {
                 throw new BadRequestError("Service Booking not found.")
             }
+        } catch (e) {
+            ApiError.handle(new BadRequestError(e.message), res);
+        }
+    }
+    listProviderForFilter = async (req, res) => {
+        try {
+            let {
+                user_id,
+                role
+            } = req;
+            let providerData = await dbReader.user.findAll({
+                where: {
+                    role:2,
+                        is_deleted: 0
+                },
+            });
+            providerData = JSON.parse(JSON.stringify(providerData));
+            new SuccessResponse("Provider get successfully.", {
+                data: providerData
+            }).send(res);
         } catch (e) {
             ApiError.handle(new BadRequestError(e.message), res);
         }
