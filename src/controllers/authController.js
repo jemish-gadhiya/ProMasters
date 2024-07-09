@@ -895,7 +895,7 @@ class AuthController {
                 let providersData = await dbReader.users.findOne({
                     attributes: ["user_id", "username", "email", "contact", "email", "role", "photo", "address", "city", "state", "country", "experience", "is_active"],
                     where: {
-                        provider_id: provider_id,
+                        user_id: provider_id,
                         role: 2,
                         is_deleted: 0
                     },
@@ -905,13 +905,13 @@ class AuthController {
                         where: {
                             is_deleted: 0
                         },
-                        // include: [{
-                        //     required: false,
-                        //     model: dbReader.comission,
-                        //     where: {
-                        //         is_deleted: 0
-                        //     }
-                        // }]
+                        include: [{
+                            required: false,
+                            model: dbReader.comission,
+                            where: {
+                                is_deleted: 0
+                            }
+                        }]
                     }]
                 });
 
