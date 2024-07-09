@@ -33,10 +33,10 @@ module.exports = function (sequelize, DataTypes) {
     });
 
     Commission.associate = function (models) {
-        Commission.hasMany(models.providerComission, {
-            foreignKey: 'comission_id',
-            targetKey: 'comission_id'
-        });
+        // Commission.hasMany(models.providerComission, {
+        //     foreignKey: 'comission_id',
+        //     targetKey: 'comission_id'
+        // });
     };
 
     return Commission;
