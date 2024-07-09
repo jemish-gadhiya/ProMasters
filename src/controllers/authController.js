@@ -17,6 +17,7 @@ const {
     dbReader,
     dbWriter
 } = require('../models/dbconfig');
+const { Op } = dbReader.Sequelize;
 const { Configuration, OpenAIApi } = require("openai");
 const moment = require('moment');
 const index_1 = require("../core/index");
@@ -698,7 +699,11 @@ class AuthController {
                     throw new Error("Tax data not found.");
                 } else {
 
-                    await dbWriter.tax.query("update tax set is_active=0 where tax_id !=0");
+                    await dbWriter.tax.update({
+                        is_active: 0
+                    }, {
+                        where: { tax_id: { [Op.not]: 0 } }
+                    });
                     await dbWriter.tax.update({
                         is_active: 1
                     }, {
