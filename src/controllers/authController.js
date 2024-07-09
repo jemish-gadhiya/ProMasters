@@ -905,13 +905,13 @@ class AuthController {
                         where: {
                             is_deleted: 0
                         },
-                        include: [{
-                            required: false,
-                            model: dbReader.comission,
-                            where: {
-                                is_deleted: 0
-                            }
-                        }]
+                        // include: [{
+                        //     required: false,
+                        //     model: dbReader.comission,
+                        //     where: {
+                        //         is_deleted: 0
+                        //     }
+                        // }]
                     }]
                 });
 
