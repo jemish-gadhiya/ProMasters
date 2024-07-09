@@ -269,6 +269,7 @@ class ProviderController {
                     is_deleted: 0
                 }
             });
+            console.log("category data are :: ", categoryData);
             // categoryData = JSON.parse(JSON.stringify(categoryData));
             new SuccessResponse("Category get successfully.", { data: categoryData }).send(res);
         } catch (e) {
