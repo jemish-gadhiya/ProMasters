@@ -41,15 +41,15 @@ module.exports = function (sequelize, DataTypes) {
         // ProviderCommission.belongsTo(models.users, { foreignKey: 'provider_id' });
         // ProviderCommission.belongsTo(models.comission, { foreignKey: 'provider_id' });
 
-        ProviderCommission.belongsTo(models.users, {
-            foreignKey: 'user_id',
-            targetKey: 'provider_id'
-        });
+        // providerCommission.belongsTo(models.users, {
+        //     foreignKey: 'user_id',
+        //     targetKey: 'provider_id'
+        // });
 
-        ProviderCommission.belongsTo(models.comission, {
-            foreignKey: 'comission_id',
-            targetKey: 'comission_id'
-        });
+        // providerCommission.belongsTo(models.comission, {
+        //     foreignKey: 'comission_id',
+        //     targetKey: 'comission_id'
+        // });
 
     };
 
