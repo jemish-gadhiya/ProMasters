@@ -269,7 +269,7 @@ class ProviderController {
                     is_deleted: 0
                 }
             });
-            categoryData = JSON.parse(JSON.stringify(categoryData));
+            // categoryData = JSON.parse(JSON.stringify(categoryData));
             new SuccessResponse("Category get successfully.", { data: categoryData }).send(res);
         } catch (e) {
             ApiError.handle(new BadRequestError(e.message), res);
@@ -510,9 +510,9 @@ class ProviderController {
                     }
                 }]
             });
-            serviceData = JSON.parse(JSON.stringify(serviceData));
+            // serviceData = JSON.parse(JSON.stringify(serviceData));
             new SuccessResponse("Service get successfully.", {
-                ...serviceData
+                data: serviceData
             }).send(res);
         } catch (e) {
             ApiError.handle(new BadRequestError(e.message), res);

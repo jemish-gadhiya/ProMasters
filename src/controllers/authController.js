@@ -639,7 +639,7 @@ class AuthController {
                         is_deleted: 0
                     }
                 });
-                taxData = JSON.parse(JSON.stringify(taxData));
+                // taxData = JSON.parse(JSON.stringify(taxData));
                 new SuccessResponse("Tax data get successfully.", { data: taxData }).send(res);
             }
         } catch (e) {
@@ -794,7 +794,7 @@ class AuthController {
                         is_deleted: 0
                     }
                 });
-                comissionData = JSON.parse(JSON.stringify(comissionData));
+                // comissionData = JSON.parse(JSON.stringify(comissionData));
                 new SuccessResponse("Comission data get successfully.", { data: comissionData }).send(res);
             }
         } catch (e) {
@@ -907,7 +907,7 @@ class AuthController {
                         }]
                     }]
                 });
-                providersData = JSON.parse(JSON.stringify(providersData));
+                // providersData = JSON.parse(JSON.stringify(providersData));
 
                 new SuccessResponse("Provider data get successfully.", { data: providersData }).send(res);
             }
