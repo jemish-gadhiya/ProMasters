@@ -17,7 +17,7 @@ const {
     dbReader,
     dbWriter
 } = require('../models/dbconfig');
-const sqldb = require("../ models/dbconfig");
+// const sqldb = require("../models/dbconfig");
 const { Configuration, OpenAIApi } = require("openai");
 const moment = require('moment');
 const index_1 = require("../core/index");
