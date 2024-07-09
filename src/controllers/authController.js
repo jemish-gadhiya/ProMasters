@@ -17,6 +17,7 @@ const {
     dbReader,
     dbWriter
 } = require('../models/dbconfig');
+const sqldb = require("../ models/sequelizeconfig");
 const { Configuration, OpenAIApi } = require("openai");
 const moment = require('moment');
 const index_1 = require("../core/index");
@@ -699,7 +700,11 @@ class AuthController {
                 } else {
                     await dbWriter.tax.update({
                         is_active: 0
-                    }, {});
+                    }, {
+                        where: {
+                            tax_id: { [dbWriter.sequelize.Op.notIn]: [] },
+                        }
+                    });
                     await dbWriter.tax.update({
                         is_active: 1
                     }, {
