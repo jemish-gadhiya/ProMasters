@@ -900,7 +900,7 @@ class AuthController {
                         is_deleted: 0
                     },
                     include: [{
-                        saperate: true,
+                        // saperate: true,
                         model: dbReader.providerComission,
                         where: {
                             is_deleted: 0
