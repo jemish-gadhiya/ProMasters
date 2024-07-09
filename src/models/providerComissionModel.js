@@ -37,9 +37,11 @@ module.exports = function (sequelize, DataTypes) {
     ProviderCommission.associate = function (models) {
         // Define associations here if needed
         // For example, if there's a relationship with providers or commissions:
-        // ProviderCommission.belongsTo(models.Provider, { foreignKey: 'provider_id' });
-        // ProviderCommission.belongsTo(models.Commission, { foreignKey: 'comission_id' });
+
+        ProviderCommission.belongsTo(models.Provider, { foreignKey: 'provider_id' });
+        ProviderCommission.belongsTo(models.Commission, { foreignKey: 'comission_id' });
+
     };
-    
+
     return ProviderCommission;
 };

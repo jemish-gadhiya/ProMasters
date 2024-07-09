@@ -624,6 +624,29 @@ class AuthController {
         }
     }
 
+    getServiceTaxById = async (req, res) => {
+        try {
+            let { tax_id } = req.body;
+            let { user_id, role } = req;
+
+            if (role !== 4) {
+                throw new Error("User don't have permission to perform this action.");
+            } else {
+                let taxData = await dbReader.tax.findOne({
+                    where: {
+                        tax_id: tax_id,
+                        user_id: user_id,
+                        is_deleted: 0
+                    }
+                });
+                taxData = JSON.parse(JSON.stringify(taxData));
+                new SuccessResponse("Tax data get successfully.", { data: taxData }).send(res);
+            }
+        } catch (e) {
+            ApiError.handle(new BadRequestError(e.message), res);
+        }
+    }
+
     deleteServiceTax = async (req, res) => {
         try {
             let { tax_id } = req.body;
@@ -656,6 +679,41 @@ class AuthController {
         }
     }
 
+    activateServiceTax = async (req, res) => {
+        try {
+            let { tax_id } = req.body;
+            let { user_id, role } = req;
+
+            if (role !== 4) {
+                throw new Error("User don't have permission to perform this action.");
+            } else {
+                let taxData = await dbReader.tax.findOne({
+                    where: {
+                        tax_id: tax_id,
+                        is_deleted: 0
+                    }
+                });
+                taxData = JSON.parse(JSON.stringify(taxData));
+                if (!taxData) {
+                    throw new Error("Tax data not found.");
+                } else {
+                    await dbWriter.tax.update({
+                        is_active: 0
+                    }, {});
+                    await dbWriter.tax.update({
+                        is_active: 1
+                    }, {
+                        where: { tax_id: tax_id }
+                    });
+
+                    new SuccessResponse("Tax data updated successfully.", {}).send(res);
+                }
+            }
+        } catch (e) {
+            ApiError.handle(new BadRequestError(e.message), res);
+        }
+    }
+
 
     //Manage comission details rom admin panel 
     addEditComission = async (req, res) => {
@@ -668,7 +726,6 @@ class AuthController {
             } else {
                 if (comission_id === 0) {
                     await dbWriter.comission.create({
-                        user_id: user_id,
                         description: description,
                         comission_amount: comission_amount,
                         comission_amount_type: comission_amount_type
@@ -712,7 +769,28 @@ class AuthController {
             } else {
                 let comissionData = await dbReader.comission.findAll({
                     where: {
-                        user_id: user_id,
+                        is_deleted: 0
+                    }
+                });
+                comissionData = JSON.parse(JSON.stringify(comissionData));
+                new SuccessResponse("Comission data get successfully.", { data: comissionData }).send(res);
+            }
+        } catch (e) {
+            ApiError.handle(new BadRequestError(e.message), res);
+        }
+    }
+
+    getComissionById = async (req, res) => {
+        try {
+            let { comission_id = 0 } = req.body;
+            let { user_id, role } = req;
+
+            if (role !== 4) {
+                throw new Error("User don't have permission to perform this action.");
+            } else {
+                let comissionData = await dbReader.comission.findOne({
+                    where: {
+                        comission_id: comission_id,
                         is_deleted: 0
                     }
                 });
@@ -757,7 +835,6 @@ class AuthController {
     }
 
 
-
     //Manage providers from the admin panel
     listAllProviders = async (req, res) => {
         try {
@@ -767,11 +844,68 @@ class AuthController {
                 throw new Error("User don't have permission to perform this action.");
             } else {
                 let providersData = await dbReader.users.findAll({
-                    attributes: ["user_id", "username", "email", "contact", "email", "role", "photo", "address", "city", "state", "country", "experience", "is_active"],
+                    // attributes: [
+                    //     "user_id", "username", "email", "contact", "email", "role", "photo", "address", "city", "state", "country", "experience", "is_active",
+                    //     [sqldb.sequelize.col('providerComission->comission.role_name'), 'role_name']
+                    // ],
                     where: {
                         role: 2,
                         is_deleted: 0
-                    }
+                    },
+                    include: [{
+                        require: false,
+                        model: dbReader.providerComission,
+                        where: {
+                            is_deleted: 0
+                        },
+                        include: [{
+                            require: false,
+                            model: dbReader.comission,
+                            where: {
+                                is_deleted: 0
+                            }
+                        }]
+                    }]
+                });
+
+                providersData = JSON.parse(JSON.stringify(providersData));
+
+                new SuccessResponse("Provider data get successfully.", { data: providersData }).send(res);
+            }
+        } catch (e) {
+            ApiError.handle(new BadRequestError(e.message), res);
+        }
+    }
+
+    getProviderById = async (req, res) => {
+        try {
+            let { provider_id = 0 } = req.body;
+            let { user_id, role } = req;
+
+            if (role !== 4) {
+                throw new Error("User don't have permission to perform this action.");
+            } else {
+                let providersData = await dbReader.users.findOne({
+                    attributes: ["user_id", "username", "email", "contact", "email", "role", "photo", "address", "city", "state", "country", "experience", "is_active"],
+                    where: {
+                        provider_id: provider_id,
+                        role: 2,
+                        is_deleted: 0
+                    },
+                    include: [{
+                        require: false,
+                        model: dbReader.providerComission,
+                        where: {
+                            is_deleted: 0
+                        },
+                        include: [{
+                            require: false,
+                            model: dbReader.comission,
+                            where: {
+                                is_deleted: 0
+                            }
+                        }]
+                    }]
                 });
                 providersData = JSON.parse(JSON.stringify(providersData));
 
