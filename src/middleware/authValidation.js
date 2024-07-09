@@ -34,6 +34,9 @@ exports.jois = {
         email: Joi.string().email(),
         otp: Joi.string().required(),
         type: Joi.string().required(),
+        platform: Joi.string().allow('').required(),
+        device_token: Joi.string().allow('').required(),
+        device_info: Joi.object().allow({}).required(),
     }),
 
     logoutPayload: Joi.object().keys({
@@ -46,7 +49,10 @@ exports.jois = {
 
     forgotPasswordOTPCheckPayload: Joi.object().keys({
         email: Joi.string().email(),
-        otp: Joi.string().required()
+        otp: Joi.string().required(),
+        platform: Joi.string().allow('').required(),
+        device_token: Joi.string().allow('').required(),
+        device_info: Joi.object().allow({}).required(),
     }),
 
     resetUserPasswordPayload: Joi.object().keys({
@@ -64,6 +70,48 @@ exports.jois = {
         contact: Joi.string().required(),
     }),
 
+    addEditServiceTaxPayload: Joi.object().keys({
+        tax_id: Joi.number().allow(0).required(),
+        tax_name: Joi.string().required(),
+        tax_amount: Joi.number().allow(0).required(),
+        tax_amount_type: Joi.number().required(),
+    }),
+
+    getServiceTaxByIdPayload: Joi.object().keys({
+        tax_id: Joi.number().required(),
+    }),
+
+    deleteServiceTaxPayload: Joi.object().keys({
+        tax_id: Joi.number().required()
+    }),
+
+    activateServiceTaxPayload: Joi.object().keys({
+        tax_id: Joi.number().required()
+    }),
 
 
+    addEditComissionPayload: Joi.object().keys({
+        comission_id: Joi.number().allow(0).required(),
+        description: Joi.string().required(),
+        comission_amount: Joi.number().allow(0).required(),
+        comission_amount_type: Joi.number().required(),
+    }),
+
+    getComissionByIdPayload: Joi.object().keys({
+        comission_id: Joi.number().required()
+    }),
+
+    deleteComissionPayload: Joi.object().keys({
+        comission_id: Joi.number().required()
+    }),
+
+
+    addEditProviderComissionPayload: Joi.object().keys({
+        comission_id: Joi.number().required(),
+        provider_id: Joi.number().required()
+    }),
+
+    getProviderByIdPayload: Joi.object().keys({
+        provider_id: Joi.number().required()
+    }),
 }

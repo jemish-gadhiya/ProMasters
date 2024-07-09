@@ -21,6 +21,29 @@ class AuthRoute extends AuthController {
         router.post("/resendSMSOTP", validator(jois.resendSMSOTPPayload), this.resendSMSOTP);
         router.post("/fileUpload", upload.array('files'), this.fileUpload);
         router.post("/frontEndErrorLog", this.frontEndErrorLog);
+        router.get("/getUserDetail", tokenValidate, this.getUserDetail);
+
+        //Manage tax from admin panel
+        router.post("/addEditServiceTax", tokenValidate, validator(jois.addEditServiceTaxPayload), this.addEditServiceTax);
+        router.get("/getAllServiceTax", tokenValidate, this.getAllServiceTax);
+        router.post("/getServiceTaxById", tokenValidate, validator(jois.getServiceTaxByIdPayload), this.getServiceTaxById);
+        router.post("/deleteServiceTax", tokenValidate, validator(jois.deleteServiceTaxPayload), this.deleteServiceTax);
+        router.post("/activateServiceTax", tokenValidate, validator(jois.activateServiceTaxPayload), this.activateServiceTax);
+
+
+
+        //Manage comission from admin panel
+        router.post("/addEditComission", tokenValidate, validator(jois.addEditComissionPayload), this.addEditComission);
+        router.get("/getAllComission", tokenValidate, this.getAllComission);
+        router.post("/getComissionById", tokenValidate, validator(jois.getComissionByIdPayload), this.getComissionById);
+        router.post("/deleteComission", tokenValidate, validator(jois.deleteComissionPayload), this.deleteComission);
+
+
+        //manage the providers fro the admin panel
+        router.get("/listAllProviders", tokenValidate, this.listAllProviders);
+        router.post("/getProviderById", tokenValidate, validator(jois.getProviderByIdPayload), this.getProviderById);
+        router.post("/addEditProviderComission", tokenValidate, validator(jois.addEditProviderComissionPayload), this.addEditProviderComission);
+
     }
 }
 

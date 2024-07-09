@@ -25,6 +25,10 @@ exports.jois = {
         image: Joi.string().required(),
     }),
 
+    getCategoryByIdPayload: Joi.object().keys({
+        category_id: Joi.number().required(),
+    }),
+
     deleteCategoryPayload: Joi.object().keys({
         category_id: Joi.number().required(),
     }),

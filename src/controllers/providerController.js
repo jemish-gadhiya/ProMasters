@@ -192,32 +192,36 @@ const { Op } = require('sequelize');
             let { category_id = 0, name, image } = req.body;
             let { user_id, role } = req;
 
-            if (category_id === 0) {
-                await dbWriter.category.create({
-                    name: name,
-                    image: image
-                });
-
-                new SuccessResponse("Category added successfully.", {}).send(res);
+            if (role !== 4) {
+                throw new Error("User don't have permission to perform this action.");
             } else {
-                let categoryData = await dbReader.category.findOne({
-                    where: {
-                        category_id: category_id,
-                        is_deleted: 0
-                    }
-                });
-                categoryData = JSON.parse(JSON.stringify(categoryData));
-                if (!categoryData) {
-                    throw new Error("Category not found.");
-                } else {
-                    await dbWriter.category.update({
+                if (category_id === 0) {
+                    await dbWriter.category.create({
                         name: name,
                         image: image
-                    }, {
-                        where: { category_id: category_id }
                     });
 
-                    new SuccessResponse("Category updated successfully.", {}).send(res);
+                    new SuccessResponse("Category added successfully.", {}).send(res);
+                } else {
+                    let categoryData = await dbReader.category.findOne({
+                        where: {
+                            category_id: category_id,
+                            is_deleted: 0
+                        }
+                    });
+                    categoryData = JSON.parse(JSON.stringify(categoryData));
+                    if (!categoryData) {
+                        throw new Error("Category not found.");
+                    } else {
+                        await dbWriter.category.update({
+                            name: name,
+                            image: image
+                        }, {
+                            where: { category_id: category_id }
+                        });
+
+                        new SuccessResponse("Category updated successfully.", {}).send(res);
+                    }
                 }
             }
         } catch (e) {
@@ -256,28 +260,50 @@ const { Op } = require('sequelize');
         }
     }
 
-    deleteCategory = async (req, res) => {
+    getCategoryById = async (req, res) => {
         try {
             let { category_id } = req.body;
             let { user_id, role } = req;
-
             let categoryData = await dbReader.category.findOne({
                 where: {
                     category_id: category_id,
                     is_deleted: 0
                 }
             });
-            categoryData = JSON.parse(JSON.stringify(categoryData));
-            if (!categoryData) {
-                throw new Error("Category data not found.");
-            } else {
-                await dbWriter.category.update({
-                    is_deleted: 1
-                }, {
-                    where: { category_id: category_id }
-                });
+            console.log("category data are :: ", categoryData);
+            // categoryData = JSON.parse(JSON.stringify(categoryData));
+            new SuccessResponse("Category get successfully.", { data: categoryData }).send(res);
+        } catch (e) {
+            ApiError.handle(new BadRequestError(e.message), res);
+        }
+    }
 
-                new SuccessResponse("Category deleted successfully.", {}).send(res);
+    deleteCategory = async (req, res) => {
+        try {
+            let { category_id } = req.body;
+            let { user_id, role } = req;
+
+            if (role !== 4) {
+                throw new Error("User don't have permission to perform this action.");
+            } else {
+                let categoryData = await dbReader.category.findOne({
+                    where: {
+                        category_id: category_id,
+                        is_deleted: 0
+                    }
+                });
+                categoryData = JSON.parse(JSON.stringify(categoryData));
+                if (!categoryData) {
+                    throw new Error("Category data not found.");
+                } else {
+                    await dbWriter.category.update({
+                        is_deleted: 1
+                    }, {
+                        where: { category_id: category_id }
+                    });
+
+                    new SuccessResponse("Category deleted successfully.", {}).send(res);
+                }
             }
         } catch (e) {
             ApiError.handle(new BadRequestError(e.message), res);
@@ -289,23 +315,27 @@ const { Op } = require('sequelize');
             let { category_id } = req.body;
             let { user_id, role } = req;
 
-            let categoryData = await dbReader.category.findOne({
-                where: {
-                    category_id: category_id,
-                    is_deleted: 0
-                }
-            });
-            categoryData = JSON.parse(JSON.stringify(categoryData));
-            if (!categoryData) {
-                throw new Error("Category data not found.");
+            if (role !== 4) {
+                throw new Error("User don't have permission to perform this action.");
             } else {
-                await dbWriter.category.update({
-                    is_enable: (categoryData?.is_enable === 0) ? 1 : 0
-                }, {
-                    where: { category_id: category_id }
+                let categoryData = await dbReader.category.findOne({
+                    where: {
+                        category_id: category_id,
+                        is_deleted: 0
+                    }
                 });
+                categoryData = JSON.parse(JSON.stringify(categoryData));
+                if (!categoryData) {
+                    throw new Error("Category data not found.");
+                } else {
+                    await dbWriter.category.update({
+                        is_enable: (categoryData?.is_enable === 0) ? 1 : 0
+                    }, {
+                        where: { category_id: category_id }
+                    });
 
-                new SuccessResponse("Category updated successfully.", {}).send(res);
+                    new SuccessResponse("Category updated successfully.", {}).send(res);
+                }
             }
         } catch (e) {
             ApiError.handle(new BadRequestError(e.message), res);
@@ -500,9 +530,9 @@ const { Op } = require('sequelize');
                     }
                 }]
             });
-            serviceData = JSON.parse(JSON.stringify(serviceData));
+            // serviceData = JSON.parse(JSON.stringify(serviceData));
             new SuccessResponse("Service get successfully.", {
-                ...serviceData
+                data: serviceData
             }).send(res);
         } catch (e) {
             ApiError.handle(new BadRequestError(e.message), res);
@@ -534,7 +564,6 @@ const { Op } = require('sequelize');
             ApiError.handle(new BadRequestError(e.message), res);
         }
     }
-    
     listServiceForUser = async (req, res) => {
         try {
             let { user_id, role } = req;

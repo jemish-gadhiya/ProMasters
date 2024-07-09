@@ -70,6 +70,10 @@ module.exports = function (sequelize, DataTypes) {
 
     User.associate = function (models) {
         // Define associations here if needed
+        User.hasOne(models.providerComission, {
+            foreignKey: 'provider_id',
+            targetKey: 'user_id'
+        });
     };
 
     return User;

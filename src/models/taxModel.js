@@ -15,8 +15,12 @@ module.exports = function (sequelize, DataTypes) {
         tax_name: DataTypes.STRING(256),
         tax_amount: DataTypes.DOUBLE,
         tax_amount_type: {
-            type: DataTypes.ENUM('fixed', 'percentage'), // Example ENUM values, adjust as needed
-            allowNull: false,
+            type: DataTypes.INTEGER, // 1-fixed, 2-percentage
+            defaultValue: 1,
+        },
+        is_active: {
+            type: DataTypes.INTEGER,
+            defaultValue: 0, //1- active, 2-deactive
         },
         is_deleted: {
             type: DataTypes.INTEGER,
