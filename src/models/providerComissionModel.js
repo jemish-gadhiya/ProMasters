@@ -46,7 +46,7 @@ module.exports = function (sequelize, DataTypes) {
         //     targetKey: 'provider_id'
         // });
 
-        providerCommission.belongsTo(models.comission, {
+        ProviderCommission.belongsTo(models.comission, {
             foreignKey: 'comission_id',
             targetKey: 'comission_id'
         });
