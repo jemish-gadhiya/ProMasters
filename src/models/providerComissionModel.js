@@ -39,7 +39,7 @@ module.exports = function (sequelize, DataTypes) {
         // For example, if there's a relationship with providers or commissions:
 
         ProviderCommission.belongsTo(models.users, { foreignKey: 'provider_id' });
-        ProviderCommission.belongsTo(models.comission, { foreignKey: 'comission_id' });
+        ProviderCommission.belongsTo(models.comission, { foreignKey: 'provider_id' });
 
     };
 
