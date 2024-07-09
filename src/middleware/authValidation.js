@@ -111,7 +111,7 @@ exports.jois = {
         provider_id: Joi.number().required()
     }),
 
-    getProviderById: Joi.object().keys({
+    getProviderByIdPayload: Joi.object().keys({
         provider_id: Joi.number().required()
     }),
 }
