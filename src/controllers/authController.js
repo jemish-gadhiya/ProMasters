@@ -915,8 +915,6 @@ class AuthController {
                     }]
                 });
 
-
-
                 // providersData = JSON.parse(JSON.stringify(providersData));
 
                 new SuccessResponse("Provider data get successfully.", { data: providersData }).send(res);
