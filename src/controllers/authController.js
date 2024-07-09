@@ -848,22 +848,19 @@ class AuthController {
                 throw new Error("User don't have permission to perform this action.");
             } else {
                 let providersData = await dbReader.users.findAll({
-                    // attributes: [
-                    //     "user_id", "username", "email", "contact", "email", "role", "photo", "address", "city", "state", "country", "experience", "is_active",
-                    //     [sqldb.sequelize.col('providerComission->comission.role_name'), 'role_name']
-                    // ],
+                    attributes: ["user_id", "username", "email", "contact", "email", "role", "photo", "address", "city", "state", "country", "experience", "is_active"],
                     where: {
                         role: 2,
                         is_deleted: 0
                     },
                     include: [{
-                        require: false,
+                        // saperate: true,
                         model: dbReader.providerComission,
                         where: {
                             is_deleted: 0
                         },
                         include: [{
-                            require: false,
+                            required: false,
                             model: dbReader.comission,
                             where: {
                                 is_deleted: 0
@@ -889,8 +886,6 @@ class AuthController {
             if (role !== 4) {
                 throw new Error("User don't have permission to perform this action.");
             } else {
-
-
 
                 let providersData = await dbReader.users.findOne({
                     attributes: ["user_id", "username", "email", "contact", "email", "role", "photo", "address", "city", "state", "country", "experience", "is_active"],
