@@ -556,6 +556,55 @@ class AuthController {
             ApiError.handle(new BadRequestError(e.message), res);
         }
     }
+    updateUserDetail = async (req, res) => {
+        try {
+            let { name, username, email, password, contact, city, state, country, address, photo } = req.body
+            password = crypto.encrypt(password.toString(), true).toString();
+            let {
+                user_id,
+                role
+            } = req;
+            let userNameMatch = await dbReader.users.findOne({
+                where: {
+                    username: username
+                }
+            })
+            userNameMatch = JSON.parse(JSON.stringify(userNameMatch))
+            if (userNameMatch) {
+                throw new error("username is already exist in system")
+            }
+            let emailMatch = await dbReader.users.findOne({
+                where: {
+                    email: email
+                }
+            })
+            emailMatch = JSON.parse(JSON.stringify(emailMatch))
+            if (emailMatch) {
+                throw new error("email is already exist in system")
+            }
+
+            let updateData = await dbWriter.users.update({
+                name: name,
+                username: username,
+                email: email,
+                password: password,
+                contact: contact,
+                city: city,
+                state: state,
+                country: country,
+                address: address,
+                photo: photo
+            }, {
+                where: {
+                    user_id: user_id
+                }
+            })
+            new SuccessResponse("User details updated successfully.", {
+            }).send(res);
+        } catch (e) {
+            ApiError.handle(new BadRequestError(e.message), res);
+        }
+    }
 
 
     //Manage tax details from admin panel 

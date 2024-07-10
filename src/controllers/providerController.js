@@ -511,6 +511,7 @@ const { Op } = require('sequelize');
                         is_deleted: 0
                     }
                 },{
+                    required:false,
                     model: dbReader.serviceAttachment,
                     where: {
                         is_deleted: 0
@@ -522,6 +523,7 @@ const { Op } = require('sequelize');
                         is_deleted: 0
                     }
                 }, {
+                    required:false,
                     as: "service_rating",
                     model: dbReader.serviceRating,
                     where: {
@@ -530,9 +532,9 @@ const { Op } = require('sequelize');
                     }
                 }]
             });
-            // serviceData = JSON.parse(JSON.stringify(serviceData));
+            serviceData = JSON.parse(JSON.stringify(serviceData));
             new SuccessResponse("Service get successfully.", {
-                data: serviceData
+                ...serviceData
             }).send(res);
         } catch (e) {
             ApiError.handle(new BadRequestError(e.message), res);
