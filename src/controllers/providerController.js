@@ -505,7 +505,7 @@ const { Op } = require('sequelize');
                     is_deleted: 0
                 },
                 include: [{
-                    model: dbReader.user,
+                    model: dbReader.users,
                     where: {
                         role:2,
                         is_deleted: 0
@@ -609,19 +609,22 @@ const { Op } = require('sequelize');
                 where: serviceWhereConditions,
                 include: [
                     {
+                        required:false,
                         model: dbReader.serviceAttachment,
                         where: {
                             is_deleted: 0
                         }
                     },
                     {
-                        model: dbReader.user,
+                        required:false,
+                        model: dbReader.users,
                         where: {
                             role:2,
                             is_deleted: 0
                         }
                     },
                     {
+                        required:false,
                         as: "service_rating",
                         model: dbReader.serviceRating,
                         where: serviceRatingWhereConditions
@@ -859,7 +862,7 @@ const { Op } = require('sequelize');
                 user_id,
                 role
             } = req;
-            let providerData = await dbReader.user.findAll({
+            let providerData = await dbReader.users.findAll({
                 where: {
                     role:2,
                         is_deleted: 0
