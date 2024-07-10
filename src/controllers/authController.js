@@ -571,7 +571,7 @@ class AuthController {
             })
             userNameMatch = JSON.parse(JSON.stringify(userNameMatch))
             if (userNameMatch) {
-                throw new error("username is already exist in system")
+                throw new Error("username is already exist in system")
             }
             let emailMatch = await dbReader.users.findOne({
                 where: {
@@ -580,7 +580,7 @@ class AuthController {
             })
             emailMatch = JSON.parse(JSON.stringify(emailMatch))
             if (emailMatch) {
-                throw new error("email is already exist in system")
+                throw new Error("email is already exist in system")
             }
 
             let updateData = await dbWriter.users.update({
