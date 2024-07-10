@@ -41,7 +41,11 @@ module.exports = function (sequelize, DataTypes) {
         underscored: true,
     });
 
-    ServiceRating.associate = function (models) {;
+    ServiceRating.associate = function (models) {
+        ServiceRating.belongsTo(models.users, {
+            foreignKey: 'user_id',
+            targetKey: 'user_id'
+        });
     };
     
     return ServiceRating;

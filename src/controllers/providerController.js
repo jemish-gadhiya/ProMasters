@@ -24,6 +24,7 @@ require('dotenv').config()
 const enumerationController = require("./enumurationController");
 var ObjectMail = new nodeMailerController_1();
 var EnumObject = new enumerationController();
+const { Op } = require('sequelize');
 
 class ProviderController {
 
@@ -269,7 +270,8 @@ class ProviderController {
                     is_deleted: 0
                 }
             });
-            categoryData = JSON.parse(JSON.stringify(categoryData));
+            //console.log("category data are :: ", categoryData);
+            // categoryData = JSON.parse(JSON.stringify(categoryData));
             new SuccessResponse("Category get successfully.", { data: categoryData }).send(res);
         } catch (e) {
             ApiError.handle(new BadRequestError(e.message), res);
@@ -438,6 +440,7 @@ class ProviderController {
             ApiError.handle(new BadRequestError(e.message), res);
         }
     }
+
     deleteService = async (req, res) => {
         try {
             let { service_id } = req.body;
@@ -465,6 +468,7 @@ class ProviderController {
             ApiError.handle(new BadRequestError(e.message), res);
         }
     }
+
     getServiceByCategory = async (req, res) => {
         try {
             let {
@@ -488,6 +492,7 @@ class ProviderController {
             ApiError.handle(new BadRequestError(e.message), res);
         }
     }
+
     getServiceById = async (req, res) => {
         try {
             let {
@@ -500,13 +505,33 @@ class ProviderController {
             let serviceData = await dbReader.service.findOne({
                 where: {
                     service_id: service_id,
-                    user_id: user_id,
                     is_deleted: 0
                 },
                 include: [{
+                    model: dbReader.users,
+                    where: {
+                        role: 2,
+                        is_deleted: 0
+                    }
+                }, {
+                    required: false,
                     model: dbReader.serviceAttachment,
                     where: {
                         is_deleted: 0
+                    }
+                }, {
+                    required: false,
+                    model: dbReader.serviceBookingHandyman,
+                    where: {
+                        is_deleted: 0
+                    }
+                }, {
+                    required: false,
+                    as: "service_rating",
+                    model: dbReader.serviceRating,
+                    where: {
+                        is_deleted: 0,
+                        rating_type: 0
                     }
                 }]
             });
@@ -518,6 +543,7 @@ class ProviderController {
             ApiError.handle(new BadRequestError(e.message), res);
         }
     }
+
     listServiceForProvider = async (req, res) => {
         try {
             let {
@@ -544,33 +570,84 @@ class ProviderController {
             ApiError.handle(new BadRequestError(e.message), res);
         }
     }
+
     listServiceForUser = async (req, res) => {
         try {
+            let { user_id, role } = req;
+            let { service_user_id, rating, min_amount, max_amount, category } = req.body;
 
-            let {
-                user_id,
-                role
-            } = req;
+            // Build the where conditions
+            let serviceWhereConditions = {
+                is_deleted: 0
+            };
+
+            if (service_user_id) {
+                serviceWhereConditions.user_id = service_user_id;
+            }
+
+            if (min_amount && max_amount) {
+                serviceWhereConditions.price = {
+                    [Op.between]: [min_amount, max_amount]
+                };
+            } else if (min_amount) {
+                serviceWhereConditions.price = {
+                    [Op.gte]: min_amount
+                };
+            } else if (max_amount) {
+                serviceWhereConditions.price = {
+                    [Op.lte]: max_amount
+                };
+            }
+
+            if (category) {
+                serviceWhereConditions.category_id = category;
+            }
+
+            let serviceRatingWhereConditions = {
+                is_deleted: 0,
+                rating_type: 0
+            };
+
+            if (rating) {
+                serviceRatingWhereConditions.rating = rating;
+            }
+
             let serviceData = await dbReader.service.findAll({
-                where: {
-                    user_id: user_id,
-                    is_deleted: 0
-                },
-                include: [{
-                    model: dbReader.serviceAttachment,
-                    where: {
-                        is_deleted: 0
+                where: serviceWhereConditions,
+                include: [
+                    {
+                        required: false,
+                        model: dbReader.serviceAttachment,
+                        where: {
+                            is_deleted: 0
+                        }
+                    },
+                    {
+                        required: false,
+                        model: dbReader.users,
+                        where: {
+                            role: 2,
+                            is_deleted: 0
+                        }
+                    },
+                    {
+                        required: false,
+                        as: "service_rating",
+                        model: dbReader.serviceRating,
+                        where: serviceRatingWhereConditions
                     }
-                }]
+                ]
             });
+
             serviceData = JSON.parse(JSON.stringify(serviceData));
-            new SuccessResponse("Service get successfully.", {
+            new SuccessResponse("Service retrieved successfully.", {
                 data: serviceData
             }).send(res);
         } catch (e) {
             ApiError.handle(new BadRequestError(e.message), res);
         }
-    }
+    };
+
     addServiceBooking = async (req, res) => {
         try {
             let {
@@ -600,12 +677,16 @@ class ProviderController {
                 }
             })
             serviceData = JSON.parse(JSON.stringify(serviceData))
-            let serviceAmount = 0
-            if (serviceData && serviceData.price) {
-                let price = serviceData.price;
-                let discount = serviceData.discount / 100; // Convert discount percentage to a decimal
-                serviceAmount = price - (price * discount);
-            }
+            let serviceAmount = 0, serviceDiscountAmount = 0;
+
+            serviceAmount = serviceData.price || 0;
+            serviceDiscountAmount = serviceData.discount || 0;
+
+            // if (serviceData && serviceData.price) {
+            // let price = serviceData.price;
+            // let discount = serviceData.discount / 100; // Convert discount percentage to a decimal
+            // serviceAmount = price - (price * discount);
+            // }
 
             let comissionData = await dbReader.providerComission.findOne({
                 where: {
@@ -618,8 +699,48 @@ class ProviderController {
                         is_deleted: 0
                     }
                 }]
-            })
+            });
             comissionData = JSON.parse(JSON.stringify(comissionData))
+
+            let comissionAmount = 0;
+            if (comissionData) {
+                if (comissionData?.Commission?.comission_amount_type === 1) {
+                    comissionAmount = comissionData?.Commission?.comission_amount;
+                } else {
+                    let comissionPercentage = comissionData?.Commission?.comission_amount / 100; // Convert discount percentage to a decimal
+                    comissionAmount = (serviceData.price * comissionPercentage).toFixed(2);
+                }
+            }
+
+            console.log("==>comission data are :: ", comissionData);
+
+            let taxData = await dbReader.tax.findOne({
+                where: {
+                    is_active: 1,
+                    is_deleted: 0
+                }
+            });
+            let taxAmount = 0;
+            if (taxData) {
+                if (taxData?.tax_amount_type === 1) {
+                    taxAmount = taxData?.tax_amount;
+                } else {
+                    let taxPercentage = taxData?.tax_amount / 100; // Convert discount percentage to a decimal
+                    taxAmount = (serviceData.price * taxPercentage).toFixed(2);
+                }
+            }
+
+            let couponData = await dbReader.coupan.findOne({
+                where: {
+                    is_active: 1,
+                    is_deleted: 0
+                }
+            });
+            let couponAmount = 0;
+            if (couponData) {
+                couponAmount = couponData?.coupon_amount;
+            }
+
             if (booking_id == 0) {
                 let serviceBookingData = await dbReader.serviceBooking.create({
                     service_id: service_id,
@@ -632,13 +753,17 @@ class ProviderController {
                     booking_service_qty: service_booking_qty,
                     coupen_id: coupan_id,
                     service_amount: serviceAmount,
-                    commission_amount: comissionData.comission.comission_amount,
+                    tax_amount: taxAmount || 0,
+                    discount_amount: serviceDiscountAmount || 0,
+                    commission_amount: comissionAmount || 0,
+                    coupen_amount: couponAmount || 0,
                     booking_service_status: 0,
-                    created_at: new Date()
+                    created_at: new Date(),
+                    booking_service_status_updated_by: user_id
                 });
-                serviceData = JSON.parse(JSON.stringify(serviceData));
+                serviceBookingData = JSON.parse(JSON.stringify(serviceBookingData));
                 new SuccessResponse("Service booked successfully.", {
-                    data: serviceData
+                    data: serviceBookingData
                 }).send(res);
             } else {
                 await dbReader.serviceBooking.update({
@@ -655,6 +780,7 @@ class ProviderController {
             ApiError.handle(new BadRequestError(e.message), res);
         }
     }
+
     saveUserAvailibility = async (req, res) => {
         try {
             let {
@@ -691,6 +817,7 @@ class ProviderController {
             ApiError.handle(new BadRequestError(e.message), res);
         }
     }
+
     assignServiceHandyman = async (req, res) => {
         try {
             let {
@@ -716,6 +843,249 @@ class ProviderController {
         }
     }
 
+    listServiceBookingForProvider = async (req, res) => {
+        try {
+            let {
+                user_id,
+                role
+            } = req;
+            let serviceData = await dbReader.service.findAll({
+                where: {
+                    user_id: user_id,
+                    is_deleted: 0
+                },
+                include: [{
+                    required: true,
+                    model: dbReader.serviceBooking,
+                    where: {
+                        is_deleted: 0
+                    }
+                }]
+            });
+            serviceData = JSON.parse(JSON.stringify(serviceData));
+            new SuccessResponse("Service get successfully.", {
+                data: serviceData
+            }).send(res);
+        } catch (e) {
+            ApiError.handle(new BadRequestError(e.message), res);
+        }
+    }
+
+    updateServiceBookingStatus = async (req, res) => {
+        try {
+            let {
+                status,
+                service_id
+            } = req.body
+            let {
+                user_id,
+                role
+            } = req;
+
+            let data = await dbReader.service.findOne({
+                where: {
+                    service_id: service_id,
+                    is_deleted: 0
+                },
+                include: [{
+                    required: true,
+                    model: dbReader.serviceBooking,
+                    where: {
+                        is_deleted: 0
+                    }
+                }]
+            })
+            data = JSON.parse(JSON.stringify(data))
+            if (data) {
+                await dbWriter.serviceBooking.update({
+                    booking_status: status
+                }, {
+                    where: {
+                        service_id: service_id,
+                        is_deleted: 0
+                    }
+                })
+                new SuccessResponse("Request Successful.", {
+                }).send(res);
+            } else {
+                throw new BadRequestError("Service Booking not found.")
+            }
+        } catch (e) {
+            ApiError.handle(new BadRequestError(e.message), res);
+        }
+    }
+
+    listProviderForFilter = async (req, res) => {
+        try {
+            let {
+                user_id,
+                role
+            } = req;
+            let providerData = await dbReader.users.findAll({
+                where: {
+                    role: 2,
+                    is_deleted: 0
+                },
+            });
+            providerData = JSON.parse(JSON.stringify(providerData));
+            new SuccessResponse("Provider get successfully.", {
+                data: providerData
+            }).send(res);
+        } catch (e) {
+            ApiError.handle(new BadRequestError(e.message), res);
+        }
+    }
+
+    getComissionOfProvider = async (req, res) => {
+        try {
+            let { user_id, role } = req;
+
+            if (role !== 2) {
+                throw new Error("User don't have permission to perform this action.");
+            } else {
+                let comissionData = await dbReader.providerComission.findOne({
+                    where: {
+                        provider_id: user_id,
+                        is_deleted: 0
+                    },
+                    include: [{
+                        required: false,
+                        model: dbReader.comission,
+                        where: {
+                            is_deleted: 0
+                        }
+                    }]
+                });
+                new SuccessResponse("Service address get successfully.", { data: comissionData }).send(res);
+            }
+        } catch (e) {
+            ApiError.handle(new BadRequestError(e.message), res);
+        }
+    }
+
+    providerDashboardAnalyticsData = async (req, res) => {
+        try {
+            let { user_id, role } = req;
+
+            if (role !== 2) {
+                throw new Error("User don't have permission to perform this action.");
+            } else {
+
+                let responseData = {
+                    total_booking: 0,
+                    total_service: 0,
+                    total_handyman: 0,
+                    total_earning: 0,
+                    monthly_earning: []
+                }
+
+                let providerBookingsData = await dbReader.serviceBooking.findAll({
+                    where: {
+                        is_deleted: 0
+                    },
+                    include: [{
+                        required: true,
+                        model: dbReader.service,
+                        where: {
+                            is_deleted: 0,
+                            user_id: user_id
+                        }
+                    }]
+                });
+                providerBookingsData = JSON.parse(JSON.stringify(providerBookingsData));
+
+                let providerServicesData = await dbReader.service.findAll({
+                    where: {
+                        is_deleted: 0,
+                        user_id: user_id
+                    }
+                });
+                providerServicesData = JSON.parse(JSON.stringify(providerServicesData));
+
+                let providerHandymanData = await dbReader.users.findAll({
+                    where: {
+                        is_deleted: 0,
+                        provider_id: user_id
+                    }
+                });
+                providerHandymanData = JSON.parse(JSON.stringify(providerHandymanData));
+
+                let providerEarning = 0;
+                let monthsData = [{
+                    month: "01",
+                    earning: 0
+                }, {
+                    month: "02",
+                    earning: 0
+                }, {
+                    month: "03",
+                    earning: 0
+                }, {
+                    month: "04",
+                    earning: 0
+                }, {
+                    month: "05",
+                    earning: 0
+                }, {
+                    month: "06",
+                    earning: 0
+                }, {
+                    month: "07",
+                    earning: 0
+                }, {
+                    month: "08",
+                    earning: 0
+                }, {
+                    month: "09",
+                    earning: 0
+                }, {
+                    month: "10",
+                    earning: 0
+                }, {
+                    month: "11",
+                    earning: 0
+                }, {
+                    month: "12",
+                    earning: 0
+                }]
+                for (let i = 0; i < providerBookingsData.length; i++) {
+                    let pData = providerBookingsData[i];
+                    if (pData?.booking_service_status === 2) {
+                        providerEarning = providerEarning + (pData?.service_amount - pData?.discount_amount - pData?.commission_amount - pData?.coupen_amount - pData?.tax_amount)
+                    }
+
+                    for (let j = 0; j < monthsData.length; j++) {
+                        let mData = monthsData[j];
+                        if (mData?.month === (new Date(pData?.booking_datetime)?.getMonth() + 1).toString().padStart(2, '0')) {
+                            monthsData[j].earning = mData?.earning + (pData?.service_amount - pData?.discount_amount - pData?.commission_amount - pData?.coupen_amount - pData?.tax_amount);
+                            monthsData[j].earning = parseFloat(monthsData[j].earning).toFixed(2)
+                        }
+                    }
+                }
+
+
+
+
+
+
+
+
+
+
+                responseData.total_booking = providerServicesData?.length || 0;
+                responseData.total_service = providerServicesData?.length || 0;
+                responseData.total_handyman = providerHandymanData?.length || 0;
+                responseData.total_earning = providerEarning.toFixed(2) || 0;
+                responseData.monthly_earning = monthsData;
+
+
+
+                new SuccessResponse("Provider dashboard analytics data get successfully.", { data: responseData }).send(res);
+            }
+        } catch (e) {
+            ApiError.handle(new BadRequestError(e.message), res);
+        }
+    }
 }
 
 module.exports = ProviderController;

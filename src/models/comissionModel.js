@@ -32,5 +32,12 @@ module.exports = function (sequelize, DataTypes) {
         underscored: true,
     });
 
+    Commission.associate = function (models) {
+        // Commission.hasMany(models.providerComission, {
+        //     foreignKey: 'comission_id',
+        //     targetKey: 'comission_id'
+        // });
+    };
+
     return Commission;
 };

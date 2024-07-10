@@ -77,7 +77,15 @@ exports.jois = {
         tax_amount_type: Joi.number().required(),
     }),
 
+    getServiceTaxByIdPayload: Joi.object().keys({
+        tax_id: Joi.number().required(),
+    }),
+
     deleteServiceTaxPayload: Joi.object().keys({
+        tax_id: Joi.number().required()
+    }),
+
+    activateServiceTaxPayload: Joi.object().keys({
         tax_id: Joi.number().required()
     }),
 
@@ -89,6 +97,10 @@ exports.jois = {
         comission_amount_type: Joi.number().required(),
     }),
 
+    getComissionByIdPayload: Joi.object().keys({
+        comission_id: Joi.number().required()
+    }),
+
     deleteComissionPayload: Joi.object().keys({
         comission_id: Joi.number().required()
     }),
@@ -96,6 +108,10 @@ exports.jois = {
 
     addEditProviderComissionPayload: Joi.object().keys({
         comission_id: Joi.number().required(),
+        provider_id: Joi.number().required()
+    }),
+
+    getProviderByIdPayload: Joi.object().keys({
         provider_id: Joi.number().required()
     }),
 }

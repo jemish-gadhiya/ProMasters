@@ -18,6 +18,10 @@ module.exports = function (sequelize, DataTypes) {
             type: DataTypes.INTEGER, // 1-fixed, 2-percentage
             defaultValue: 1,
         },
+        is_active: {
+            type: DataTypes.INTEGER,
+            defaultValue: 0, //1- active, 2-deactive
+        },
         is_deleted: {
             type: DataTypes.INTEGER,
             defaultValue: 0,
@@ -41,6 +45,6 @@ module.exports = function (sequelize, DataTypes) {
         // For example, if there's a relationship with users:
         // Tax.belongsTo(models.User, { foreignKey: 'user_id' });
     };
-
+    
     return Tax;
 };
