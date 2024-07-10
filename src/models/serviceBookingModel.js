@@ -30,14 +30,28 @@ module.exports = function (sequelize, DataTypes) {
         },
         coupen_id: DataTypes.INTEGER,
         service_amount: DataTypes.DOUBLE,
-        commission_amount: DataTypes.DOUBLE,
+        tax_amount: {
+            type: DataTypes.DOUBLE,
+            defaultValue: 1,
+        },
+        discount_amount: {
+            type: DataTypes.DOUBLE,
+            defaultValue: 1,
+        },
+        commission_amount: {
+            type: DataTypes.DOUBLE,
+            defaultValue: 1,
+        },
+        coupen_amount: {
+            type: DataTypes.DOUBLE,
+            defaultValue: 1,
+        },
         booking_status: {
             type: DataTypes.INTEGER,
             defaultValue: 0,
         },
         booking_service_status: {
-            type: DataTypes.INTEGER,
-            // ENUM('pending', 'in_progress', 'completed', 'cancelled'), // Example ENUM values, adjust as needed
+            type: DataTypes.INTEGER, // 0 - pending, 1- in_progress, 2- completed,3- cancelled
             allowNull: false,
         },
         booking_service_status_updated_by: {
@@ -68,7 +82,13 @@ module.exports = function (sequelize, DataTypes) {
         // ServiceBooking.belongsTo(models.Service, { foreignKey: 'service_id' });
         // ServiceBooking.belongsTo(models.User, { foreignKey: 'booked_by' });
         // ServiceBooking.belongsTo(models.Coupon, { foreignKey: 'coupen_id' });
+
+        ServiceBooking.belongsTo(models.service, {
+            foreignKey: 'service_id',
+            targetKey: 'service_id'
+        });
+
     };
-    
+
     return ServiceBooking;
 };
