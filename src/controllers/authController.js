@@ -626,7 +626,7 @@ class AuthController {
 
                     new SuccessResponse("Tax data added successfully.", {}).send(res);
                 } else {
-                    let taxData = await dbReader.serviceAddress.findOne({
+                    let taxData = await dbReader.tax.findOne({
                         where: {
                             tax_id: tax_id,
                             is_deleted: 0
