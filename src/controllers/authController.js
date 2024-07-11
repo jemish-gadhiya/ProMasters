@@ -267,8 +267,6 @@ class AuthController {
                         where: { user_id: data.user_id }
                     });
 
-
-
                     if (is_email_verified === 1 && is_sms_verified === 1) {
                         let userData = {
                             user_id: data.user_id,

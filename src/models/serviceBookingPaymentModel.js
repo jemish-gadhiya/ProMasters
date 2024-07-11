@@ -13,8 +13,8 @@ module.exports = function (sequelize, DataTypes) {
             allowNull: false,
         },
         payment_status: {
-            type: DataTypes.ENUM('pending', 'completed', 'failed'), // Example ENUM values, adjust as needed
-            allowNull: false,
+            type: DataTypes.INTEGER, //0 - pending, 1 - completed, 3 - failed
+            defaultValue: 0,
         },
         payment_method: DataTypes.STRING(256),
         amount: DataTypes.DOUBLE,
@@ -46,6 +46,6 @@ module.exports = function (sequelize, DataTypes) {
         // ServiceBookingPayment.belongsTo(models.ServiceBooking, { foreignKey: 'service_booking_id' });
         // ServiceBookingPayment.belongsTo(models.User, { foreignKey: 'user_id' });
     };
-    
+
     return ServiceBookingPayment;
 };

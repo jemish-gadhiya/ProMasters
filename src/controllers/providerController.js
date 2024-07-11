@@ -1063,22 +1063,11 @@ class ProviderController {
                     }
                 }
 
-
-
-
-
-
-
-
-
-
                 responseData.total_booking = providerServicesData?.length || 0;
                 responseData.total_service = providerServicesData?.length || 0;
                 responseData.total_handyman = providerHandymanData?.length || 0;
                 responseData.total_earning = providerEarning.toFixed(2) || 0;
                 responseData.monthly_earning = monthsData;
-
-
 
                 new SuccessResponse("Provider dashboard analytics data get successfully.", { data: responseData }).send(res);
             }
@@ -1086,6 +1075,55 @@ class ProviderController {
             ApiError.handle(new BadRequestError(e.message), res);
         }
     }
+
+    paymentDetailsForProvider = async (req, res) => {
+        try {
+            let { user_id, role } = req;
+
+            if (role !== 2) {
+                throw new Error("User don't have permission to perform this action.");
+            } else {
+
+
+
+                let bookingsData = await dbReader.serviceBooking.findAll({
+                    where: {
+                        is_deleted: 0
+                    },
+                    include: [{
+                        attributes: [],
+                        required: true,
+                        model: dbReader.service,
+                        where: {
+                            is_deleted: 0,
+                            user_id: user_id
+                        }
+                    }, {
+                        attributes: ["user_id", "name", 'email', "contact", "role", "photo", "address", "city", "state", "country",],
+                        required: false,
+                        model: dbReader.users,
+                        where: {
+                            is_deleted: 0
+                        }
+                    }, {
+                        required: false,
+                        model: dbReader.serviceBookingPayment,
+                        where: {
+                            is_deleted: 0
+                        }
+                    }
+                    ]
+                });
+                bookingsData = JSON.parse(JSON.stringify(bookingsData));
+
+
+                new SuccessResponse("Payment details get successfully.", { data: bookingsData }).send(res);
+            }
+        } catch (e) {
+            ApiError.handle(new BadRequestError(e.message), res);
+        }
+    }
+
 }
 
 module.exports = ProviderController;

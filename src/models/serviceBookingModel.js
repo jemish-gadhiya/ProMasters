@@ -88,6 +88,16 @@ module.exports = function (sequelize, DataTypes) {
             targetKey: 'service_id'
         });
 
+        ServiceBooking.belongsTo(models.users, {
+            foreignKey: 'booked_by',
+            targetKey: 'user_id'
+        });
+
+        ServiceBooking.hasMany(models.serviceBookingPayment, {
+            foreignKey: 'service_booking_id',
+            targetKey: 'service_booking_id'
+        });
+
     };
 
     return ServiceBooking;
