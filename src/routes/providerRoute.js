@@ -44,6 +44,8 @@ class ProviderRoute extends ProviderController {
         router.get("/providerDashboardAnalyticsData", tokenValidate, this.providerDashboardAnalyticsData);
         router.get("/paymentDetailsForProvider", tokenValidate, this.paymentDetailsForProvider);
 
+        router.post("/purchaseSubscriptionForProvider", tokenValidate, validator(jois.purchaseSubscriptionForProviderPayload), this.purchaseSubscriptionForProvider);
+        router.get("/getUserSubscriptionForProvider", tokenValidate, this.getUserSubscriptionForProvider);
     }
 }
 

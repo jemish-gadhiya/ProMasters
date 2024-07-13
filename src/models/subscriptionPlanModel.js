@@ -11,7 +11,22 @@ module.exports = function (sequelize, DataTypes) {
         title: DataTypes.STRING(256),
         description: DataTypes.STRING(256),
         amount: DataTypes.DOUBLE,
-        is_active: DataTypes.INTEGER,
+        no_service: {
+            type: DataTypes.INTEGER,
+            defaultValue: 0,
+        },
+        no_handyman: {
+            type: DataTypes.INTEGER,
+            defaultValue: 0,
+        },
+        no_featured_service: {
+            type: DataTypes.INTEGER,
+            defaultValue: 0,
+        },
+        is_active: {
+            type: DataTypes.INTEGER,
+            defaultValue: 1,
+        },
         is_deleted: {
             type: DataTypes.INTEGER,
             defaultValue: 0,
@@ -35,6 +50,6 @@ module.exports = function (sequelize, DataTypes) {
         // For example, if there's a relationship with subscriptions:
         // SubscriptionPlan.hasMany(models.Subscription, { foreignKey: 'subscription_plan_id' });
     };
-    
+
     return SubscriptionPlan;
 };

@@ -1124,6 +1124,99 @@ class ProviderController {
         }
     }
 
+    purchaseSubscriptionForProvider = async (req, res) => {
+        try {
+            let {
+                subscription_plan_id,
+                due_date,
+                payment_type,
+                card_details
+            } = req.body;
+
+            let {
+                user_id,
+                role
+            } = req;
+
+            let planData = await dbReader.subscriptionPlan.findOne({
+                where: {
+                    subscription_plan_id: subscription_plan_id,
+                    is_deleted: 0,
+                    is_active: 1
+                }
+            })
+            planData = JSON.parse(JSON.stringify(planData));
+
+            if (!planData) {
+                throw new Error("Subscription plan data not found.");
+            } else {
+                let amount = planData?.amount;
+
+                let newSubscription = await dbWriter.subscription.create({
+                    user_id: user_id,
+                    subscription_plan_id: subscription_plan_id,
+                    amount: amount,
+                    due_date: due_date,
+                });
+
+                //console.log("---> newSubscription ::", newSubscription);
+
+
+                //Here below transaction id get from the payment transaction, we have to get this id once we done the payment.
+                let transaction_id = "ABCDTEST1234@@@",
+                    status = 1;
+
+
+                let subscription_id = newSubscription?.dataValues?.subscription_id;
+
+
+                //console.log("subscription id is :: ", subscription_id);
+
+                let subscriptionPaymentData = await dbWriter.subscriptionPayment.create({
+                    subscription_id: subscription_id,
+                    payment_type: payment_type,
+                    status: status,
+                    transaction_id: transaction_id,
+                    receipt: "",
+                    card_details: card_details
+                });
+
+                //console.log("subscriptionPaymentData ::: ", subscriptionPaymentData);
+                new SuccessResponse("Subscription purchased successfully.", {}).send(res);
+            }
+
+        } catch (e) {
+            ApiError.handle(new BadRequestError(e.message), res);
+        }
+    }
+
+    getUserSubscriptionForProvider = async (req, res) => {
+        try {
+            let { user_id, role } = req;
+
+            if (role !== 2) {
+                throw new Error("User don't have permission to perform this action.");
+            } else {
+                let subscriptionData = await dbReader.subscription.findOne({
+                    where: {
+                        user_id: user_id,
+                        is_deleted: 0
+                    },
+                    include: [{
+                        required: false,
+                        model: dbReader.subscriptionPayment,
+                        where: {
+                            is_deleted: 0
+                        }
+                    }]
+                });
+                new SuccessResponse("Subscription data get successfully.", { data: subscriptionData }).send(res);
+            }
+        } catch (e) {
+            ApiError.handle(new BadRequestError(e.message), res);
+        }
+    }
+
 }
 
 module.exports = ProviderController;
