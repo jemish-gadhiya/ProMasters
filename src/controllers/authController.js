@@ -1018,6 +1018,80 @@ class AuthController {
             ApiError.handle(new BadRequestError(e.message), res);
         }
     }
+
+    addEditSubscriptionPlan = async (req, res) => {
+        try {
+            let { subscription_plan_id = 0, title, description, amount, no_service, no_handyman, no_featured_service, is_active = 1, is_deleted = 0 } = req.body;
+            let { user_id, role } = req;
+
+            if (role !== 4) {
+                throw new Error("User don't have permission to perform this action.");
+            } else {
+                if (subscription_plan_id === 0) {
+                    await dbWriter.subscriptionPlan.create({
+                        title: title,
+                        description: description,
+                        amount: amount,
+                        no_service: no_service,
+                        no_handyman: no_handyman,
+                        no_featured_service: no_featured_service,
+                        is_active: is_active,
+                        is_deleted: is_deleted
+                    });
+
+                    new SuccessResponse("Subscription plan added successfully.", {}).send(res);
+                } else {
+                    let planData = await dbReader.subscriptionPlan.findOne({
+                        where: {
+                            subscription_plan_id: subscription_plan_id,
+                            is_deleted: 0
+                        }
+                    });
+                    // planData = JSON.parse(JSON.stringify(planData));
+                    if (!planData) {
+                        throw new Error("Subscription plan data not found.");
+                    } else {
+                        await dbWriter.subscriptionPlan.update({
+                            title: title,
+                            description: description,
+                            amount: amount,
+                            no_service: no_service,
+                            no_handyman: no_handyman,
+                            no_featured_service: no_featured_service,
+                            is_active: is_active,
+                            is_deleted: is_deleted
+                        }, {
+                            where: { subscription_plan_id: subscription_plan_id }
+                        });
+
+                        new SuccessResponse("Subscription plan data updated successfully.", {}).send(res);
+                    }
+                }
+            }
+        } catch (e) {
+            ApiError.handle(new BadRequestError(e.message), res);
+        }
+    }
+
+    getAllSubscriptionPlans = async (req, res) => {
+        try {
+            let { user_id, role } = req;
+
+            let planData = await dbReader.subscriptionPlan.findAll({
+                where: {
+                    is_deleted: 0,
+                    is_active: 1
+                }
+            });
+            planData = JSON.parse(JSON.stringify(planData));
+            new SuccessResponse("Subscription plan data get successfully.", { data: planData }).send(res);
+
+        } catch (e) {
+            ApiError.handle(new BadRequestError(e.message), res);
+        }
+    }
+
+
 }
 
 module.exports = AuthController;

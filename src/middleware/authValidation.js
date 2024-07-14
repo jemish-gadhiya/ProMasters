@@ -114,4 +114,18 @@ exports.jois = {
     getProviderByIdPayload: Joi.object().keys({
         provider_id: Joi.number().required()
     }),
+
+    addEditSubscriptionPlanPayload: Joi.object().keys({
+        subscription_plan_id: Joi.number().required(),
+        title: Joi.string().required(),
+        description: Joi.string().required(),
+        amount: Joi.number().required(),
+        no_service: Joi.number().allow(0).required(),
+        no_handyman: Joi.number().allow(0).required(),
+        no_featured_service: Joi.number().allow(0).required(),
+        is_active: Joi.number().allow(0).required(),
+        is_deleted: Joi.number().allow(0).required(),
+    }),
+
+
 }

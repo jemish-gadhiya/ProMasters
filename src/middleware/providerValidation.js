@@ -37,4 +37,12 @@ exports.jois = {
         category_id: Joi.number().required(),
     }),
 
+    purchaseSubscriptionForProviderPayload: Joi.object().keys({
+        subscription_plan_id: Joi.number().required(),
+        due_date: Joi.string().required(),
+        payment_type: Joi.string().required(),
+        card_details: Joi.string().required(),
+    }),
+
+
 }
