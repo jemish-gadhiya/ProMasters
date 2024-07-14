@@ -1091,6 +1091,32 @@ class AuthController {
         }
     }
 
+    payToProviderFromAdmin = async (req, res) => {
+        try {
+            let { provider_id, amount } = req.body;
+            let { user_id, role } = req;
+
+            if (role !== 4) {
+                throw new Error("User don't have permission to perform this action.");
+            } else {
+                let data = await dbWriter.wallet.create({
+                    provider_id: provider_id,
+                    service_id: 0,
+                    amount: amount,
+                    is_paid_by_admin: 1
+                });
+
+                //Need to develop flow here for send payment to provider once client give payment gateway information
+
+                new SuccessResponse("Payment done successfully.", {}).send(res);
+            }
+        } catch (e) {
+            console.log("error is :::", e);
+            ApiError.handle(new BadRequestError(e.message), res);
+        }
+    }
+
+
 
 }
 

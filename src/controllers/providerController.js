@@ -822,7 +822,8 @@ class ProviderController {
         try {
             let {
                 handyman_user_id,
-                service_id
+                service_id,
+                service_booking_id
             } = req.body
             let {
                 user_id,
@@ -830,6 +831,7 @@ class ProviderController {
             } = req;
 
             let serviceHandymanData = await dbWriter.serviceBookingHandyman.create({
+                service_booking_id: service_booking_id,
                 service_id: service_id,
                 user_id: handyman_user_id,
                 created_at: new Date()
@@ -1211,6 +1213,86 @@ class ProviderController {
                     }]
                 });
                 new SuccessResponse("Subscription data get successfully.", { data: subscriptionData }).send(res);
+            }
+        } catch (e) {
+            ApiError.handle(new BadRequestError(e.message), res);
+        }
+    }
+
+    changeServiceProgressStatus = async (req, res) => {
+        try {
+            let { service_booking_id, status } = req.body;
+            let { user_id, role } = req;
+
+            if (role === 1) {
+                throw new Error("User don't have permission to perform this action.");
+            } else {
+                let serviceBookingData = await dbReader.serviceBooking.findOne({
+                    where: {
+                        service_booking_id: service_booking_id,
+                        is_deleted: 0
+                    }, include: [{
+                        required: true,
+                        model: dbReader.service
+                    }]
+                });
+                serviceBookingData = JSON.parse(JSON.stringify(serviceBookingData));
+
+                if (!serviceBookingData) {
+                    throw new Error("Service booking data not found.");
+                } else {
+                    await dbWriter.serviceBooking.update({
+                        booking_service_status: status,
+                        booking_service_status_updated_by: user_id
+                    }, {
+                        where: {
+                            service_booking_id: service_booking_id,
+                        }
+                    });
+
+                    if (status === 2) {//If status is completed then add respective service amount to provider's wallet.
+                        let provider_id = serviceBookingData?.Service?.user_id,
+                            service_id = serviceBookingData?.Service?.service_id,
+                            amount = serviceBookingData?.service_amount - serviceBookingData?.discount_amount - serviceBookingData?.commission_amount - serviceBookingData?.coupen_amount - serviceBookingData?.tax_amount;
+
+                        await dbWriter.wallet.create({
+                            provider_id: provider_id,
+                            service_id: service_id,
+                            amount: amount
+                        });
+                    }
+
+                    new SuccessResponse("Status updated successfully.", {}).send(res);
+                }
+            }
+        } catch (e) {
+            ApiError.handle(new BadRequestError(e.message), res);
+        }
+    }
+
+    getProviderWalletDetails = async (req, res) => {
+        try {
+            let { user_id, role } = req;
+
+            if (role !== 2) {
+                throw new Error("User don't have permission to perform this action.");
+            } else {
+                let walletData = await dbReader.wallet.findAll({
+                    where: {
+                        provider_id: user_id,
+                        is_deleted: 0
+                    },
+                    include: [{
+                        required: false,
+                        model: dbReader.service,
+                        where: {
+                            is_deleted: 0
+                        }
+                    }]
+                });
+                walletData = JSON.parse(JSON.stringify(walletData));
+
+                new SuccessResponse("Wallet data get successfully.", { data: walletData }).send(res);
             }
         } catch (e) {
             ApiError.handle(new BadRequestError(e.message), res);

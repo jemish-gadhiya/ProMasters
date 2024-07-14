@@ -50,6 +50,7 @@ class AuthRoute extends AuthController {
         router.post("/addEditSubscriptionPlan", tokenValidate, validator(jois.addEditSubscriptionPlanPayload), this.addEditSubscriptionPlan);
         router.get("/getAllSubscriptionPlans", tokenValidate, this.getAllSubscriptionPlans);
 
+        router.post("/payToProviderFromAdmin", tokenValidate, validator(jois.payToProviderFromAdminPayload), this.payToProviderFromAdmin);
     }
 }
 

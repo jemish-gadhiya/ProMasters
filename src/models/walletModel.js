@@ -11,7 +11,14 @@ module.exports = function (sequelize, DataTypes) {
         provider_id: DataTypes.INTEGER,
         service_id: DataTypes.INTEGER,
         amount: DataTypes.DOUBLE,
-        status: DataTypes.INTEGER,
+        status: {// 1-success, 0-fail
+            type: DataTypes.INTEGER,
+            defaultValue: 1,
+        },
+        is_paid_by_admin: {
+            type: DataTypes.INTEGER,
+            defaultValue: 0,
+        },
         is_deleted: {
             type: DataTypes.INTEGER,
             defaultValue: 0,
@@ -31,11 +38,11 @@ module.exports = function (sequelize, DataTypes) {
     });
 
     Wallet.associate = function (models) {
-        // Define associations here if needed
-        // For example, if there's a relationship with providers or services:
-        // Wallet.belongsTo(models.Provider, { foreignKey: 'provider_id' });
-        // Wallet.belongsTo(models.Service, { foreignKey: 'service_id' });
+        Wallet.hasMany(models.service, {
+            foreignKey: 'service_id',
+            sourceKey: 'service_id'
+        });
     };
-    
+
     return Wallet;
 };

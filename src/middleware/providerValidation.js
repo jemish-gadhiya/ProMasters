@@ -45,4 +45,9 @@ exports.jois = {
     }),
 
 
+    changeServiceProgressStatusPayload: Joi.object().keys({
+        service_booking_id: Joi.number().required(),
+        status: Joi.number().allow(0).required(),
+    }),
+
 }

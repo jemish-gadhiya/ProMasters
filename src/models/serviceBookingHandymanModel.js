@@ -12,6 +12,10 @@ module.exports = function (sequelize, DataTypes) {
             type: DataTypes.INTEGER,
             allowNull: false,
         },
+        service_booking_id: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+        },
         user_id: {
             type: DataTypes.INTEGER,
             allowNull: false,
@@ -35,11 +39,8 @@ module.exports = function (sequelize, DataTypes) {
     });
 
     ServiceBookingHandyman.associate = function (models) {
-        // Define associations here if needed
-        // For example, if there's a relationship with services and users:
-        // ServiceBookingHandyman.belongsTo(models.Service, { foreignKey: 'service_id' });
-        // ServiceBookingHandyman.belongsTo(models.User, { foreignKey: 'user_id' });
+
     };
-    
+
     return ServiceBookingHandyman;
 };

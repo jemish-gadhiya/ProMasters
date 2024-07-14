@@ -128,4 +128,9 @@ exports.jois = {
     }),
 
 
+    payToProviderFromAdminPayload: Joi.object().keys({
+        provider_id: Joi.number().required(),
+        amount: Joi.number().required(),
+    }),
+
 }
