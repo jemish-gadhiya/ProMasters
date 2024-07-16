@@ -37,4 +37,17 @@ exports.jois = {
         category_id: Joi.number().required(),
     }),
 
+    purchaseSubscriptionForProviderPayload: Joi.object().keys({
+        subscription_plan_id: Joi.number().required(),
+        due_date: Joi.string().required(),
+        payment_type: Joi.string().required(),
+        card_details: Joi.string().required(),
+    }),
+
+
+    changeServiceProgressStatusPayload: Joi.object().keys({
+        service_booking_id: Joi.number().required(),
+        status: Joi.number().allow(0).required(),
+    }),
+
 }

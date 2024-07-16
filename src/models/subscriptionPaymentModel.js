@@ -12,10 +12,7 @@ module.exports = function (sequelize, DataTypes) {
             type: DataTypes.INTEGER,
             allowNull: false,
         },
-        payment_type: {
-            type: DataTypes.ENUM('credit_card', 'debit_card', 'paypal', 'stripe', 'other'), // Example ENUM values, adjust as needed
-            allowNull: false,
-        },
+        payment_type: DataTypes.STRING(256),
         status: {
             type: DataTypes.INTEGER,
             defaultValue: 0,
@@ -49,6 +46,6 @@ module.exports = function (sequelize, DataTypes) {
         // For example, if there's a relationship with subscriptions:
         // SubscriptionPayment.belongsTo(models.Subscription, { foreignKey: 'subscription_id' });
     };
-    
+
     return SubscriptionPayment;
 };

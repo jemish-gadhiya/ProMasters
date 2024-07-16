@@ -39,7 +39,7 @@ class ApiResponse {
                 request: JSON.stringify(res.req.body) || JSON.stringify(res.req.params),
                 response: apiResponse,
                 user_id: res.req.user_id || 0,
-                execution_time: executionTime
+                execution_time: executionTime || ""
             })
 
         }

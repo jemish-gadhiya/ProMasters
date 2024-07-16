@@ -30,14 +30,28 @@ module.exports = function (sequelize, DataTypes) {
         },
         coupen_id: DataTypes.INTEGER,
         service_amount: DataTypes.DOUBLE,
-        commission_amount: DataTypes.DOUBLE,
+        tax_amount: {
+            type: DataTypes.DOUBLE,
+            defaultValue: 1,
+        },
+        discount_amount: {
+            type: DataTypes.DOUBLE,
+            defaultValue: 1,
+        },
+        commission_amount: {
+            type: DataTypes.DOUBLE,
+            defaultValue: 1,
+        },
+        coupen_amount: {
+            type: DataTypes.DOUBLE,
+            defaultValue: 1,
+        },
         booking_status: {
-            type: DataTypes.INTEGER,
+            type: DataTypes.INTEGER,// 0-pending, 1- accept, 2-reject
             defaultValue: 0,
         },
-        booking_service_status: {
+        booking_service_status: {//0 - pending, 1- in_progress, 2- completed,3- cancelled
             type: DataTypes.INTEGER,
-            // ENUM('pending', 'in_progress', 'completed', 'cancelled'), // Example ENUM values, adjust as needed
             allowNull: false,
         },
         booking_service_status_updated_by: {
@@ -66,9 +80,31 @@ module.exports = function (sequelize, DataTypes) {
         // Define associations here if needed
         // For example, if there's a relationship with services, users, and coupons:
         // ServiceBooking.belongsTo(models.Service, { foreignKey: 'service_id' });
-        ServiceBooking.belongsTo(models.users, { foreignKey: 'booked_by' });
+        // ServiceBooking.belongsTo(models.User, { foreignKey: 'booked_by' });
         // ServiceBooking.belongsTo(models.Coupon, { foreignKey: 'coupen_id' });
+
+        ServiceBooking.belongsTo(models.service, {
+            foreignKey: 'service_id',
+            targetKey: 'service_id'
+        });
+
+        ServiceBooking.belongsTo(models.users, {
+            foreignKey: 'booked_by',
+            targetKey: 'user_id'
+        });
+
+        ServiceBooking.hasMany(models.serviceBookingPayment, {
+            foreignKey: 'service_booking_id',
+            targetKey: 'service_booking_id'
+        });
+
+        ServiceBooking.hasMany(models.serviceBookingHandyman, {
+            foreignKey: 'service_booking_id',
+            targetKey: 'service_booking_id'
+        });
+
+
     };
-    
+
     return ServiceBooking;
 };

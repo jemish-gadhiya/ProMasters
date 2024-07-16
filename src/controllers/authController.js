@@ -267,8 +267,6 @@ class AuthController {
                         where: { user_id: data.user_id }
                     });
 
-
-
                     if (is_email_verified === 1 && is_sms_verified === 1) {
                         let userData = {
                             user_id: data.user_id,
@@ -556,6 +554,55 @@ class AuthController {
             ApiError.handle(new BadRequestError(e.message), res);
         }
     }
+    updateUserDetail = async (req, res) => {
+        try {
+            let { name, username, email, password, contact, city, state, country, address, photo } = req.body
+            password = crypto.encrypt(password.toString(), true).toString();
+            let {
+                user_id,
+                role
+            } = req;
+            let userNameMatch = await dbReader.users.findOne({
+                where: {
+                    username: username
+                }
+            })
+            userNameMatch = JSON.parse(JSON.stringify(userNameMatch))
+            if (userNameMatch) {
+                throw new Error("username is already exist in system")
+            }
+            let emailMatch = await dbReader.users.findOne({
+                where: {
+                    email: email
+                }
+            })
+            emailMatch = JSON.parse(JSON.stringify(emailMatch))
+            if (emailMatch) {
+                throw new Error("email is already exist in system")
+            }
+
+            let updateData = await dbWriter.users.update({
+                name: name,
+                username: username,
+                email: email,
+                password: password,
+                contact: contact,
+                city: city,
+                state: state,
+                country: country,
+                address: address,
+                photo: photo
+            }, {
+                where: {
+                    user_id: user_id
+                }
+            })
+            new SuccessResponse("User details updated successfully.", {
+            }).send(res);
+        } catch (e) {
+            ApiError.handle(new BadRequestError(e.message), res);
+        }
+    }
 
 
     //Manage tax details from admin panel 
@@ -577,7 +624,7 @@ class AuthController {
 
                     new SuccessResponse("Tax data added successfully.", {}).send(res);
                 } else {
-                    let taxData = await dbReader.serviceAddress.findOne({
+                    let taxData = await dbReader.tax.findOne({
                         where: {
                             tax_id: tax_id,
                             is_deleted: 0
@@ -971,6 +1018,106 @@ class AuthController {
             ApiError.handle(new BadRequestError(e.message), res);
         }
     }
+
+    addEditSubscriptionPlan = async (req, res) => {
+        try {
+            let { subscription_plan_id = 0, title, description, amount, no_service, no_handyman, no_featured_service, is_active = 1, is_deleted = 0 } = req.body;
+            let { user_id, role } = req;
+
+            if (role !== 4) {
+                throw new Error("User don't have permission to perform this action.");
+            } else {
+                if (subscription_plan_id === 0) {
+                    await dbWriter.subscriptionPlan.create({
+                        title: title,
+                        description: description,
+                        amount: amount,
+                        no_service: no_service,
+                        no_handyman: no_handyman,
+                        no_featured_service: no_featured_service,
+                        is_active: is_active,
+                        is_deleted: is_deleted
+                    });
+
+                    new SuccessResponse("Subscription plan added successfully.", {}).send(res);
+                } else {
+                    let planData = await dbReader.subscriptionPlan.findOne({
+                        where: {
+                            subscription_plan_id: subscription_plan_id,
+                            is_deleted: 0
+                        }
+                    });
+                    // planData = JSON.parse(JSON.stringify(planData));
+                    if (!planData) {
+                        throw new Error("Subscription plan data not found.");
+                    } else {
+                        await dbWriter.subscriptionPlan.update({
+                            title: title,
+                            description: description,
+                            amount: amount,
+                            no_service: no_service,
+                            no_handyman: no_handyman,
+                            no_featured_service: no_featured_service,
+                            is_active: is_active,
+                            is_deleted: is_deleted
+                        }, {
+                            where: { subscription_plan_id: subscription_plan_id }
+                        });
+
+                        new SuccessResponse("Subscription plan data updated successfully.", {}).send(res);
+                    }
+                }
+            }
+        } catch (e) {
+            ApiError.handle(new BadRequestError(e.message), res);
+        }
+    }
+
+    getAllSubscriptionPlans = async (req, res) => {
+        try {
+            let { user_id, role } = req;
+
+            let planData = await dbReader.subscriptionPlan.findAll({
+                where: {
+                    is_deleted: 0,
+                    is_active: 1
+                }
+            });
+            planData = JSON.parse(JSON.stringify(planData));
+            new SuccessResponse("Subscription plan data get successfully.", { data: planData }).send(res);
+
+        } catch (e) {
+            ApiError.handle(new BadRequestError(e.message), res);
+        }
+    }
+
+    payToProviderFromAdmin = async (req, res) => {
+        try {
+            let { provider_id, amount } = req.body;
+            let { user_id, role } = req;
+
+            if (role !== 4) {
+                throw new Error("User don't have permission to perform this action.");
+            } else {
+                let data = await dbWriter.wallet.create({
+                    provider_id: provider_id,
+                    service_id: 0,
+                    amount: amount,
+                    is_paid_by_admin: 1
+                });
+
+                //Need to develop flow here for send payment to provider once client give payment gateway information
+
+                new SuccessResponse("Payment done successfully.", {}).send(res);
+            }
+        } catch (e) {
+            console.log("error is :::", e);
+            ApiError.handle(new BadRequestError(e.message), res);
+        }
+    }
+
+
+
 }
 
 module.exports = AuthController;

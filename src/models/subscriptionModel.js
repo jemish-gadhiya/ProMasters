@@ -17,7 +17,7 @@ module.exports = function (sequelize, DataTypes) {
             allowNull: false,
         },
         amount: DataTypes.DOUBLE,
-        due_date: DataTypes.DATE,
+        due_date: DataTypes.STRING(256),
         is_deleted: {
             type: DataTypes.INTEGER,
             defaultValue: 0,
@@ -37,11 +37,11 @@ module.exports = function (sequelize, DataTypes) {
     });
 
     Subscription.associate = function (models) {
-        // Define associations here if needed
-        // For example, if there's a relationship with users and subscription plans:
-        // Subscription.belongsTo(models.User, { foreignKey: 'user_id' });
-        // Subscription.belongsTo(models.SubscriptionPlan, { foreignKey: 'subscription_plan_id' });
+        Subscription.hasMany(models.subscriptionPayment, {
+            foreignKey: 'subscription_id',
+            sourceKey: 'subscription_id'
+        });
     };
-    
+
     return Subscription;
 };

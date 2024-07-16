@@ -20,8 +20,8 @@ module.exports = function (sequelize, DataTypes) {
         service_address_id: DataTypes.STRING(256),
         service_type: DataTypes.STRING(256),
         status: {
-            type: DataTypes.ENUM('pending', 'active', 'inactive', 'completed', 'cancelled'), // Example ENUM values, adjust as needed
-            allowNull: false,
+            type: DataTypes.INTEGER, //(0 -'pending',1- 'active',2- 'inactive',3- 'completed',5- 'cancelled'),
+            defaultValue: 0,
         },
         price: DataTypes.DOUBLE,
         discount: DataTypes.DOUBLE,

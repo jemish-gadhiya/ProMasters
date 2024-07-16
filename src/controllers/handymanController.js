@@ -255,6 +255,40 @@ class ProviderController {
         }
     }
 
+    getCompletedServiceCountForHandyman = async (req, res) => {
+        try {
+            let { user_id, role } = req;
+
+            if (role !== 3) {
+                throw new Error("User don't have permission to perform this action.");
+            } else {
+                let handymanTotServiceDoneData = await dbReader.serviceBooking.findAll({
+                    where: {
+                        is_deleted: 0,
+                        booking_service_status: 2
+                    },
+                    include: [{
+                        required: true,
+                        model: dbReader.serviceBookingHandyman,
+                        where: {
+                            user_id: user_id,
+                            is_deleted: 0
+                        }
+                    }]
+                });
+                handymanTotServiceDoneData = JSON.parse(JSON.stringify(handymanTotServiceDoneData));
+
+                new SuccessResponse("Get data successfully.", {
+                    data: {
+                        totalServiceDone: handymanTotServiceDoneData?.length || 0
+                    }
+                }).send(res);
+            }
+        } catch (e) {
+            ApiError.handle(new BadRequestError(e.message), res);
+        }
+    }
+
 }
 
 module.exports = ProviderController;

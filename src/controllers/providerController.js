@@ -270,7 +270,7 @@ class ProviderController {
                     is_deleted: 0
                 }
             });
-            console.log("category data are :: ", categoryData);
+            //console.log("category data are :: ", categoryData);
             // categoryData = JSON.parse(JSON.stringify(categoryData));
             new SuccessResponse("Category get successfully.", { data: categoryData }).send(res);
         } catch (e) {
@@ -440,6 +440,7 @@ class ProviderController {
             ApiError.handle(new BadRequestError(e.message), res);
         }
     }
+
     deleteService = async (req, res) => {
         try {
             let { service_id } = req.body;
@@ -467,6 +468,7 @@ class ProviderController {
             ApiError.handle(new BadRequestError(e.message), res);
         }
     }
+
     getServiceByCategory = async (req, res) => {
         try {
             let {
@@ -490,6 +492,7 @@ class ProviderController {
             ApiError.handle(new BadRequestError(e.message), res);
         }
     }
+
     getServiceById = async (req, res) => {
         try {
             let {
@@ -511,6 +514,7 @@ class ProviderController {
                         is_deleted: 0
                     }
                 }, {
+                    required: false,
                     model: dbReader.serviceAttachment,
                     where: {
                         is_deleted: 0
@@ -522,6 +526,7 @@ class ProviderController {
                         is_deleted: 0
                     }
                 }, {
+                    required: false,
                     as: "service_rating",
                     model: dbReader.serviceRating,
                     where: {
@@ -530,14 +535,15 @@ class ProviderController {
                     }
                 }]
             });
-            // serviceData = JSON.parse(JSON.stringify(serviceData));
+            serviceData = JSON.parse(JSON.stringify(serviceData));
             new SuccessResponse("Service get successfully.", {
-                data: serviceData
+                ...serviceData
             }).send(res);
         } catch (e) {
             ApiError.handle(new BadRequestError(e.message), res);
         }
     }
+
     listServiceForProvider = async (req, res) => {
         try {
             let {
@@ -564,6 +570,7 @@ class ProviderController {
             ApiError.handle(new BadRequestError(e.message), res);
         }
     }
+
     listServiceForUser = async (req, res) => {
         try {
             let { user_id, role } = req;
@@ -670,12 +677,16 @@ class ProviderController {
                 }
             })
             serviceData = JSON.parse(JSON.stringify(serviceData))
-            let serviceAmount = 0
-            if (serviceData && serviceData.price) {
-                let price = serviceData.price;
-                let discount = serviceData.discount / 100; // Convert discount percentage to a decimal
-                serviceAmount = price - (price * discount);
-            }
+            let serviceAmount = 0, serviceDiscountAmount = 0;
+
+            serviceAmount = serviceData.price || 0;
+            serviceDiscountAmount = serviceData.discount || 0;
+
+            // if (serviceData && serviceData.price) {
+            // let price = serviceData.price;
+            // let discount = serviceData.discount / 100; // Convert discount percentage to a decimal
+            // serviceAmount = price - (price * discount);
+            // }
 
             let comissionData = await dbReader.providerComission.findOne({
                 where: {
@@ -688,8 +699,48 @@ class ProviderController {
                         is_deleted: 0
                     }
                 }]
-            })
+            });
             comissionData = JSON.parse(JSON.stringify(comissionData))
+
+            let comissionAmount = 0;
+            if (comissionData) {
+                if (comissionData?.Commission?.comission_amount_type === 1) {
+                    comissionAmount = comissionData?.Commission?.comission_amount;
+                } else {
+                    let comissionPercentage = comissionData?.Commission?.comission_amount / 100; // Convert discount percentage to a decimal
+                    comissionAmount = (serviceData.price * comissionPercentage).toFixed(2);
+                }
+            }
+
+            console.log("==>comission data are :: ", comissionData);
+
+            let taxData = await dbReader.tax.findOne({
+                where: {
+                    is_active: 1,
+                    is_deleted: 0
+                }
+            });
+            let taxAmount = 0;
+            if (taxData) {
+                if (taxData?.tax_amount_type === 1) {
+                    taxAmount = taxData?.tax_amount;
+                } else {
+                    let taxPercentage = taxData?.tax_amount / 100; // Convert discount percentage to a decimal
+                    taxAmount = (serviceData.price * taxPercentage).toFixed(2);
+                }
+            }
+
+            let couponData = await dbReader.coupan.findOne({
+                where: {
+                    is_active: 1,
+                    is_deleted: 0
+                }
+            });
+            let couponAmount = 0;
+            if (couponData) {
+                couponAmount = couponData?.coupon_amount;
+            }
+
             if (booking_id == 0) {
                 let serviceBookingData = await dbReader.serviceBooking.create({
                     service_id: service_id,
@@ -702,13 +753,17 @@ class ProviderController {
                     booking_service_qty: service_booking_qty,
                     coupen_id: coupan_id,
                     service_amount: serviceAmount,
-                    commission_amount: comissionData.comission.comission_amount,
+                    tax_amount: taxAmount || 0,
+                    discount_amount: serviceDiscountAmount || 0,
+                    commission_amount: comissionAmount || 0,
+                    coupen_amount: couponAmount || 0,
                     booking_service_status: 0,
-                    created_at: new Date()
+                    created_at: new Date(),
+                    booking_service_status_updated_by: user_id
                 });
-                serviceData = JSON.parse(JSON.stringify(serviceData));
+                serviceBookingData = JSON.parse(JSON.stringify(serviceBookingData));
                 new SuccessResponse("Service booked successfully.", {
-                    data: serviceData
+                    data: serviceBookingData
                 }).send(res);
             } else {
                 await dbReader.serviceBooking.update({
@@ -725,6 +780,7 @@ class ProviderController {
             ApiError.handle(new BadRequestError(e.message), res);
         }
     }
+
     saveUserAvailibility = async (req, res) => {
         try {
             let {
@@ -761,11 +817,13 @@ class ProviderController {
             ApiError.handle(new BadRequestError(e.message), res);
         }
     }
+
     assignServiceHandyman = async (req, res) => {
         try {
             let {
                 handyman_user_id,
-                service_id
+                service_id,
+                service_booking_id
             } = req.body
             let {
                 user_id,
@@ -773,6 +831,7 @@ class ProviderController {
             } = req;
 
             let serviceHandymanData = await dbWriter.serviceBookingHandyman.create({
+                service_booking_id: service_booking_id,
                 service_id: service_id,
                 user_id: handyman_user_id,
                 created_at: new Date()
@@ -821,6 +880,7 @@ class ProviderController {
             ApiError.handle(new BadRequestError(e.message), res);
         }
     }
+
     updateServiceBookingStatus = async (req, res) => {
         try {
             let {
@@ -864,6 +924,7 @@ class ProviderController {
             ApiError.handle(new BadRequestError(e.message), res);
         }
     }
+
     listProviderForFilter = async (req, res) => {
         try {
             let {
@@ -884,6 +945,368 @@ class ProviderController {
             ApiError.handle(new BadRequestError(e.message), res);
         }
     }
+
+    getComissionOfProvider = async (req, res) => {
+        try {
+            let { user_id, role } = req;
+
+            if (role !== 2) {
+                throw new Error("User don't have permission to perform this action.");
+            } else {
+                let comissionData = await dbReader.providerComission.findOne({
+                    where: {
+                        provider_id: user_id,
+                        is_deleted: 0
+                    },
+                    include: [{
+                        required: false,
+                        model: dbReader.comission,
+                        where: {
+                            is_deleted: 0
+                        }
+                    }]
+                });
+                new SuccessResponse("Service address get successfully.", { data: comissionData }).send(res);
+            }
+        } catch (e) {
+            ApiError.handle(new BadRequestError(e.message), res);
+        }
+    }
+
+    providerDashboardAnalyticsData = async (req, res) => {
+        try {
+            let { user_id, role } = req;
+
+            if (role !== 2) {
+                throw new Error("User don't have permission to perform this action.");
+            } else {
+
+                let responseData = {
+                    total_booking: 0,
+                    total_service: 0,
+                    total_handyman: 0,
+                    total_earning: 0,
+                    monthly_earning: []
+                }
+
+                let providerBookingsData = await dbReader.serviceBooking.findAll({
+                    where: {
+                        is_deleted: 0
+                    },
+                    include: [{
+                        required: true,
+                        model: dbReader.service,
+                        where: {
+                            is_deleted: 0,
+                            user_id: user_id
+                        }
+                    }]
+                });
+                providerBookingsData = JSON.parse(JSON.stringify(providerBookingsData));
+
+                let providerServicesData = await dbReader.service.findAll({
+                    where: {
+                        is_deleted: 0,
+                        user_id: user_id
+                    }
+                });
+                providerServicesData = JSON.parse(JSON.stringify(providerServicesData));
+
+                let providerHandymanData = await dbReader.users.findAll({
+                    where: {
+                        is_deleted: 0,
+                        provider_id: user_id
+                    }
+                });
+                providerHandymanData = JSON.parse(JSON.stringify(providerHandymanData));
+
+                let providerEarning = 0;
+                let monthsData = [{
+                    month: "01",
+                    earning: 0
+                }, {
+                    month: "02",
+                    earning: 0
+                }, {
+                    month: "03",
+                    earning: 0
+                }, {
+                    month: "04",
+                    earning: 0
+                }, {
+                    month: "05",
+                    earning: 0
+                }, {
+                    month: "06",
+                    earning: 0
+                }, {
+                    month: "07",
+                    earning: 0
+                }, {
+                    month: "08",
+                    earning: 0
+                }, {
+                    month: "09",
+                    earning: 0
+                }, {
+                    month: "10",
+                    earning: 0
+                }, {
+                    month: "11",
+                    earning: 0
+                }, {
+                    month: "12",
+                    earning: 0
+                }]
+                for (let i = 0; i < providerBookingsData.length; i++) {
+                    let pData = providerBookingsData[i];
+                    if (pData?.booking_service_status === 2) {
+                        providerEarning = providerEarning + (pData?.service_amount - pData?.discount_amount - pData?.commission_amount - pData?.coupen_amount - pData?.tax_amount)
+                    }
+
+                    for (let j = 0; j < monthsData.length; j++) {
+                        let mData = monthsData[j];
+                        if (mData?.month === (new Date(pData?.booking_datetime)?.getMonth() + 1).toString().padStart(2, '0')) {
+                            monthsData[j].earning = mData?.earning + (pData?.service_amount - pData?.discount_amount - pData?.commission_amount - pData?.coupen_amount - pData?.tax_amount);
+                            monthsData[j].earning = parseFloat(monthsData[j].earning).toFixed(2)
+                        }
+                    }
+                }
+
+                responseData.total_booking = providerServicesData?.length || 0;
+                responseData.total_service = providerServicesData?.length || 0;
+                responseData.total_handyman = providerHandymanData?.length || 0;
+                responseData.total_earning = providerEarning.toFixed(2) || 0;
+                responseData.monthly_earning = monthsData;
+
+                new SuccessResponse("Provider dashboard analytics data get successfully.", { data: responseData }).send(res);
+            }
+        } catch (e) {
+            ApiError.handle(new BadRequestError(e.message), res);
+        }
+    }
+
+    paymentDetailsForProvider = async (req, res) => {
+        try {
+            let { user_id, role } = req;
+
+            if (role !== 2) {
+                throw new Error("User don't have permission to perform this action.");
+            } else {
+
+
+
+                let bookingsData = await dbReader.serviceBooking.findAll({
+                    where: {
+                        is_deleted: 0
+                    },
+                    include: [{
+                        attributes: [],
+                        required: true,
+                        model: dbReader.service,
+                        where: {
+                            is_deleted: 0,
+                            user_id: user_id
+                        }
+                    }, {
+                        attributes: ["user_id", "name", 'email', "contact", "role", "photo", "address", "city", "state", "country",],
+                        required: false,
+                        model: dbReader.users,
+                        where: {
+                            is_deleted: 0
+                        }
+                    }, {
+                        required: false,
+                        model: dbReader.serviceBookingPayment,
+                        where: {
+                            is_deleted: 0
+                        }
+                    }
+                    ]
+                });
+                bookingsData = JSON.parse(JSON.stringify(bookingsData));
+
+
+                new SuccessResponse("Payment details get successfully.", { data: bookingsData }).send(res);
+            }
+        } catch (e) {
+            ApiError.handle(new BadRequestError(e.message), res);
+        }
+    }
+
+    purchaseSubscriptionForProvider = async (req, res) => {
+        try {
+            let {
+                subscription_plan_id,
+                due_date,
+                payment_type,
+                card_details
+            } = req.body;
+
+            let {
+                user_id,
+                role
+            } = req;
+
+            let planData = await dbReader.subscriptionPlan.findOne({
+                where: {
+                    subscription_plan_id: subscription_plan_id,
+                    is_deleted: 0,
+                    is_active: 1
+                }
+            })
+            planData = JSON.parse(JSON.stringify(planData));
+
+            if (!planData) {
+                throw new Error("Subscription plan data not found.");
+            } else {
+                let amount = planData?.amount;
+
+                let newSubscription = await dbWriter.subscription.create({
+                    user_id: user_id,
+                    subscription_plan_id: subscription_plan_id,
+                    amount: amount,
+                    due_date: due_date,
+                });
+
+                //console.log("---> newSubscription ::", newSubscription);
+
+
+                //Here below transaction id get from the payment transaction, we have to get this id once we done the payment.
+                let transaction_id = "ABCDTEST1234@@@",
+                    status = 1;
+
+
+                let subscription_id = newSubscription?.dataValues?.subscription_id;
+
+
+                //console.log("subscription id is :: ", subscription_id);
+
+                let subscriptionPaymentData = await dbWriter.subscriptionPayment.create({
+                    subscription_id: subscription_id,
+                    payment_type: payment_type,
+                    status: status,
+                    transaction_id: transaction_id,
+                    receipt: "",
+                    card_details: card_details
+                });
+
+                //console.log("subscriptionPaymentData ::: ", subscriptionPaymentData);
+                new SuccessResponse("Subscription purchased successfully.", {}).send(res);
+            }
+
+        } catch (e) {
+            ApiError.handle(new BadRequestError(e.message), res);
+        }
+    }
+
+    getUserSubscriptionForProvider = async (req, res) => {
+        try {
+            let { user_id, role } = req;
+
+            if (role !== 2) {
+                throw new Error("User don't have permission to perform this action.");
+            } else {
+                let subscriptionData = await dbReader.subscription.findOne({
+                    where: {
+                        user_id: user_id,
+                        is_deleted: 0
+                    },
+                    include: [{
+                        required: false,
+                        model: dbReader.subscriptionPayment,
+                        where: {
+                            is_deleted: 0
+                        }
+                    }]
+                });
+                new SuccessResponse("Subscription data get successfully.", { data: subscriptionData }).send(res);
+            }
+        } catch (e) {
+            ApiError.handle(new BadRequestError(e.message), res);
+        }
+    }
+
+    changeServiceProgressStatus = async (req, res) => {
+        try {
+            let { service_booking_id, status } = req.body;
+            let { user_id, role } = req;
+
+            if (role === 1) {
+                throw new Error("User don't have permission to perform this action.");
+            } else {
+                let serviceBookingData = await dbReader.serviceBooking.findOne({
+                    where: {
+                        service_booking_id: service_booking_id,
+                        is_deleted: 0
+                    }, include: [{
+                        required: true,
+                        model: dbReader.service
+                    }]
+                });
+                serviceBookingData = JSON.parse(JSON.stringify(serviceBookingData));
+
+                if (!serviceBookingData) {
+                    throw new Error("Service booking data not found.");
+                } else {
+                    await dbWriter.serviceBooking.update({
+                        booking_service_status: status,
+                        booking_service_status_updated_by: user_id
+                    }, {
+                        where: {
+                            service_booking_id: service_booking_id,
+                        }
+                    });
+
+                    if (status === 2) {//If status is completed then add respective service amount to provider's wallet.
+                        let provider_id = serviceBookingData?.Service?.user_id,
+                            service_id = serviceBookingData?.Service?.service_id,
+                            amount = serviceBookingData?.service_amount - serviceBookingData?.discount_amount - serviceBookingData?.commission_amount - serviceBookingData?.coupen_amount - serviceBookingData?.tax_amount;
+
+                        await dbWriter.wallet.create({
+                            provider_id: provider_id,
+                            service_id: service_id,
+                            amount: amount
+                        });
+                    }
+
+                    new SuccessResponse("Status updated successfully.", {}).send(res);
+                }
+            }
+        } catch (e) {
+            ApiError.handle(new BadRequestError(e.message), res);
+        }
+    }
+
+    getProviderWalletDetails = async (req, res) => {
+        try {
+            let { user_id, role } = req;
+
+            if (role !== 2) {
+                throw new Error("User don't have permission to perform this action.");
+            } else {
+                let walletData = await dbReader.wallet.findAll({
+                    where: {
+                        provider_id: user_id,
+                        is_deleted: 0
+                    },
+                    include: [{
+                        required: false,
+                        model: dbReader.service,
+                        where: {
+                            is_deleted: 0
+                        }
+                    }]
+                });
+                walletData = JSON.parse(JSON.stringify(walletData));
+
+                new SuccessResponse("Wallet data get successfully.", { data: walletData }).send(res);
+            }
+        } catch (e) {
+            ApiError.handle(new BadRequestError(e.message), res);
+        }
+    }
+
 }
 
 module.exports = ProviderController;

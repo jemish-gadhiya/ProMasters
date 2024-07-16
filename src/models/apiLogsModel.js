@@ -11,8 +11,8 @@ module.exports = function (sequelize, DataTypes) {
         api_name: DataTypes.STRING(256),
         request: DataTypes.TEXT,
         response: DataTypes.TEXT,
-        user_id: DataTypes.INTEGER,   
-        execution_time: DataTypes.STRING(256),
+        user_id: DataTypes.INTEGER,
+        execution_time: DataTypes.TEXT,
         created_at: DataTypes.DATE(),
     }, {
         tableName: 'ApiLogs',
@@ -21,8 +21,8 @@ module.exports = function (sequelize, DataTypes) {
     });
 
     ApiLogs.associate = function (models) {
-       
+
     };
-    
+
     return ApiLogs;
 };
