@@ -609,12 +609,14 @@ const { Op } = require('sequelize');
                 where: serviceWhereConditions,
                 include: [
                     {
+                        required:false,
                         model: dbReader.serviceAttachment,
                         where: {
                             is_deleted: 0
                         }
                     },
                     {
+                        required:false,
                         model: dbReader.users,
                         where: {
                             role:2,
@@ -622,6 +624,7 @@ const { Op } = require('sequelize');
                         }
                     },
                     {
+                        required:false,
                         as: "service_rating",
                         model: dbReader.serviceRating,
                         where: serviceRatingWhereConditions
