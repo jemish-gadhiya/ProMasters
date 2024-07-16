@@ -24,9 +24,9 @@ require('dotenv').config()
 const enumerationController = require("./enumurationController");
 var ObjectMail = new nodeMailerController_1();
 var EnumObject = new enumerationController();
-const { Op } = require('sequelize');
+const { Op, where } = require('sequelize');
 
- class ProviderController {
+class ProviderController {
 
     //Service address module API's
     addEditServiceAddress = async (req, res) => {
@@ -507,16 +507,16 @@ const { Op } = require('sequelize');
                 include: [{
                     model: dbReader.users,
                     where: {
-                        role:2,
+                        role: 2,
                         is_deleted: 0
                     }
-                },{
+                }, {
                     model: dbReader.serviceAttachment,
                     where: {
                         is_deleted: 0
                     }
-                },{
-                    required:false,
+                }, {
+                    required: false,
                     model: dbReader.serviceBookingHandyman,
                     where: {
                         is_deleted: 0
@@ -609,22 +609,22 @@ const { Op } = require('sequelize');
                 where: serviceWhereConditions,
                 include: [
                     {
-                        required:false,
+                        required: false,
                         model: dbReader.serviceAttachment,
                         where: {
                             is_deleted: 0
                         }
                     },
                     {
-                        required:false,
+                        required: false,
                         model: dbReader.users,
                         where: {
-                            role:2,
+                            role: 2,
                             is_deleted: 0
                         }
                     },
                     {
-                        required:false,
+                        required: false,
                         as: "service_rating",
                         model: dbReader.serviceRating,
                         where: serviceRatingWhereConditions
@@ -802,7 +802,15 @@ const { Op } = require('sequelize');
                     model: dbReader.serviceBooking,
                     where: {
                         is_deleted: 0
-                    }
+                    },
+                    include: [{
+                        model: dbReader.users,
+                        attributes: ["user_id", "name", "username", "email", "photo", "is_active", "created_at"],
+                        where: {
+                            is_deleted: 0,
+                            is_active: 1
+                        }
+                    }]
                 }]
             });
             serviceData = JSON.parse(JSON.stringify(serviceData));
@@ -864,8 +872,8 @@ const { Op } = require('sequelize');
             } = req;
             let providerData = await dbReader.users.findAll({
                 where: {
-                    role:2,
-                        is_deleted: 0
+                    role: 2,
+                    is_deleted: 0
                 },
             });
             providerData = JSON.parse(JSON.stringify(providerData));

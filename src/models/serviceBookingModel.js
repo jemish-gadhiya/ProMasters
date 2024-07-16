@@ -66,7 +66,7 @@ module.exports = function (sequelize, DataTypes) {
         // Define associations here if needed
         // For example, if there's a relationship with services, users, and coupons:
         // ServiceBooking.belongsTo(models.Service, { foreignKey: 'service_id' });
-        // ServiceBooking.belongsTo(models.User, { foreignKey: 'booked_by' });
+        ServiceBooking.belongsTo(models.users, { foreignKey: 'booked_by' });
         // ServiceBooking.belongsTo(models.Coupon, { foreignKey: 'coupen_id' });
     };
     
