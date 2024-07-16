@@ -24,7 +24,7 @@ require('dotenv').config()
 const enumerationController = require("./enumurationController");
 var ObjectMail = new nodeMailerController_1();
 var EnumObject = new enumerationController();
-const { Op } = require('sequelize');
+const { Op, where } = require('sequelize');
 
 class ProviderController {
 
@@ -861,7 +861,15 @@ class ProviderController {
                     model: dbReader.serviceBooking,
                     where: {
                         is_deleted: 0
-                    }
+                    },
+                    include: [{
+                        model: dbReader.users,
+                        attributes: ["user_id", "name", "username", "email", "photo", "is_active", "created_at"],
+                        where: {
+                            is_deleted: 0,
+                            is_active: 1
+                        }
+                    }]
                 }]
             });
             serviceData = JSON.parse(JSON.stringify(serviceData));

@@ -8,6 +8,7 @@ var cors = require('cors');
 const swaggerRoute_1 = require("./routes/swaggerRoute");
 const AuthRoute = require("./routes/authRoute");
 const ProviderRoute = require("./routes/providerRoute");
+const NotificationRoute = require("./routes/notificationRoute");
 const HandymanRoute = require("./routes/handymanRoute");
 const indexRoute = require("./routes/index");
 const { ApiResponse } = require('./core/ApiResponse');
@@ -64,6 +65,7 @@ class App {
   api() {
     new AuthRoute(this.router);
     new ProviderRoute(this.router);
+    new NotificationRoute(this.router);
     new HandymanRoute(this.router);
     new indexRoute(this.router);
 
