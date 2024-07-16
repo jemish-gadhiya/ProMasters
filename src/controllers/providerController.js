@@ -1057,18 +1057,17 @@ class ProviderController {
                 }, {
                     month: "12",
                     earning: 0
-                }]
+                }];
+
                 for (let i = 0; i < providerBookingsData.length; i++) {
                     let pData = providerBookingsData[i];
                     if (pData?.booking_service_status === 2) {
-                        providerEarning = providerEarning + (pData?.service_amount - pData?.discount_amount - pData?.commission_amount - pData?.coupen_amount - pData?.tax_amount)
+                        providerEarning = parseFloat(providerEarning) + (parseFloat(pData?.service_amount * pData?.booking_service_qty) - pData?.discount_amount - pData?.commission_amount - pData?.coupen_amount - pData?.tax_amount);
                     }
 
                     for (let j = 0; j < monthsData.length; j++) {
-                        let mData = monthsData[j];
-                        if (mData?.month === (new Date(pData?.booking_datetime)?.getMonth() + 1).toString().padStart(2, '0')) {
-                            monthsData[j].earning = mData?.earning + (pData?.service_amount - pData?.discount_amount - pData?.commission_amount - pData?.coupen_amount - pData?.tax_amount);
-                            monthsData[j].earning = parseFloat(monthsData[j].earning).toFixed(2)
+                        if (monthsData[j]?.month === (new Date(pData?.booking_datetime)?.getMonth() + 1).toString().padStart(2, '0') && pData?.booking_service_status === 2) {
+                            monthsData[j].earning = parseFloat(parseFloat(monthsData[j]?.earning) + (parseFloat(pData?.service_amount * pData?.booking_service_qty) - pData?.discount_amount - pData?.commission_amount - pData?.coupen_amount - pData?.tax_amount)).toFixed(2);
                         }
                     }
                 }
@@ -1261,7 +1260,7 @@ class ProviderController {
                     if (status === 2) {//If status is completed then add respective service amount to provider's wallet.
                         let provider_id = serviceBookingData?.Service?.user_id,
                             service_id = serviceBookingData?.Service?.service_id,
-                            amount = serviceBookingData?.service_amount - serviceBookingData?.discount_amount - serviceBookingData?.commission_amount - serviceBookingData?.coupen_amount - serviceBookingData?.tax_amount;
+                            amount = (serviceBookingData?.service_amount * serviceBookingData?.booking_service_qty) - serviceBookingData?.discount_amount - serviceBookingData?.commission_amount - serviceBookingData?.coupen_amount - serviceBookingData?.tax_amount;
 
                         await dbWriter.wallet.create({
                             provider_id: provider_id,
