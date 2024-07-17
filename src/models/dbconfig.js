@@ -77,6 +77,7 @@ DbInstance.forEach(element => {
     element.name['userAvailibility'] = require(path.join(__dirname, './userAvailibilityModel'))(element.name['sequelize'], Sequelize);
     element.name['subscriptionPlan'] = require(path.join(__dirname, './subscriptionPlanModel'))(element.name['sequelize'], Sequelize);
     element.name['wallet'] = require(path.join(__dirname, './walletModel'))(element.name['sequelize'], Sequelize);
+    element.name['serviceBookingHistory'] = require(path.join(__dirname, './bookingHistoryModel'))(element.name['sequelize'], Sequelize);
 
 
     // Model Association

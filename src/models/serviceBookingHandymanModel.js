@@ -39,7 +39,10 @@ module.exports = function (sequelize, DataTypes) {
     });
 
     ServiceBookingHandyman.associate = function (models) {
-
+        ServiceBooking.belongsTo(models.users, {
+            foreignKey: 'user_id',
+            targetKey: 'user_id'
+        });
     };
 
     return ServiceBookingHandyman;

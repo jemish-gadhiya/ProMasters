@@ -74,6 +74,10 @@ module.exports = function (sequelize, DataTypes) {
             foreignKey: 'provider_id',
             targetKey: 'user_id'
         });
+        User.hasMany(models.serviceRating, {
+            foreignKey: 'rating_reciever_id',
+            sourceKey: 'user_id'
+        });
     };
 
     return User;
