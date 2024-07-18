@@ -783,6 +783,24 @@ class AuthController {
         }
     }
 
+    getActiveTax = async (req, res) => {
+        try {
+            let { user_id, role } = req;
+
+            let taxData = await dbReader.tax.findOne({
+                where: {
+                    is_active: 1,
+                    is_deleted: 0
+                }
+            });
+            taxData = JSON.parse(JSON.stringify(taxData));
+            new SuccessResponse("Tax data get successfully.", { data: taxData }).send(res);
+
+        } catch (e) {
+            ApiError.handle(new BadRequestError(e.message), res);
+        }
+    }
+
 
     //Manage comission details rom admin panel 
     addEditComission = async (req, res) => {
