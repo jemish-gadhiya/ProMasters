@@ -24,15 +24,24 @@ require('dotenv').config()
 const enumerationController = require("./enumurationController");
 var ObjectMail = new nodeMailerController_1();
 var EnumObject = new enumerationController();
-const { Op, where } = require('sequelize');
+const {
+    Op,
+    where
+} = require('sequelize');
+const { required } = require('joi');
 
 class ProviderController {
 
     //Service address module API's
     addEditServiceAddress = async (req, res) => {
         try {
-            let { service_address_id = 0, address, latitude = "", longitude = "" } = req.body;
-            let { user_id, role } = req;
+            let {
+                service_address_id = 0, address, latitude = "", longitude = ""
+            } = req.body;
+            let {
+                user_id,
+                role
+            } = req;
 
             if (role !== 2) {
                 throw new Error("User don't have permission to perform this action.");
@@ -63,7 +72,10 @@ class ProviderController {
                             latitude: latitude,
                             longitude: longitude
                         }, {
-                            where: { service_address_id: service_address_id, user_id: user_id }
+                            where: {
+                                service_address_id: service_address_id,
+                                user_id: user_id
+                            }
                         });
 
                         new SuccessResponse("Address updated successfully.", {}).send(res);
@@ -78,7 +90,10 @@ class ProviderController {
 
     getAllServiceAddress = async (req, res) => {
         try {
-            let { user_id, role } = req;
+            let {
+                user_id,
+                role
+            } = req;
 
             if (role !== 2) {
                 throw new Error("User don't have permission to perform this action.");
@@ -90,7 +105,9 @@ class ProviderController {
                     }
                 });
                 addressData = JSON.parse(JSON.stringify(addressData));
-                new SuccessResponse("Service address get successfully.", { data: addressData }).send(res);
+                new SuccessResponse("Service address get successfully.", {
+                    data: addressData
+                }).send(res);
             }
         } catch (e) {
             ApiError.handle(new BadRequestError(e.message), res);
@@ -99,7 +116,10 @@ class ProviderController {
 
     getActiveServiceAddress = async (req, res) => {
         try {
-            let { user_id, role } = req;
+            let {
+                user_id,
+                role
+            } = req;
 
             if (role !== 2) {
                 throw new Error("User don't have permission to perform this action.");
@@ -112,7 +132,9 @@ class ProviderController {
                     }
                 });
                 addressData = JSON.parse(JSON.stringify(addressData));
-                new SuccessResponse("Service address get successfully.", { data: addressData }).send(res);
+                new SuccessResponse("Service address get successfully.", {
+                    data: addressData
+                }).send(res);
             }
         } catch (e) {
             ApiError.handle(new BadRequestError(e.message), res);
@@ -121,8 +143,13 @@ class ProviderController {
 
     deleteServiceAddress = async (req, res) => {
         try {
-            let { service_address_id } = req.body;
-            let { user_id, role } = req;
+            let {
+                service_address_id
+            } = req.body;
+            let {
+                user_id,
+                role
+            } = req;
 
             if (role !== 2) {
                 throw new Error("User don't have permission to perform this action.");
@@ -141,7 +168,10 @@ class ProviderController {
                     await dbWriter.serviceAddress.update({
                         is_deleted: 1
                     }, {
-                        where: { service_address_id: service_address_id, user_id: user_id }
+                        where: {
+                            service_address_id: service_address_id,
+                            user_id: user_id
+                        }
                     });
 
                     new SuccessResponse("Address deleted successfully.", {}).send(res);
@@ -154,8 +184,13 @@ class ProviderController {
 
     deactiveServiceAddress = async (req, res) => {
         try {
-            let { service_address_id } = req.body;
-            let { user_id, role } = req;
+            let {
+                service_address_id
+            } = req.body;
+            let {
+                user_id,
+                role
+            } = req;
 
             if (role !== 2) {
                 throw new Error("User don't have permission to perform this action.");
@@ -174,7 +209,10 @@ class ProviderController {
                     await dbWriter.serviceAddress.update({
                         is_active: (addressData?.is_active === 0) ? 1 : 0
                     }, {
-                        where: { service_address_id: service_address_id, user_id: user_id }
+                        where: {
+                            service_address_id: service_address_id,
+                            user_id: user_id
+                        }
                     });
 
                     new SuccessResponse("Address updated successfully.", {}).send(res);
@@ -189,8 +227,13 @@ class ProviderController {
     //Category module API's
     addEditCategory = async (req, res) => {
         try {
-            let { category_id = 0, name, image } = req.body;
-            let { user_id, role } = req;
+            let {
+                category_id = 0, name, image
+            } = req.body;
+            let {
+                user_id,
+                role
+            } = req;
 
             if (role !== 4) {
                 throw new Error("User don't have permission to perform this action.");
@@ -217,7 +260,9 @@ class ProviderController {
                             name: name,
                             image: image
                         }, {
-                            where: { category_id: category_id }
+                            where: {
+                                category_id: category_id
+                            }
                         });
 
                         new SuccessResponse("Category updated successfully.", {}).send(res);
@@ -231,14 +276,19 @@ class ProviderController {
 
     getAllCategory = async (req, res) => {
         try {
-            let { user_id, role } = req;
+            let {
+                user_id,
+                role
+            } = req;
             let categoryData = await dbReader.category.findAll({
                 where: {
                     is_deleted: 0
                 }
             });
             categoryData = JSON.parse(JSON.stringify(categoryData));
-            new SuccessResponse("Category get successfully.", { data: categoryData }).send(res);
+            new SuccessResponse("Category get successfully.", {
+                data: categoryData
+            }).send(res);
         } catch (e) {
             ApiError.handle(new BadRequestError(e.message), res);
         }
@@ -246,7 +296,10 @@ class ProviderController {
 
     getActiveCategory = async (req, res) => {
         try {
-            let { user_id, role } = req;
+            let {
+                user_id,
+                role
+            } = req;
             let categoryData = await dbReader.category.findAll({
                 where: {
                     is_enable: 1,
@@ -254,7 +307,9 @@ class ProviderController {
                 }
             });
             categoryData = JSON.parse(JSON.stringify(categoryData));
-            new SuccessResponse("Category get successfully.", { data: categoryData }).send(res);
+            new SuccessResponse("Category get successfully.", {
+                data: categoryData
+            }).send(res);
         } catch (e) {
             ApiError.handle(new BadRequestError(e.message), res);
         }
@@ -262,8 +317,13 @@ class ProviderController {
 
     getCategoryById = async (req, res) => {
         try {
-            let { category_id } = req.body;
-            let { user_id, role } = req;
+            let {
+                category_id
+            } = req.body;
+            let {
+                user_id,
+                role
+            } = req;
             let categoryData = await dbReader.category.findOne({
                 where: {
                     category_id: category_id,
@@ -272,7 +332,9 @@ class ProviderController {
             });
             //console.log("category data are :: ", categoryData);
             // categoryData = JSON.parse(JSON.stringify(categoryData));
-            new SuccessResponse("Category get successfully.", { data: categoryData }).send(res);
+            new SuccessResponse("Category get successfully.", {
+                data: categoryData
+            }).send(res);
         } catch (e) {
             ApiError.handle(new BadRequestError(e.message), res);
         }
@@ -280,8 +342,13 @@ class ProviderController {
 
     deleteCategory = async (req, res) => {
         try {
-            let { category_id } = req.body;
-            let { user_id, role } = req;
+            let {
+                category_id
+            } = req.body;
+            let {
+                user_id,
+                role
+            } = req;
 
             if (role !== 4) {
                 throw new Error("User don't have permission to perform this action.");
@@ -299,7 +366,9 @@ class ProviderController {
                     await dbWriter.category.update({
                         is_deleted: 1
                     }, {
-                        where: { category_id: category_id }
+                        where: {
+                            category_id: category_id
+                        }
                     });
 
                     new SuccessResponse("Category deleted successfully.", {}).send(res);
@@ -312,8 +381,13 @@ class ProviderController {
 
     deactiveCategory = async (req, res) => {
         try {
-            let { category_id } = req.body;
-            let { user_id, role } = req;
+            let {
+                category_id
+            } = req.body;
+            let {
+                user_id,
+                role
+            } = req;
 
             if (role !== 4) {
                 throw new Error("User don't have permission to perform this action.");
@@ -331,7 +405,9 @@ class ProviderController {
                     await dbWriter.category.update({
                         is_enable: (categoryData?.is_enable === 0) ? 1 : 0
                     }, {
-                        where: { category_id: category_id }
+                        where: {
+                            category_id: category_id
+                        }
                     });
 
                     new SuccessResponse("Category updated successfully.", {}).send(res);
@@ -443,8 +519,13 @@ class ProviderController {
 
     deleteService = async (req, res) => {
         try {
-            let { service_id } = req.body;
-            let { user_id, role } = req;
+            let {
+                service_id
+            } = req.body;
+            let {
+                user_id,
+                role
+            } = req;
 
             let serviceData = await dbReader.service.findOne({
                 where: {
@@ -459,7 +540,9 @@ class ProviderController {
                 await dbWriter.service.update({
                     is_deleted: 1
                 }, {
-                    where: { service_id: service_id, }
+                    where: {
+                        service_id: service_id,
+                    }
                 });
 
                 new SuccessResponse("Service deleted successfully.", {}).send(res);
@@ -573,8 +656,17 @@ class ProviderController {
 
     listServiceForUser = async (req, res) => {
         try {
-            let { user_id, role } = req;
-            let { service_user_id, rating, min_amount, max_amount, category } = req.body;
+            let {
+                user_id,
+                role
+            } = req;
+            let {
+                service_user_id,
+                rating,
+                min_amount,
+                max_amount,
+                category
+            } = req.body;
 
             // Build the where conditions
             let serviceWhereConditions = {
@@ -614,8 +706,7 @@ class ProviderController {
 
             let serviceData = await dbReader.service.findAll({
                 where: serviceWhereConditions,
-                include: [
-                    {
+                include: [{
                         required: false,
                         model: dbReader.serviceAttachment,
                         where: {
@@ -677,7 +768,8 @@ class ProviderController {
                 }
             })
             serviceData = JSON.parse(JSON.stringify(serviceData))
-            let serviceAmount = 0, serviceDiscountAmount = 0;
+            let serviceAmount = 0,
+                serviceDiscountAmount = 0;
 
             serviceAmount = serviceData.price || 0;
             serviceDiscountAmount = serviceData.discount || 0;
@@ -915,8 +1007,7 @@ class ProviderController {
                         is_deleted: 0
                     }
                 })
-                new SuccessResponse("Request Successful.", {
-                }).send(res);
+                new SuccessResponse("Request Successful.", {}).send(res);
             } else {
                 throw new BadRequestError("Service Booking not found.")
             }
@@ -948,7 +1039,10 @@ class ProviderController {
 
     getComissionOfProvider = async (req, res) => {
         try {
-            let { user_id, role } = req;
+            let {
+                user_id,
+                role
+            } = req;
 
             if (role !== 2) {
                 throw new Error("User don't have permission to perform this action.");
@@ -966,7 +1060,9 @@ class ProviderController {
                         }
                     }]
                 });
-                new SuccessResponse("Service address get successfully.", { data: comissionData }).send(res);
+                new SuccessResponse("Service address get successfully.", {
+                    data: comissionData
+                }).send(res);
             }
         } catch (e) {
             ApiError.handle(new BadRequestError(e.message), res);
@@ -975,7 +1071,10 @@ class ProviderController {
 
     providerDashboardAnalyticsData = async (req, res) => {
         try {
-            let { user_id, role } = req;
+            let {
+                user_id,
+                role
+            } = req;
 
             if (role !== 2) {
                 throw new Error("User don't have permission to perform this action.");
@@ -1057,8 +1156,7 @@ class ProviderController {
                 }, {
                     month: "12",
                     earning: 0
-                }];
-
+                }]
                 for (let i = 0; i < providerBookingsData.length; i++) {
                     let pData = providerBookingsData[i];
                     if (pData?.booking_service_status === 2) {
@@ -1078,7 +1176,9 @@ class ProviderController {
                 responseData.total_earning = providerEarning.toFixed(2) || 0;
                 responseData.monthly_earning = monthsData;
 
-                new SuccessResponse("Provider dashboard analytics data get successfully.", { data: responseData }).send(res);
+                new SuccessResponse("Provider dashboard analytics data get successfully.", {
+                    data: responseData
+                }).send(res);
             }
         } catch (e) {
             ApiError.handle(new BadRequestError(e.message), res);
@@ -1087,7 +1187,10 @@ class ProviderController {
 
     paymentDetailsForProvider = async (req, res) => {
         try {
-            let { user_id, role } = req;
+            let {
+                user_id,
+                role
+            } = req;
 
             if (role !== 2) {
                 throw new Error("User don't have permission to perform this action.");
@@ -1108,7 +1211,7 @@ class ProviderController {
                             user_id: user_id
                         }
                     }, {
-                        attributes: ["user_id", "name", 'email', "contact", "role", "photo", "address", "city", "state", "country",],
+                        attributes: ["user_id", "name", 'email', "contact", "role", "photo", "address", "city", "state", "country", ],
                         required: false,
                         model: dbReader.users,
                         where: {
@@ -1120,13 +1223,14 @@ class ProviderController {
                         where: {
                             is_deleted: 0
                         }
-                    }
-                    ]
+                    }]
                 });
                 bookingsData = JSON.parse(JSON.stringify(bookingsData));
 
 
-                new SuccessResponse("Payment details get successfully.", { data: bookingsData }).send(res);
+                new SuccessResponse("Payment details get successfully.", {
+                    data: bookingsData
+                }).send(res);
             }
         } catch (e) {
             ApiError.handle(new BadRequestError(e.message), res);
@@ -1201,7 +1305,10 @@ class ProviderController {
 
     getUserSubscriptionForProvider = async (req, res) => {
         try {
-            let { user_id, role } = req;
+            let {
+                user_id,
+                role
+            } = req;
 
             if (role !== 2) {
                 throw new Error("User don't have permission to perform this action.");
@@ -1219,7 +1326,9 @@ class ProviderController {
                         }
                     }]
                 });
-                new SuccessResponse("Subscription data get successfully.", { data: subscriptionData }).send(res);
+                new SuccessResponse("Subscription data get successfully.", {
+                    data: subscriptionData
+                }).send(res);
             }
         } catch (e) {
             ApiError.handle(new BadRequestError(e.message), res);
@@ -1228,8 +1337,14 @@ class ProviderController {
 
     changeServiceProgressStatus = async (req, res) => {
         try {
-            let { service_booking_id, status } = req.body;
-            let { user_id, role } = req;
+            let {
+                service_booking_id,
+                status
+            } = req.body;
+            let {
+                user_id,
+                role
+            } = req;
 
             if (role === 1) {
                 throw new Error("User don't have permission to perform this action.");
@@ -1238,7 +1353,8 @@ class ProviderController {
                     where: {
                         service_booking_id: service_booking_id,
                         is_deleted: 0
-                    }, include: [{
+                    },
+                    include: [{
                         required: true,
                         model: dbReader.service
                     }]
@@ -1257,7 +1373,7 @@ class ProviderController {
                         }
                     });
 
-                    if (status === 2) {//If status is completed then add respective service amount to provider's wallet.
+                    if (status === 2) { //If status is completed then add respective service amount to provider's wallet.
                         let provider_id = serviceBookingData?.Service?.user_id,
                             service_id = serviceBookingData?.Service?.service_id,
                             amount = (serviceBookingData?.service_amount * serviceBookingData?.booking_service_qty) - serviceBookingData?.discount_amount - serviceBookingData?.commission_amount - serviceBookingData?.coupen_amount - serviceBookingData?.tax_amount;
@@ -1279,7 +1395,10 @@ class ProviderController {
 
     getProviderWalletDetails = async (req, res) => {
         try {
-            let { user_id, role } = req;
+            let {
+                user_id,
+                role
+            } = req;
 
             if (role !== 2) {
                 throw new Error("User don't have permission to perform this action.");
@@ -1299,13 +1418,140 @@ class ProviderController {
                 });
                 walletData = JSON.parse(JSON.stringify(walletData));
 
-                new SuccessResponse("Wallet data get successfully.", { data: walletData }).send(res);
+                new SuccessResponse("Wallet data get successfully.", {
+                    data: walletData
+                }).send(res);
             }
         } catch (e) {
             ApiError.handle(new BadRequestError(e.message), res);
         }
     }
-
+    
+    getServiceBookingDetailById = async (req, res) => {
+        try {
+            let {
+                service_booking_id
+            } = req.body
+            let {
+                user_id,
+                role
+            } = req;
+            let serviceData = await dbReader.service.findOne({
+                where: {
+                    user_id: user_id,
+                    is_deleted: 0
+                },
+                include: [{
+                    required: true,
+                    model: dbReader.serviceBooking,
+                    where: {
+                        is_deleted: 0,
+                        service_booking_id: service_booking_id
+                    },
+                    include: [{
+                        required:false,
+                        model: dbReader.serviceBookingHandyman,
+                        where: {
+                            is_deleted: 0
+                        },
+                        include: [{
+                            model: dbReader.users,
+                            attributes: ["user_id", "name", "username", "email", "photo", "is_active", "created_at"],
+                            where: {
+                                is_deleted: 0,
+                                is_active: 1
+                            },
+                            include:[{
+                                model:dbReader.serviceRating,
+                                where:{
+                                    is_deleted:0
+                                }
+                            }]
+                        }]
+                    }, {
+                        required:false,
+                        model: dbReader.users,
+                        attributes: ["user_id", "name", "username", "email", "photo", "is_active", "created_at"],
+                        where: {
+                            is_deleted: 0,
+                            is_active: 1
+                        }
+                    }, {
+                        required:false,
+                        model: dbReader.serviceBookingPayment,
+                        where: {
+                            is_deleted: 0
+                        }
+                    }]
+                }]
+            });
+            serviceData = JSON.parse(JSON.stringify(serviceData));
+            new SuccessResponse("Service get successfully.", {
+                data: serviceData
+            }).send(res);
+        } catch (e) {
+            ApiError.handle(new BadRequestError(e.message), res);
+        }
+    }
+    getServiceBookingHistory = async (req, res) => {
+        try {
+            let {
+                service_booking_id
+            } = req.body
+            let {
+                user_id,
+                role
+            } = req;
+            let serviceBookingHistoryData = await dbReader.serviceBookingHistory.findAll({
+                where: {
+                    is_deleted: 0,
+                    service_booking_id: service_booking_id
+                },
+            });
+            serviceBookingHistoryData = JSON.parse(JSON.stringify(serviceBookingHistoryData));
+            new SuccessResponse("Service history get successfully.", {
+                data: serviceBookingHistoryData
+            }).send(res);
+        } catch (e) {
+            ApiError.handle(new BadRequestError(e.message), res);
+        }
+    }
+    getUserServiceBookingByStatus = async (req, res) => {
+        try {
+            let {
+                status
+            } = req.body
+            let {
+                user_id,
+                role
+            } = req;
+            let serviceBookingData = await dbReader.serviceBooking.findAll({
+                where: {
+                    is_deleted: 0,
+                    booked_by:user_id,
+                    booking_status:status
+                },
+                include:[{
+                    model:dbReader.service,
+                    where:{
+                        is_deleted:0
+                    },
+                    include:[{
+                        model:dbReader.users,
+                        where:{
+                            is_deleted:0
+                        }
+                    }]
+                }]
+            });
+            serviceBookingData = JSON.parse(JSON.stringify(serviceBookingData));
+            new SuccessResponse("Service history get successfully.", {
+                data: serviceBookingData
+            }).send(res);
+        } catch (e) {
+            ApiError.handle(new BadRequestError(e.message), res);
+        }
+    }
 }
 
 module.exports = ProviderController;
