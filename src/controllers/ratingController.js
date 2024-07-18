@@ -46,7 +46,7 @@ class RatingController {
                 description: description,
                 user_id: user_id
             })
-            ratingData = JSON.parse(JSON.stringify(ratingData))
+            ratingData = JSON.parse(JSON.stringify(ratingData));
             new SuccessResponse("Request successful.", {
                 data: ratingData
             }).send(res);
@@ -66,10 +66,10 @@ class RatingController {
             let serviceRatingData = await dbReader.serviceRating.findAll({
                 where: {
                     rating_type: 1,
-                    rating_reciever_id:service_id
+                    rating_reciever_id: service_id
                 },
-                include:[{
-                    required:false,
+                include: [{
+                    required: false,
                     model: dbReader.users,
                     attributes: ["user_id", "name", "username", "email", "photo", "is_active", "created_at"],
                     where: {
@@ -80,7 +80,7 @@ class RatingController {
             })
             serviceRatingData = JSON.parse(JSON.stringify(serviceRatingData))
             new SuccessResponse("Request successful.", {
-                data : serviceRatingData
+                data: serviceRatingData
             }).send(res);
 
         } catch (e) {
@@ -100,7 +100,7 @@ class RatingController {
                 is_deleted: 1
             }, {
                 where: {
-                    service_rating_id:service_rating_id,
+                    service_rating_id: service_rating_id,
                     is_deleted: 0
                 }
             })
