@@ -554,6 +554,7 @@ class AuthController {
             ApiError.handle(new BadRequestError(e.message), res);
         }
     }
+
     updateUserDetail = async (req, res) => {
         try {
             let { name, username, email, password, contact, city, state, country, address, photo } = req.body
@@ -562,43 +563,60 @@ class AuthController {
                 user_id,
                 role
             } = req;
-            let userNameMatch = await dbReader.users.findOne({
-                where: {
-                    username: username
-                }
-            })
-            userNameMatch = JSON.parse(JSON.stringify(userNameMatch))
-            if (userNameMatch) {
-                throw new Error("username is already exist in system")
-            }
-            let emailMatch = await dbReader.users.findOne({
-                where: {
-                    email: email
-                }
-            })
-            emailMatch = JSON.parse(JSON.stringify(emailMatch))
-            if (emailMatch) {
-                throw new Error("email is already exist in system")
-            }
 
-            let updateData = await dbWriter.users.update({
-                name: name,
-                username: username,
-                email: email,
-                password: password,
-                contact: contact,
-                city: city,
-                state: state,
-                country: country,
-                address: address,
-                photo: photo
-            }, {
+            let userData = await dbReader.users.findOne({
                 where: {
                     user_id: user_id
                 }
             })
-            new SuccessResponse("User details updated successfully.", {
-            }).send(res);
+            userData = JSON.parse(JSON.stringify(userData));
+            if (userData) {
+                if (userData.email !== email) {
+                    let emailMatch = await dbReader.users.findOne({
+                        where: {
+                            email: email
+                        }
+                    })
+                    emailMatch = JSON.parse(JSON.stringify(emailMatch))
+                    if (emailMatch) {
+                        throw new Error("Email is already exist in system");
+                    }
+                }
+
+                if (userData.username !== username) {
+                    let userNameMatch = await dbReader.users.findOne({
+                        where: {
+                            username: username
+                        }
+                    })
+                    userNameMatch = JSON.parse(JSON.stringify(userNameMatch))
+                    if (userNameMatch) {
+                        throw new Error("Username is already exist in system")
+                    }
+                }
+
+                await dbWriter.users.update({
+                    name: name,
+                    username: username,
+                    email: email,
+                    password: password,
+                    contact: contact,
+                    city: city,
+                    state: state,
+                    country: country,
+                    address: address,
+                    photo: photo
+                }, {
+                    where: {
+                        user_id: user_id
+                    }
+                });
+
+                new SuccessResponse("User details updated successfully.", {
+                }).send(res);
+            } else {
+                throw new Error("User data not found.");
+            }
         } catch (e) {
             ApiError.handle(new BadRequestError(e.message), res);
         }
