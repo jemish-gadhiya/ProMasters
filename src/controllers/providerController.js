@@ -614,7 +614,7 @@ class ProviderController {
                     model: dbReader.serviceRating,
                     where: {
                         is_deleted: 0,
-                        rating_type: 0
+                        rating_type: 1
                     }
                 }]
             });
@@ -707,26 +707,26 @@ class ProviderController {
             let serviceData = await dbReader.service.findAll({
                 where: serviceWhereConditions,
                 include: [{
-                        required: false,
-                        model: dbReader.serviceAttachment,
-                        where: {
-                            is_deleted: 0
-                        }
-                    },
-                    {
-                        required: false,
-                        model: dbReader.users,
-                        where: {
-                            role: 2,
-                            is_deleted: 0
-                        }
-                    },
-                    {
-                        required: false,
-                        as: "service_rating",
-                        model: dbReader.serviceRating,
-                        where: serviceRatingWhereConditions
+                    required: false,
+                    model: dbReader.serviceAttachment,
+                    where: {
+                        is_deleted: 0
                     }
+                },
+                {
+                    required: false,
+                    model: dbReader.users,
+                    where: {
+                        role: 2,
+                        is_deleted: 0
+                    }
+                },
+                {
+                    required: false,
+                    as: "service_rating",
+                    model: dbReader.serviceRating,
+                    where: serviceRatingWhereConditions
+                }
                 ]
             });
 
@@ -1211,7 +1211,7 @@ class ProviderController {
                             user_id: user_id
                         }
                     }, {
-                        attributes: ["user_id", "name", 'email', "contact", "role", "photo", "address", "city", "state", "country", ],
+                        attributes: ["user_id", "name", 'email', "contact", "role", "photo", "address", "city", "state", "country",],
                         required: false,
                         model: dbReader.users,
                         where: {
@@ -1426,7 +1426,7 @@ class ProviderController {
             ApiError.handle(new BadRequestError(e.message), res);
         }
     }
-    
+
     getServiceBookingDetailById = async (req, res) => {
         try {
             let {
@@ -1449,7 +1449,7 @@ class ProviderController {
                         service_booking_id: service_booking_id
                     },
                     include: [{
-                        required:false,
+                        required: false,
                         model: dbReader.serviceBookingHandyman,
                         where: {
                             is_deleted: 0
@@ -1461,15 +1461,15 @@ class ProviderController {
                                 is_deleted: 0,
                                 is_active: 1
                             },
-                            include:[{
-                                model:dbReader.serviceRating,
-                                where:{
-                                    is_deleted:0
+                            include: [{
+                                model: dbReader.serviceRating,
+                                where: {
+                                    is_deleted: 0
                                 }
                             }]
                         }]
                     }, {
-                        required:false,
+                        required: false,
                         model: dbReader.users,
                         attributes: ["user_id", "name", "username", "email", "photo", "is_active", "created_at"],
                         where: {
@@ -1477,7 +1477,7 @@ class ProviderController {
                             is_active: 1
                         }
                     }, {
-                        required:false,
+                        required: false,
                         model: dbReader.serviceBookingPayment,
                         where: {
                             is_deleted: 0
@@ -1528,18 +1528,18 @@ class ProviderController {
             let serviceBookingData = await dbReader.serviceBooking.findAll({
                 where: {
                     is_deleted: 0,
-                    booked_by:user_id,
-                    booking_status:status
+                    booked_by: user_id,
+                    booking_status: status
                 },
-                include:[{
-                    model:dbReader.service,
-                    where:{
-                        is_deleted:0
+                include: [{
+                    model: dbReader.service,
+                    where: {
+                        is_deleted: 0
                     },
-                    include:[{
-                        model:dbReader.users,
-                        where:{
-                            is_deleted:0
+                    include: [{
+                        model: dbReader.users,
+                        where: {
+                            is_deleted: 0
                         }
                     }]
                 }]
