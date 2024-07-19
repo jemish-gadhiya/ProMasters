@@ -37,8 +37,8 @@ module.exports = function (sequelize, DataTypes) {
     FavouritedService.associate = function (models) {
         // Define associations here if needed
         // For example, if there's a relationship with users and services:
-        // FavouritedService.belongsTo(models.User, { foreignKey: 'user_id' });
-        // FavouritedService.belongsTo(models.Service, { foreignKey: 'service_id' });
+        FavouritedService.belongsTo(models.User, { foreignKey: 'user_id' });
+        FavouritedService.belongsTo(models.Service, { foreignKey: 'service_id' });
     };
     
     return FavouritedService;
