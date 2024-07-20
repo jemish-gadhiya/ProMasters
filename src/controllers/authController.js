@@ -554,7 +554,6 @@ class AuthController {
             ApiError.handle(new BadRequestError(e.message), res);
         }
     }
-
     updateUserDetail = async (req, res) => {
         try {
             let { name, username, email, password, contact, city, state, country, address, photo } = req.body

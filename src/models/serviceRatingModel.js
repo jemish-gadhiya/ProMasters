@@ -45,6 +45,10 @@ module.exports = function (sequelize, DataTypes) {
             foreignKey: 'user_id',
             targetKey: 'user_id'
         });
+        ServiceRating.belongsTo(models.service, {
+            foreignKey: 'rating_reciever_id',
+            targetKey: 'service_id'
+        });
     };
 
     return ServiceRating;

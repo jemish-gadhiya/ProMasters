@@ -12,6 +12,12 @@ class RatingRoute extends RatingController {
         router.post("/saveRating", tokenValidate, this.saveRating);
         router.post("/listRatingForService", tokenValidate, this.listRatingForService);
         router.post("/deleteRating", tokenValidate, this.deleteRating);
+        router.post("/editRating", tokenValidate, this.editRating);
+        router.get("/listRatingForUserRatedService", tokenValidate, this.listRatingForUserRatedService);
+
+        router.post("/saveFavouriteService", tokenValidate, this.saveFavouriteService);
+        router.get("/listFavouriteService", tokenValidate, this.listFavouriteService);
+
     }
 }
 

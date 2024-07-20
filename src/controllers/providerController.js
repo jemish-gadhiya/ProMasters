@@ -330,7 +330,6 @@ class ProviderController {
                     is_deleted: 0
                 }
             });
-            //console.log("category data are :: ", categoryData);
             // categoryData = JSON.parse(JSON.stringify(categoryData));
             new SuccessResponse("Category get successfully.", {
                 data: categoryData
@@ -803,8 +802,6 @@ class ProviderController {
                     comissionAmount = (serviceData.price * comissionPercentage).toFixed(2);
                 }
             }
-
-            console.log("==>comission data are :: ", comissionData);
 
             let taxData = await dbReader.tax.findOne({
                 where: {
