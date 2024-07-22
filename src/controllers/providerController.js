@@ -28,7 +28,9 @@ const {
     Op,
     where
 } = require('sequelize');
-const { required } = require('joi');
+const {
+    required
+} = require('joi');
 
 class ProviderController {
 
@@ -591,6 +593,11 @@ class ProviderController {
                     is_deleted: 0
                 },
                 include: [{
+                    model: dbReader.category,
+                    where: {
+                        is_deleted: 0,
+                    },
+                },{
                     model: dbReader.users,
                     where: {
                         role: 2,
@@ -619,6 +626,15 @@ class ProviderController {
                 }]
             });
             serviceData = JSON.parse(JSON.stringify(serviceData));
+            // serviceData.forEach((e) => {
+                if (serviceData.service_rating.length) {
+                    let total_rating = 0
+                    serviceData.service_rating.forEach((ele) => {
+                        total_rating = total_rating + parseFloat(ele.rating)
+                    })
+                    serviceData.total_rating = parseFloat(total_rating / serviceData.service_rating.length)
+                }
+            // })
             new SuccessResponse("Service get successfully.", {
                 ...serviceData
             }).send(res);
@@ -707,30 +723,44 @@ class ProviderController {
             let serviceData = await dbReader.service.findAll({
                 where: serviceWhereConditions,
                 include: [{
-                    required: false,
-                    model: dbReader.serviceAttachment,
+                    model: dbReader.category,
                     where: {
-                        is_deleted: 0
+                        is_deleted: 0,
+                    },
+                },{
+                        required: false,
+                        model: dbReader.serviceAttachment,
+                        where: {
+                            is_deleted: 0
+                        }
+                    },
+                    {
+                        required: false,
+                        model: dbReader.users,
+                        where: {
+                            role: 2,
+                            is_deleted: 0
+                        }
+                    },
+                    {
+                        required: false,
+                        as: "service_rating",
+                        model: dbReader.serviceRating,
+                        where: serviceRatingWhereConditions
                     }
-                },
-                {
-                    required: false,
-                    model: dbReader.users,
-                    where: {
-                        role: 2,
-                        is_deleted: 0
-                    }
-                },
-                {
-                    required: false,
-                    as: "service_rating",
-                    model: dbReader.serviceRating,
-                    where: serviceRatingWhereConditions
-                }
                 ]
             });
-
             serviceData = JSON.parse(JSON.stringify(serviceData));
+            console.log("serviceData", serviceData);
+            serviceData.forEach((e) => {
+                if (e.service_rating.length) {
+                    let total_rating = 0
+                    e.service_rating.forEach((ele) => {
+                        total_rating = total_rating + parseFloat(ele.rating)
+                    })
+                    e.total_rating = parseFloat(total_rating / e.service_rating.length)
+                }
+            })
             new SuccessResponse("Service retrieved successfully.", {
                 data: serviceData
             }).send(res);
@@ -1211,7 +1241,7 @@ class ProviderController {
                             user_id: user_id
                         }
                     }, {
-                        attributes: ["user_id", "name", 'email', "contact", "role", "photo", "address", "city", "state", "country",],
+                        attributes: ["user_id", "name", 'email', "contact", "role", "photo", "address", "city", "state", "country", ],
                         required: false,
                         model: dbReader.users,
                         where: {
@@ -1438,9 +1468,9 @@ class ProviderController {
             } = req;
             let serviceData = await dbReader.service.findOne({
                 where: {
-                    user_id: user_id,
                     is_deleted: 0
                 },
+				subQuery:false,
                 include: [{
                     required: true,
                     model: dbReader.serviceBooking,
@@ -1462,6 +1492,7 @@ class ProviderController {
                                 is_active: 1
                             },
                             include: [{
+								required: false,
                                 model: dbReader.serviceRating,
                                 where: {
                                     is_deleted: 0

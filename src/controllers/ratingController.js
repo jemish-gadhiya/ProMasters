@@ -240,6 +240,14 @@ class RatingController {
                         is_deleted: 0,
                     },
                     include: [{
+                        required: false,
+                        as: "service_rating",
+                        model: dbReader.serviceRating,
+                        where: {
+                            is_deleted: 0,
+                            rating_type: 1
+                        }
+                    },{
                         model: dbReader.category,
                         where: {
                             is_deleted: 0,
