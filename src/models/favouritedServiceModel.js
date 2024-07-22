@@ -40,6 +40,6 @@ module.exports = function (sequelize, DataTypes) {
         FavouritedService.belongsTo(models.users, { foreignKey: 'user_id' });
         FavouritedService.belongsTo(models.service, { foreignKey: 'service_id' });
     };
-
+    
     return FavouritedService;
 };

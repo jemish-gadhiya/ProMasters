@@ -786,7 +786,7 @@ class AuthController {
         try {
             let { user_id, role } = req;
 
-            let taxData = await dbReader.tax.findOne({
+            let taxData = await dbReader.tax.findAll({
                 where: {
                     is_active: 1,
                     is_deleted: 0
