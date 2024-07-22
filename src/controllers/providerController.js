@@ -1435,9 +1435,9 @@ class ProviderController {
             } = req;
             let serviceData = await dbReader.service.findOne({
                 where: {
-                    user_id: user_id,
                     is_deleted: 0
                 },
+				subQuery:false,
                 include: [{
                     required: true,
                     model: dbReader.serviceBooking,
@@ -1459,6 +1459,7 @@ class ProviderController {
                                 is_active: 1
                             },
                             include: [{
+								required: false,
                                 model: dbReader.serviceRating,
                                 where: {
                                     is_deleted: 0
