@@ -20,6 +20,7 @@ const index_1 = require("../core/index");
 const nodeMailerController_1 = require("./nodeMailerController");
 var crypto = new index_1.crypto_1();
 const jwt = require("jsonwebtoken");
+const moment = require('moment');
 require('dotenv').config()
 const enumerationController = require("./enumurationController");
 var ObjectMail = new nodeMailerController_1();
@@ -249,6 +250,119 @@ class ProviderController {
 
                     new SuccessResponse("Handyman status updated successfully.", {}).send(res);
                 }
+            }
+        } catch (e) {
+            ApiError.handle(new BadRequestError(e.message), res);
+        }
+    }
+
+    getCompletedServiceCountForHandyman = async (req, res) => {
+        try {
+            let { user_id, role } = req;
+
+            if (role !== 3) {
+                throw new Error("User don't have permission to perform this action.");
+            } else {
+                let handymanTotServiceDoneData = await dbReader.serviceBooking.findAll({
+                    where: {
+                        is_deleted: 0,
+                        booking_service_status: 2
+                    },
+                    include: [{
+                        required: true,
+                        model: dbReader.serviceBookingHandyman,
+                        where: {
+                            user_id: user_id,
+                            is_deleted: 0
+                        }
+                    }]
+                });
+                handymanTotServiceDoneData = JSON.parse(JSON.stringify(handymanTotServiceDoneData));
+
+                new SuccessResponse("Get data successfully.", {
+                    data: {
+                        totalServiceDone: handymanTotServiceDoneData?.length || 0
+                    }
+                }).send(res);
+            }
+        } catch (e) {
+            ApiError.handle(new BadRequestError(e.message), res);
+        }
+    }
+    getDashboardDetailForHandyman = async (req, res) => {
+        try {
+            let { user_id, role } = req;
+
+            if (role !== 3) {
+                throw new Error("User don't have permission to perform this action.");
+            } else {
+                let handymanTotServiceDoneData = await dbReader.serviceBooking.findAll({
+                    where: {
+                        is_deleted: 0,
+                        booking_service_status: 2
+                    },
+                    include: [{
+                        required: true,
+                        model: dbReader.serviceBookingHandyman,
+                        where: {
+                            user_id: user_id,
+                            is_deleted: 0
+                        }
+                    }, {
+                        required: false,
+                        model: dbReader.service,
+                        where: {
+                            is_deleted: 0
+                        },
+                        include: [{
+                            required: false,
+                            as: "service_rating",
+                            model: dbReader.serviceRating,
+                            where: {
+                                is_deleted: 0
+                            },
+                            include: [{
+                                attributes: ["user_id", "name", "email", "contact", "photo"],
+                                required: false,
+                                model: dbReader.users,
+                                where: {
+                                    is_deleted: 0
+                                },
+                            }]
+                        }]
+                    }]
+                });
+                handymanTotServiceDoneData = JSON.parse(JSON.stringify(handymanTotServiceDoneData));
+
+                let tot_earning = 0, tot_ratings = [], upcoming_services = 0, todays_services = 0;
+
+                for (let i = 0; i < handymanTotServiceDoneData.length; i++) {
+                    let pData = handymanTotServiceDoneData[i];
+                    tot_earning = parseFloat(tot_earning) + (parseFloat(pData?.service_amount * pData?.booking_service_qty) - pData?.discount_amount - pData?.commission_amount - pData?.coupen_amount - pData?.tax_amount);
+
+                    if (pData?.Service?.service_rating) {
+                        tot_ratings = tot_ratings.concat(pData?.Service?.service_rating);
+                    }
+
+                    if (moment(pData?.booking_datetime).format("DD-MM-YYYY") > moment().format("DD-MM-YYYY")) {
+                        upcoming_services = upcoming_services + 1;
+                    }
+
+                    if (moment(pData?.booking_datetime).format("DD-MM-YYYY") === moment().format("DD-MM-YYYY")) {
+                        todays_services = todays_services + 1;
+                    }
+                }
+
+                new SuccessResponse("Get data successfully.", {
+                    data: {
+                        totalServiceDone: handymanTotServiceDoneData?.length || 0,
+                        totalEarnings: tot_earning.toFixed(2) || 0,
+                        totRatings: tot_ratings.length,
+                        upcomingServices: upcoming_services,
+                        todaysServices: todays_services,
+                        reviewData: tot_ratings
+                    }
+                }).send(res);
             }
         } catch (e) {
             ApiError.handle(new BadRequestError(e.message), res);

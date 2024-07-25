@@ -18,9 +18,8 @@ module.exports = function (sequelize, DataTypes) {
         },
         rating: DataTypes.DOUBLE,
         rating_type: {
-            type: DataTypes.INTEGER,
-            // ENUM('service', 'provider', 'handyman'),
-            allowNull: false,
+            type: DataTypes.INTEGER,// 1- service', 2- 'provider', 3- 'handyman'
+            defaultValue: 1,
         },
         description: DataTypes.STRING(256),
         is_deleted: {
@@ -46,7 +45,11 @@ module.exports = function (sequelize, DataTypes) {
             foreignKey: 'user_id',
             targetKey: 'user_id'
         });
+        ServiceRating.belongsTo(models.service, {
+            foreignKey: 'rating_reciever_id',
+            targetKey: 'service_id'
+        });
     };
-    
+
     return ServiceRating;
 };

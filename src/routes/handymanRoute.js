@@ -15,6 +15,9 @@ class HandymanRoute extends HandymanController {
         router.post("/editHandyman", tokenValidate, validator(jois.editHandymansPayload), this.editHandyman);
         router.get("/getAllHandymanByPovider", tokenValidate, this.getAllHandymanByPovider);
         router.post("/activateDeactivateHandyman", tokenValidate, validator(jois.activateDeactivateHandymanPayload), this.activateDeactivateHandyman);
+        router.get("/getCompletedServiceCountForHandyman", tokenValidate, this.getCompletedServiceCountForHandyman);
+        router.get("/getDashboardDetailForHandyman", tokenValidate, this.getDashboardDetailForHandyman);
+
     }
 }
 

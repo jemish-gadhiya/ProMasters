@@ -47,11 +47,11 @@ module.exports = function (sequelize, DataTypes) {
             defaultValue: 1,
         },
         booking_status: {
-            type: DataTypes.INTEGER,
+            type: DataTypes.INTEGER,// 0-pending, 1- accept, 2-reject
             defaultValue: 0,
         },
-        booking_service_status: {
-            type: DataTypes.INTEGER, // 0 - pending, 1- in_progress, 2- completed,3- cancelled
+        booking_service_status: {//0 - pending, 1- in_progress, 2- completed,3- cancelled
+            type: DataTypes.INTEGER,
             allowNull: false,
         },
         booking_service_status_updated_by: {
@@ -97,6 +97,12 @@ module.exports = function (sequelize, DataTypes) {
             foreignKey: 'service_booking_id',
             targetKey: 'service_booking_id'
         });
+
+        ServiceBooking.hasMany(models.serviceBookingHandyman, {
+            foreignKey: 'service_booking_id',
+            targetKey: 'service_booking_id'
+        });
+
 
     };
 

@@ -562,43 +562,60 @@ class AuthController {
                 user_id,
                 role
             } = req;
-            let userNameMatch = await dbReader.users.findOne({
-                where: {
-                    username: username
-                }
-            })
-            userNameMatch = JSON.parse(JSON.stringify(userNameMatch))
-            if (userNameMatch) {
-                throw new Error("username is already exist in system")
-            }
-            let emailMatch = await dbReader.users.findOne({
-                where: {
-                    email: email
-                }
-            })
-            emailMatch = JSON.parse(JSON.stringify(emailMatch))
-            if (emailMatch) {
-                throw new Error("email is already exist in system")
-            }
 
-            let updateData = await dbWriter.users.update({
-                name: name,
-                username: username,
-                email: email,
-                password: password,
-                contact: contact,
-                city: city,
-                state: state,
-                country: country,
-                address: address,
-                photo: photo
-            }, {
+            let userData = await dbReader.users.findOne({
                 where: {
                     user_id: user_id
                 }
-            })
-            new SuccessResponse("User details updated successfully.", {
-            }).send(res);
+            });
+            userData = JSON.parse(JSON.stringify(userData));
+            if (userData) {
+                if (userData.email !== email) {
+                    let emailMatch = await dbReader.users.findOne({
+                        where: {
+                            email: email
+                        }
+                    })
+                    emailMatch = JSON.parse(JSON.stringify(emailMatch))
+                    if (emailMatch) {
+                        throw new Error("Email is already exist in system");
+                    }
+                }
+
+                if (userData.username !== username) {
+                    let userNameMatch = await dbReader.users.findOne({
+                        where: {
+                            username: username
+                        }
+                    });
+                    userNameMatch = JSON.parse(JSON.stringify(userNameMatch));
+                    if (userNameMatch) {
+                        throw new Error("Username is already exist in system");
+                    }
+                }
+
+                await dbWriter.users.update({
+                    name: name,
+                    username: username,
+                    email: email,
+                    password: password,
+                    contact: contact,
+                    city: city,
+                    state: state,
+                    country: country,
+                    address: address,
+                    photo: photo
+                }, {
+                    where: {
+                        user_id: user_id
+                    }
+                });
+
+                new SuccessResponse("User details updated successfully.", {
+                }).send(res);
+            } else {
+                throw new Error("User data not found.");
+            }
         } catch (e) {
             ApiError.handle(new BadRequestError(e.message), res);
         }
@@ -760,6 +777,24 @@ class AuthController {
                     new SuccessResponse("Tax data updated successfully.", {}).send(res);
                 }
             }
+        } catch (e) {
+            ApiError.handle(new BadRequestError(e.message), res);
+        }
+    }
+
+    getActiveTax = async (req, res) => {
+        try {
+            let { user_id, role } = req;
+
+            let taxData = await dbReader.tax.findAll({
+                where: {
+                    is_active: 1,
+                    is_deleted: 0
+                }
+            });
+            taxData = JSON.parse(JSON.stringify(taxData));
+            new SuccessResponse("Tax data get successfully.", { data: taxData }).send(res);
+
         } catch (e) {
             ApiError.handle(new BadRequestError(e.message), res);
         }
@@ -1090,6 +1125,32 @@ class AuthController {
             ApiError.handle(new BadRequestError(e.message), res);
         }
     }
+
+    payToProviderFromAdmin = async (req, res) => {
+        try {
+            let { provider_id, amount } = req.body;
+            let { user_id, role } = req;
+
+            if (role !== 4) {
+                throw new Error("User don't have permission to perform this action.");
+            } else {
+                let data = await dbWriter.wallet.create({
+                    provider_id: provider_id,
+                    service_id: 0,
+                    amount: amount,
+                    is_paid_by_admin: 1
+                });
+
+                //Need to develop flow here for send payment to provider once client give payment gateway information
+
+                new SuccessResponse("Payment done successfully.", {}).send(res);
+            }
+        } catch (e) {
+            console.log("error is :::", e);
+            ApiError.handle(new BadRequestError(e.message), res);
+        }
+    }
+
 
 
 }

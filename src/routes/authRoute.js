@@ -30,7 +30,7 @@ class AuthRoute extends AuthController {
         router.post("/getServiceTaxById", tokenValidate, validator(jois.getServiceTaxByIdPayload), this.getServiceTaxById);
         router.post("/deleteServiceTax", tokenValidate, validator(jois.deleteServiceTaxPayload), this.deleteServiceTax);
         router.post("/activateServiceTax", tokenValidate, validator(jois.activateServiceTaxPayload), this.activateServiceTax);
-
+        router.get("/getActiveTax", tokenValidate, this.getActiveTax);
 
 
         //Manage comission from admin panel
@@ -50,6 +50,7 @@ class AuthRoute extends AuthController {
         router.post("/addEditSubscriptionPlan", tokenValidate, validator(jois.addEditSubscriptionPlanPayload), this.addEditSubscriptionPlan);
         router.get("/getAllSubscriptionPlans", tokenValidate, this.getAllSubscriptionPlans);
 
+        router.post("/payToProviderFromAdmin", tokenValidate, validator(jois.payToProviderFromAdminPayload), this.payToProviderFromAdmin);
     }
 }
 
