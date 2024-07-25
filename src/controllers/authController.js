@@ -567,7 +567,7 @@ class AuthController {
                 where: {
                     user_id: user_id
                 }
-            })
+            });
             userData = JSON.parse(JSON.stringify(userData));
             if (userData) {
                 if (userData.email !== email) {
@@ -587,10 +587,10 @@ class AuthController {
                         where: {
                             username: username
                         }
-                    })
-                    userNameMatch = JSON.parse(JSON.stringify(userNameMatch))
+                    });
+                    userNameMatch = JSON.parse(JSON.stringify(userNameMatch));
                     if (userNameMatch) {
-                        throw new Error("Username is already exist in system")
+                        throw new Error("Username is already exist in system");
                     }
                 }
 

@@ -750,7 +750,7 @@ class ProviderController {
                 ]
             });
             serviceData = JSON.parse(JSON.stringify(serviceData));
-            console.log("serviceData", serviceData);
+            //console.log("serviceData", serviceData);
             serviceData.forEach((e) => {
                 if (e.service_rating.length) {
                     let total_rating = 0
