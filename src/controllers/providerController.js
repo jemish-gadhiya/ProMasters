@@ -596,7 +596,7 @@ class ProviderController {
                     where: {
                         is_deleted: 0,
                     },
-                },{
+                }, {
                     model: dbReader.users,
                     where: {
                         role: 2,
@@ -626,13 +626,13 @@ class ProviderController {
             });
             serviceData = JSON.parse(JSON.stringify(serviceData));
             // serviceData.forEach((e) => {
-                if (serviceData.service_rating.length) {
-                    let total_rating = 0
-                    serviceData.service_rating.forEach((ele) => {
-                        total_rating = total_rating + parseFloat(ele.rating)
-                    })
-                    serviceData.total_rating = parseFloat(total_rating / serviceData.service_rating.length)
-                }
+            if (serviceData.service_rating.length) {
+                let total_rating = 0
+                serviceData.service_rating.forEach((ele) => {
+                    total_rating = total_rating + parseFloat(ele.rating)
+                })
+                serviceData.total_rating = parseFloat(total_rating / serviceData.service_rating.length)
+            }
             // })
             new SuccessResponse("Service get successfully.", {
                 ...serviceData
@@ -726,27 +726,27 @@ class ProviderController {
                     where: {
                         is_deleted: 0,
                     },
-                },{
-                        required: false,
-                        model: dbReader.serviceAttachment,
-                        where: {
-                            is_deleted: 0
-                        }
-                    },
-                    {
-                        required: false,
-                        model: dbReader.users,
-                        where: {
-                            role: 2,
-                            is_deleted: 0
-                        }
-                    },
-                    {
-                        required: false,
-                        as: "service_rating",
-                        model: dbReader.serviceRating,
-                        where: serviceRatingWhereConditions
+                }, {
+                    required: false,
+                    model: dbReader.serviceAttachment,
+                    where: {
+                        is_deleted: 0
                     }
+                },
+                {
+                    required: false,
+                    model: dbReader.users,
+                    where: {
+                        role: 2,
+                        is_deleted: 0
+                    }
+                },
+                {
+                    required: false,
+                    as: "service_rating",
+                    model: dbReader.serviceRating,
+                    where: serviceRatingWhereConditions
+                }
                 ]
             });
             serviceData = JSON.parse(JSON.stringify(serviceData));
@@ -863,7 +863,7 @@ class ProviderController {
             }
 
             if (booking_id == 0) {
-                let serviceBookingData = await dbReader.serviceBooking.create({
+                let serviceBookingData = await dbWriter.serviceBooking.create({
                     service_id: service_id,
                     booking_no: code,
                     booked_by: user_id,
@@ -1240,7 +1240,7 @@ class ProviderController {
                             user_id: user_id
                         }
                     }, {
-                        attributes: ["user_id", "name", 'email', "contact", "role", "photo", "address", "city", "state", "country", ],
+                        attributes: ["user_id", "name", 'email', "contact", "role", "photo", "address", "city", "state", "country",],
                         required: false,
                         model: dbReader.users,
                         where: {
@@ -1469,7 +1469,7 @@ class ProviderController {
                 where: {
                     is_deleted: 0
                 },
-				subQuery:false,
+                subQuery: false,
                 include: [{
                     required: true,
                     model: dbReader.serviceBooking,
@@ -1491,7 +1491,7 @@ class ProviderController {
                                 is_active: 1
                             },
                             include: [{
-								required: false,
+                                required: false,
                                 model: dbReader.serviceRating,
                                 where: {
                                     is_deleted: 0
@@ -1578,6 +1578,43 @@ class ProviderController {
             new SuccessResponse("Service history get successfully.", {
                 data: serviceBookingData
             }).send(res);
+        } catch (e) {
+            ApiError.handle(new BadRequestError(e.message), res);
+        }
+    }
+
+    servicePaymentFromUser = async (req, res) => {
+        try {
+            let {
+                service_booking_id
+            } = req.body;
+
+            let {
+                user_id,
+                role
+            } = req;
+
+            if (role !== 1) {
+                throw new Error("User don't have permission to perform this action.");
+            } else {
+
+                let serviceBookingData = await dbReader.serviceBooking.findOne({
+                    where: {
+                        service_booking_id: service_booking_id,
+                        is_deleted: 0
+                    }
+                });
+                serviceBookingData = JSON.parse(JSON.stringify(serviceBookingData));
+                if (!serviceBookingData) {
+                    throw new Error("Service address not found.");
+                } else {
+                    console.log("service Booking data are :::: ", serviceBookingData);
+
+                    new SuccessResponse("Payment done successfully.", {
+                        data: serviceBookingData
+                    }).send(res);
+                }
+            }
         } catch (e) {
             ApiError.handle(new BadRequestError(e.message), res);
         }

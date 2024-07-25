@@ -26,7 +26,7 @@ module.exports = function (sequelize, DataTypes) {
         latitude: DataTypes.STRING(256),
         longitude: DataTypes.STRING(256),
         role: {
-            type: DataTypes.INTEGER, // 1-user, 2-provider, 3-handyman,
+            type: DataTypes.INTEGER, // 1-user, 2-provider, 3-handyman, 4- admin
             allowNull: false,
         },
         photo: DataTypes.TEXT,
@@ -44,7 +44,7 @@ module.exports = function (sequelize, DataTypes) {
         },
         is_sms_verified: {
             type: DataTypes.INTEGER,
-            defaultValue: 0,
+            defaultValue: 1,
         },
         is_active: {
             type: DataTypes.INTEGER,
