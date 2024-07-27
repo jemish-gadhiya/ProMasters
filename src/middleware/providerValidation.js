@@ -55,4 +55,9 @@ exports.jois = {
         service_booking_id: Joi.number().required(),
     }),
 
+
+    transferToProviderPayload: Joi.object().keys({
+        user_id: Joi.number().required(),
+        amount: Joi.number().required(),
+    }),
 }

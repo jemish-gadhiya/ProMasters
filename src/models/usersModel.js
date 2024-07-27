@@ -50,6 +50,7 @@ module.exports = function (sequelize, DataTypes) {
             type: DataTypes.INTEGER,
             defaultValue: 1,
         },
+        stripe_account_id: DataTypes.TEXT,
         is_deleted: {
             type: DataTypes.INTEGER,
             defaultValue: 0,

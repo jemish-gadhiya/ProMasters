@@ -32,6 +32,9 @@ const {
     required
 } = require('joi');
 
+const Stripe = require('stripe');
+const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
+
 class ProviderController {
 
     //Service address module API's
@@ -1583,6 +1586,7 @@ class ProviderController {
         }
     }
 
+    //Manage payment flow
     servicePaymentFromUser = async (req, res) => {
         try {
             let {
@@ -1597,7 +1601,6 @@ class ProviderController {
             if (role !== 1) {
                 throw new Error("User don't have permission to perform this action.");
             } else {
-
                 let serviceBookingData = await dbReader.serviceBooking.findOne({
                     where: {
                         service_booking_id: service_booking_id,
@@ -1608,17 +1611,191 @@ class ProviderController {
                 if (!serviceBookingData) {
                     throw new Error("Service address not found.");
                 } else {
-                    console.log("service Booking data are :::: ", serviceBookingData);
+                    //console.log("service Booking data are :::: ", serviceBookingData);
 
-                    new SuccessResponse("Payment done successfully.", {
-                        data: serviceBookingData
-                    }).send(res);
+                    let payable_amount = parseFloat(serviceBookingData?.service_amount * serviceBookingData?.booking_service_qty) - serviceBookingData?.discount_amount - serviceBookingData?.commission_amount - serviceBookingData?.coupen_amount - serviceBookingData?.tax_amount;
+                    //console.log("Payable amount ::: ", payable_amount);
+                    if (payable_amount) {
+                        // Convert amount from AED to fils and ensure it's an integer
+                        const amountInFils = Math.round(parseFloat(payable_amount) * 100);
+
+                        const paymentIntent = await stripe.paymentIntents.create({
+                            amount: amountInFils,
+                            currency: "aed",
+                            payment_method_types: ['card'],
+                        });
+
+                        //console.log("paymentIntent ::: ", paymentIntent);
+
+
+                        //Check for payment data if it is already exist or not and if not exist then create payment entry with statu pending and with the payment intent id and record already exist then update the payment intent id
+                        let serviceBookingPaymentData = await dbReader.serviceBookingPayment.findOne({
+                            where: {
+                                service_booking_id: service_booking_id,
+                                user_id: user_id,
+                                is_deleted: 0
+                            }
+                        });
+                        serviceBookingPaymentData = JSON.parse(JSON.stringify(serviceBookingPaymentData));
+                        if (serviceBookingPaymentData) {
+
+                            await dbWriter.serviceBookingPayment.update({
+                                payment_intent_id: paymentIntent.id,
+                            }, {
+                                where: {
+                                    service_booking_id: service_booking_id,
+                                    user_id: user_id,
+                                    is_deleted: 0
+                                }
+                            });
+                        } else {
+                            await dbWriter.serviceBookingPayment.create({
+                                service_booking_id: service_booking_id,
+                                payment_status: 0,
+                                payment_method: "card",
+                                amount: parseFloat(payable_amount),
+                                description: "",
+                                payment_intent_id: paymentIntent.id,
+                                user_id: user_id,
+                            });
+                        }
+
+                        res.status(200).json({
+                            clientSecret: paymentIntent.client_secret,
+                            data: paymentIntent
+                        });
+                    } else {
+                        throw new Error("Payable amount is not valid.");
+                    }
                 }
             }
         } catch (e) {
             ApiError.handle(new BadRequestError(e.message), res);
         }
     }
+
+    stripeWebHook = async (req, res) => {
+        try {
+            const sig = req.headers['stripe-signature'];
+            const endpointSecret = process.env.STRIPE_WEBHOOK_KEY;
+
+            let event;
+            try {
+                event = stripe.webhooks.constructEvent(req.rawBody, sig, endpointSecret);
+            } catch (err) {
+                res.status(400).send(`Webhook Error: ${err.message}`);
+                return;
+            }
+
+            const paymentWebHookData = event.data.object;
+            if (event.type === 'payment_intent.succeeded' || event.type === 'charge.succeeded') {
+                await dbWriter.serviceBookingPayment.update({
+                    payment_intent_id: "",
+                    payment_status: 1,
+                    description: JSON.stringify(paymentWebHookData),
+                }, {
+                    where: {
+                        payment_intent_id: paymentIntent.id,
+                    }
+                });
+            } else if (event.type === 'payment_intent.succeeded' || event.type === 'charge.succeeded') {
+                await dbWriter.serviceBookingPayment.update({
+                    payment_intent_id: "",
+                    payment_status: 2,
+                    description: JSON.stringify(paymentWebHookData),
+                }, {
+                    where: {
+                        payment_intent_id: paymentIntent.id,
+                    }
+                });
+            }
+
+            res.status(200).end();
+        } catch (e) {
+            ApiError.handle(new BadRequestError(e.message), res);
+        }
+    }
+
+
+
+    createProviderStripeAccount = async (req, res) => {
+        try {
+            let {
+                user_id,
+                role
+            } = req;
+
+            let userData = await dbReader.users.findOne({
+                where: {
+                    user_id: user_id,
+                    is_deleted: 0
+                }
+            });
+            userData = JSON.parse(JSON.stringify(userData));
+            if (!userData) {
+                throw new Error("User data not found.");
+            } else {
+                const account = await stripe.accounts.create({
+                    type: 'express', // Use 'express' or 'standard' depending on your needs
+                    country: 'UAE', // Set the country code to UAE
+                    email: userData?.email,
+                    capabilities: {
+                        card_payments: { requested: true },
+                        transfers: { requested: true },
+                    },
+                });
+
+                await dbWriter.users.update({
+                    stripe_account_id: account.id,
+                }, {
+                    where: {
+                        user_id: user_id
+                    }
+                });
+            }
+        } catch (e) {
+            ApiError.handle(new BadRequestError(e.message), res);
+        }
+    }
+
+    transferToProvider = async (req, res) => {
+        try {
+            let {
+                role
+            } = req;
+            const { amount, user_id } = req.body;
+
+            if (role !== 4) {
+                throw new Error("User don't have permission to perform this action.");
+            } else {
+
+                let userData = await dbReader.users.findOne({
+                    where: {
+                        user_id: user_id,
+                        is_deleted: 0
+                    }
+                });
+                userData = JSON.parse(JSON.stringify(userData));
+                if (!userData) {
+                    throw new Error("User data not found.");
+                } else {
+                    if (userData?.stripe_account_id) {
+                        const transfer = await stripe.transfers.create({
+                            amount,
+                            currency: 'usd',
+                            destination: providerAccountId,
+                        });
+                        console.log("transfer data is :: ", transfer);
+                        res.status(200).json({ transfer });
+                    } else {
+                        throw new Error("User stripe account not linked.");
+                    }
+                }
+            }
+        } catch (error) {
+            res.status(500).json({ error: error.message });
+        }
+    };
 }
 
 module.exports = ProviderController;

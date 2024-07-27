@@ -22,6 +22,8 @@ module.exports = function (sequelize, DataTypes) {
             type: DataTypes.INTEGER,
             allowNull: false,
         },
+        description: DataTypes.TEXT,
+        payment_intent_id: DataTypes.TEXT,
         is_deleted: {
             type: DataTypes.INTEGER,
             defaultValue: 0,
