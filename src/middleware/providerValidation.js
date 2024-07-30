@@ -50,4 +50,14 @@ exports.jois = {
         status: Joi.number().allow(0).required(),
     }),
 
+
+    servicePaymentFromUserPayload: Joi.object().keys({
+        service_booking_id: Joi.number().required(),
+    }),
+
+
+    transferToProviderPayload: Joi.object().keys({
+        user_id: Joi.number().required(),
+        amount: Joi.number().required(),
+    }),
 }

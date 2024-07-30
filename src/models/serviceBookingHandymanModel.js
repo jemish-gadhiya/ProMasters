@@ -44,6 +44,6 @@ module.exports = function (sequelize, DataTypes) {
             targetKey: 'user_id'
         });
     };
-
+    
     return ServiceBookingHandyman;
 };
