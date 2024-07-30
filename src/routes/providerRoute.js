@@ -36,6 +36,8 @@ class ProviderRoute extends ProviderController {
         router.post("/saveUserAvailibility", tokenValidate, this.saveUserAvailibility);
         router.post("/assignServiceHandyman", tokenValidate, this.assignServiceHandyman);
 
+
+
         router.get("/listServiceBookingForProvider", tokenValidate, this.listServiceBookingForProvider);
         router.post("/updateServiceBookingStatus", tokenValidate, this.updateServiceBookingStatus);
         router.get("/listProviderForFilter", tokenValidate, this.listProviderForFilter);
@@ -53,6 +55,14 @@ class ProviderRoute extends ProviderController {
         router.post("/getServiceBookingHistory", tokenValidate, this.getServiceBookingHistory);
         router.post("/getUserServiceBookingByStatus", tokenValidate, this.getUserServiceBookingByStatus);
 
+
+
+        router.post("/servicePaymentFromUser", validator(jois.servicePaymentFromUserPayload), tokenValidate, this.servicePaymentFromUser);
+        router.post("/stripeWebHook", this.stripeWebHook);
+
+
+        router.post("/createProviderStripeAccount", tokenValidate, this.createProviderStripeAccount);
+        router.post("/transferToProvider", validator(jois.transferToProviderPayload), tokenValidate, this.transferToProvider);
 
     }
 }

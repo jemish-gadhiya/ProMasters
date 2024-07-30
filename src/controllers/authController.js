@@ -133,7 +133,7 @@ class AuthController {
                 if (userExistData?.is_active === 0) {
                     throw new Error("User is deactivated.");
                 } else {
-                    if (userExistData?.is_email_verified && userExistData?.is_sms_verified) {
+                    if (userExistData?.is_email_verified) {
                         if (userExistData.password == encryptedPassword) {
                             let UA_string = req.headers['user-agent'];
                             const UA = new UAParser(UA_string);
@@ -567,7 +567,7 @@ class AuthController {
                 where: {
                     user_id: user_id
                 }
-            })
+            });
             userData = JSON.parse(JSON.stringify(userData));
             if (userData) {
                 if (userData.email !== email) {
@@ -587,10 +587,10 @@ class AuthController {
                         where: {
                             username: username
                         }
-                    })
-                    userNameMatch = JSON.parse(JSON.stringify(userNameMatch))
+                    });
+                    userNameMatch = JSON.parse(JSON.stringify(userNameMatch));
                     if (userNameMatch) {
-                        throw new Error("Username is already exist in system")
+                        throw new Error("Username is already exist in system");
                     }
                 }
 
