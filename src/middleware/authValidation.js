@@ -106,6 +106,29 @@ exports.jois = {
     }),
 
 
+
+    addEditCoupanPayload: Joi.object().keys({
+        coupon_id: Joi.number().allow(0).required(),
+        coupon_code: Joi.string().required(),
+        coupon_amount: Joi.number().required(),
+    }),
+
+    getCoupanByIdPayload: Joi.object().keys({
+        coupon_id: Joi.number().required(),
+    }),
+
+    activeDeactiveCoupanPayload: Joi.object().keys({
+        coupon_id: Joi.number().required(),
+    }),
+
+    deleteCoupanPayload: Joi.object().keys({
+        coupon_id: Joi.number().required(),
+    }),
+
+
+
+
+
     addEditProviderComissionPayload: Joi.object().keys({
         comission_id: Joi.number().required(),
         provider_id: Joi.number().required()
