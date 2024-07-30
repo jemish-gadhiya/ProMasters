@@ -1721,6 +1721,10 @@ class ProviderController {
     createProviderStripeAccount = async (req, res) => {
         try {
             let {
+                routing_number,
+                account_number
+            } = req.body;
+            let {
                 user_id,
                 role
             } = req;
@@ -1735,23 +1739,60 @@ class ProviderController {
             if (!userData) {
                 throw new Error("User data not found.");
             } else {
-                const account = await stripe.accounts.create({
-                    type: 'express', // Use 'express' or 'standard' depending on your needs
-                    country: 'UAE', // Set the country code to UAE
-                    email: userData?.email,
-                    capabilities: {
-                        card_payments: { requested: true },
-                        transfers: { requested: true },
-                    },
-                });
+                let stripe_account_id = userData?.stripe_account_id,
+                    stripe_bank_account_id = userData?.stripe_bank_account_id;
 
-                await dbWriter.users.update({
-                    stripe_account_id: account.id,
-                }, {
-                    where: {
-                        user_id: user_id
+                if (stripe_account_id && stripe_bank_account_id) {
+                    new SuccessResponse("User's stripe account already up to date.", {
+                        stripe_account_id: stripe_account_id,
+                        stripe_bank_account_id: stripe_bank_account_id
+                    }).send(res);
+                } else {
+                    if (!stripe_account_id) {
+                        const account = await stripe.accounts.create({
+                            type: 'express', // Use 'express' or 'standard' depending on your needs
+                            country: 'UAE', // Set the country code to UAE
+                            email: userData?.email,
+                            capabilities: {
+                                card_payments: { requested: true },
+                                transfers: { requested: true },
+                            },
+                        });
+                        stripe_account_id = account.id;
                     }
-                });
+
+                    if (stripe_account_id && !stripe_bank_account_id) {
+                        const bank_account = stripe.accounts.createExternalAccount(
+                            stripe_account_id, // Replace with the ID of the connected account
+                            {
+                                external_account: {
+                                    object: 'bank_account',
+                                    country: 'AE',
+                                    currency: 'aed',
+                                    account_holder_name: userData?.name,
+                                    account_holder_type: 'individual', // or 'company'
+                                    routing_number: routing_number,// Replace with the appropriate bank code or SWIFT code
+                                    account_number: account_number,// Replace with the appropriate bank account number
+                                },
+                            }
+                        );
+                        stripe_bank_account_id = bank_account.id;
+                    }
+
+                    await dbWriter.users.update({
+                        stripe_account_id: stripe_account_id,
+                        stripe_bank_account_id: stripe_bank_account_id
+                    }, {
+                        where: {
+                            user_id: user_id
+                        }
+                    });
+
+                    new SuccessResponse("User's stripe account setup done successfully.", {
+                        stripe_account_id: stripe_account_id,
+                        stripe_bank_account_id: stripe_bank_account_id
+                    }).send(res);
+                }
             }
         } catch (e) {
             ApiError.handle(new BadRequestError(e.message), res);
