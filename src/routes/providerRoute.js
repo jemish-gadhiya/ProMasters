@@ -61,8 +61,8 @@ class ProviderRoute extends ProviderController {
         router.post("/stripeWebHook", this.stripeWebHook);
 
 
-        router.post("/createProviderStripeAccount", tokenValidate, this.createProviderStripeAccount);
-        router.post("/transferToProvider", validator(jois.transferToProviderPayload), tokenValidate, this.transferToProvider);
+        router.post("/createProviderStripeAccount", validator(jois.createProviderStripeAccountPayload), tokenValidate, this.createProviderStripeAccount);
+        //router.post("/transferToProvider", validator(jois.transferToProviderPayload), tokenValidate, this.transferToProvider);
 
     }
 }

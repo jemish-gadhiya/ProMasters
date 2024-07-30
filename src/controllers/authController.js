@@ -28,6 +28,9 @@ require('dotenv').config()
 const enumerationController = require("./enumurationController");
 var ObjectMail = new nodeMailerController_1();
 var EnumObject = new enumerationController();
+
+const Stripe = require('stripe');
+const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 class AuthController {
 
     getUserData = async (user_id) => {
@@ -1134,16 +1137,37 @@ class AuthController {
             if (role !== 4) {
                 throw new Error("User don't have permission to perform this action.");
             } else {
-                let data = await dbWriter.wallet.create({
-                    provider_id: provider_id,
-                    service_id: 0,
-                    amount: amount,
-                    is_paid_by_admin: 1
+
+                let providerData = await dbReader.users.findOne({
+                    attributes: ["user_id", "name", "username", "email", "contact", "email", "role", "photo", "address", "city", "state", "country", "experience", "is_email_verified", "is_sms_verified", "is_active", "created_at"],
+                    where: {
+                        user_id: user_id,
+                        is_deleted: 0
+                    }
                 });
+                providerData = JSON.parse(JSON.stringify(providerData));
 
-                //Need to develop flow here for send payment to provider once client give payment gateway information
+                if (providerData.stripe_account_id && providerData.stripe_bank_account_id) {
+                    //Need to develop flow here for send payment to provider once client give payment gateway information
+                    let paymentData = await stripe.payouts.create({
+                        amount: amount,
+                        currency: 'aed',
+                        destination: bankAccount.id,
+                        stripe_account: bankAccount.account,
+                    });
 
-                new SuccessResponse("Payment done successfully.", {}).send(res);
+                    let data = await dbWriter.wallet.create({
+                        provider_id: provider_id,
+                        service_id: 0,
+                        amount: amount,
+                        is_paid_by_admin: 1,
+                        description: JSON.stringify(paymentData)
+                    });
+
+                    new SuccessResponse("Payment done successfully.", {}).send(res);
+                } else {
+                    throw new Error("User's bank account is not set up.");
+                }
             }
         } catch (e) {
             console.log("error is :::", e);

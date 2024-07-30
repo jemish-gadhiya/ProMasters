@@ -60,4 +60,9 @@ exports.jois = {
         user_id: Joi.number().required(),
         amount: Joi.number().required(),
     }),
+
+    createProviderStripeAccountPayload: Joi.object().keys({
+        routing_number: Joi.string().required(),
+        account_number: Joi.string().required(),
+    }),
 }
