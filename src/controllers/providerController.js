@@ -1799,44 +1799,44 @@ class ProviderController {
         }
     }
 
-    transferToProvider = async (req, res) => {
-        try {
-            let {
-                role
-            } = req;
-            const { amount, user_id } = req.body;
+    // transferToProvider = async (req, res) => {
+    //     try {
+    //         let {
+    //             role
+    //         } = req;
+    //         const { amount, user_id } = req.body;
 
-            if (role !== 4) {
-                throw new Error("User don't have permission to perform this action.");
-            } else {
+    //         if (role !== 4) {
+    //             throw new Error("User don't have permission to perform this action.");
+    //         } else {
 
-                let userData = await dbReader.users.findOne({
-                    where: {
-                        user_id: user_id,
-                        is_deleted: 0
-                    }
-                });
-                userData = JSON.parse(JSON.stringify(userData));
-                if (!userData) {
-                    throw new Error("User data not found.");
-                } else {
-                    if (userData?.stripe_account_id) {
-                        const transfer = await stripe.transfers.create({
-                            amount,
-                            currency: 'usd',
-                            destination: providerAccountId,
-                        });
-                        console.log("transfer data is :: ", transfer);
-                        res.status(200).json({ transfer });
-                    } else {
-                        throw new Error("User stripe account not linked.");
-                    }
-                }
-            }
-        } catch (error) {
-            res.status(500).json({ error: error.message });
-        }
-    };
+    //             let userData = await dbReader.users.findOne({
+    //                 where: {
+    //                     user_id: user_id,
+    //                     is_deleted: 0
+    //                 }
+    //             });
+    //             userData = JSON.parse(JSON.stringify(userData));
+    //             if (!userData) {
+    //                 throw new Error("User data not found.");
+    //             } else {
+    //                 if (userData?.stripe_account_id) {
+    //                     const transfer = await stripe.transfers.create({
+    //                         amount,
+    //                         currency: 'usd',
+    //                         destination: providerAccountId,
+    //                     });
+    //                     console.log("transfer data is :: ", transfer);
+    //                     res.status(200).json({ transfer });
+    //                 } else {
+    //                     throw new Error("User stripe account not linked.");
+    //                 }
+    //             }
+    //         }
+    //     } catch (error) {
+    //         res.status(500).json({ error: error.message });
+    //     }
+    // };
 }
 
 module.exports = ProviderController;
