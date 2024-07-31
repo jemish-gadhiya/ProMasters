@@ -1321,6 +1321,60 @@ class AuthController {
         }
     }
 
+    getSubscriptionPlanById = async (req, res) => {
+        try {
+            let { subscription_plan_id } = req.body;
+            let { user_id, role } = req;
+
+            let planData = await dbReader.subscriptionPlan.findOne({
+                where: {
+                    subscription_plan_id: subscription_plan_id,
+                    is_deleted: 0
+                }
+            });
+            planData = JSON.parse(JSON.stringify(planData));
+            if (!planData) {
+                throw new Error("Subscription plan data not found.");
+            } else {
+                new SuccessResponse("Subscription plan data get successfully.", { data: planData }).send(res);
+            }
+        } catch (e) {
+            ApiError.handle(new BadRequestError(e.message), res);
+        }
+    }
+
+    deleteSubscriptionPlan = async (req, res) => {
+        try {
+            let { subscription_plan_id } = req.body;
+            let { user_id, role } = req;
+
+            if (role !== 4) {
+                throw new Error("User don't have permission to perform this action.");
+            } else {
+                let planData = await dbReader.subscriptionPlan.findOne({
+                    where: {
+                        subscription_plan_id: subscription_plan_id,
+                        is_deleted: 0
+                    }
+                });
+                planData = JSON.parse(JSON.stringify(planData));
+                if (!planData) {
+                    throw new Error("Subscription plan data not found.");
+                } else {
+                    await dbWriter.subscriptionPlan.update({
+                        is_deleted: 1
+                    }, {
+                        where: { subscription_plan_id: subscription_plan_id, }
+                    });
+
+                    new SuccessResponse("Subscription plan deleted successfully.", {}).send(res);
+                }
+            }
+        } catch (e) {
+            ApiError.handle(new BadRequestError(e.message), res);
+        }
+    }
+
     payToProviderFromAdmin = async (req, res) => {
         try {
             let { provider_id, amount } = req.body;

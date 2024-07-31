@@ -50,6 +50,8 @@ class AuthRoute extends AuthController {
         //manage the providers fro the admin panel
         router.post("/addEditSubscriptionPlan", tokenValidate, validator(jois.addEditSubscriptionPlanPayload), this.addEditSubscriptionPlan);
         router.get("/getAllSubscriptionPlans", tokenValidate, this.getAllSubscriptionPlans);
+        router.post("/getSubscriptionPlanById", tokenValidate, validator(jois.getSubscriptionPlanByIdPayload), this.getSubscriptionPlanById);
+        router.post("/deleteSubscriptionPlan", tokenValidate, validator(jois.deleteSubscriptionPlanPayload), this.deleteSubscriptionPlan);
 
         router.post("/payToProviderFromAdmin", tokenValidate, validator(jois.payToProviderFromAdminPayload), this.payToProviderFromAdmin);
     }
