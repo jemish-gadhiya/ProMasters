@@ -154,6 +154,14 @@ exports.jois = {
         is_deleted: Joi.number().allow(0).required(),
     }),
 
+    getSubscriptionPlanByIdPayload: Joi.object().keys({
+        subscription_plan_id: Joi.number().required(),
+    }),
+
+    deleteSubscriptionPlanPayload: Joi.object().keys({
+        subscription_plan_id: Joi.number().required(),
+    }),
+
 
     payToProviderFromAdminPayload: Joi.object().keys({
         provider_id: Joi.number().required(),
