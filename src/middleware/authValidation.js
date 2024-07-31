@@ -70,6 +70,10 @@ exports.jois = {
         contact: Joi.string().required(),
     }),
 
+    deleteUserAccountPayload: Joi.object().keys({
+        user_id: Joi.number().required(),
+    }),
+
     addEditServiceTaxPayload: Joi.object().keys({
         tax_id: Joi.number().allow(0).required(),
         tax_name: Joi.string().required(),
@@ -104,6 +108,29 @@ exports.jois = {
     deleteComissionPayload: Joi.object().keys({
         comission_id: Joi.number().required()
     }),
+
+
+
+    addEditCoupanPayload: Joi.object().keys({
+        coupon_id: Joi.number().allow(0).required(),
+        coupon_code: Joi.string().required(),
+        coupon_amount: Joi.number().required(),
+    }),
+
+    getCoupanByIdPayload: Joi.object().keys({
+        coupon_id: Joi.number().required(),
+    }),
+
+    activeDeactiveCoupanPayload: Joi.object().keys({
+        coupon_id: Joi.number().required(),
+    }),
+
+    deleteCoupanPayload: Joi.object().keys({
+        coupon_id: Joi.number().required(),
+    }),
+
+
+
 
 
     addEditProviderComissionPayload: Joi.object().keys({
