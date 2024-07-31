@@ -70,6 +70,10 @@ exports.jois = {
         contact: Joi.string().required(),
     }),
 
+    deleteUserAccountPayload: Joi.object().keys({
+        user_id: Joi.number().required(),
+    }),
+
     addEditServiceTaxPayload: Joi.object().keys({
         tax_id: Joi.number().allow(0).required(),
         tax_name: Joi.string().required(),

@@ -23,6 +23,7 @@ class AuthRoute extends AuthController {
         router.post("/frontEndErrorLog", this.frontEndErrorLog);
         router.get("/getUserDetail", tokenValidate, this.getUserDetail);
         router.post("/updateUserDetail", tokenValidate, this.updateUserDetail);
+        router.post("/deleteUserAccount", validator(jois.deleteUserAccountPayload), tokenValidate, this.deleteUserAccount);
 
         //Manage tax from admin panel
         router.post("/addEditServiceTax", tokenValidate, validator(jois.addEditServiceTaxPayload), this.addEditServiceTax);
@@ -38,19 +39,6 @@ class AuthRoute extends AuthController {
         router.get("/getAllComission", tokenValidate, this.getAllComission);
         router.post("/getComissionById", tokenValidate, validator(jois.getComissionByIdPayload), this.getComissionById);
         router.post("/deleteComission", tokenValidate, validator(jois.deleteComissionPayload), this.deleteComission);
-
-
-
-        //Manage coupen from admin panel
-        router.post("/addEditCoupan", tokenValidate, validator(jois.addEditCoupanPayload), this.addEditCoupan);
-        router.get("/getAllCoupan", tokenValidate, this.getAllCoupan);
-        router.post("/getCoupanById", tokenValidate, validator(jois.getCoupanByIdPayload), this.getCoupanById);
-        router.post("/activeDeactiveCoupan", tokenValidate, validator(jois.activeDeactiveCoupanPayload), this.activeDeactiveCoupan);
-        router.post("/deleteCoupan", tokenValidate, validator(jois.deleteCoupanPayload), this.deleteCoupan);
-
-
-
-
 
 
         //manage the providers fro the admin panel

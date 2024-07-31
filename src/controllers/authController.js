@@ -624,6 +624,35 @@ class AuthController {
         }
     }
 
+    deleteUserAccount = async (req, res) => {
+        try {
+            let { user_id } = req.body;
+
+            let userData = await dbReader.users.findOne({
+                where: {
+                    user_id: user_id
+                }
+            });
+            userData = JSON.parse(JSON.stringify(userData));
+            if (userData) {
+
+                await dbWriter.users.update({
+                    is_deleted: 1
+                }, {
+                    where: {
+                        user_id: user_id
+                    }
+                });
+
+                new SuccessResponse("User deleted successfully.", {}).send(res);
+            } else {
+                throw new Error("User data not found.");
+            }
+        } catch (e) {
+            ApiError.handle(new BadRequestError(e.message), res);
+        }
+    }
+
 
     //Manage tax details from admin panel 
     addEditServiceTax = async (req, res) => {
