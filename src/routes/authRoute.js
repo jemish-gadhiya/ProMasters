@@ -46,6 +46,16 @@ class AuthRoute extends AuthController {
         router.post("/getProviderById", tokenValidate, validator(jois.getProviderByIdPayload), this.getProviderById);
         router.post("/addEditProviderComission", tokenValidate, validator(jois.addEditProviderComissionPayload), this.addEditProviderComission);
 
+        //Coupan module apis
+        router.post("/addEditCoupen", tokenValidate, validator(jois.addEditCoupanPayload), this.addEditCoupan);
+        router.get("/getAllCoupan", tokenValidate, this.getAllCoupan);
+        router.post("/getCoupanById", tokenValidate, validator(jois.getCoupanByIdPayload), this.getCoupanById);
+        router.post("/activeDeactiveCoupan", tokenValidate, validator(jois.activeDeactiveCoupanPayload), this.activeDeactiveCoupan);
+        router.post("/deleteCoupan", tokenValidate, validator(jois.deleteCoupanPayload), this.deleteCoupan);
+
+
+
+
 
         //manage the providers fro the admin panel
         router.post("/addEditSubscriptionPlan", tokenValidate, validator(jois.addEditSubscriptionPlanPayload), this.addEditSubscriptionPlan);
