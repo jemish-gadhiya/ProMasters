@@ -70,6 +70,10 @@ exports.jois = {
         contact: Joi.string().required(),
     }),
 
+    deleteUserAccountPayload: Joi.object().keys({
+        user_id: Joi.number().required(),
+    }),
+
     addEditServiceTaxPayload: Joi.object().keys({
         tax_id: Joi.number().allow(0).required(),
         tax_name: Joi.string().required(),
@@ -106,6 +110,29 @@ exports.jois = {
     }),
 
 
+
+    addEditCoupanPayload: Joi.object().keys({
+        coupon_id: Joi.number().allow(0).required(),
+        coupon_code: Joi.string().required(),
+        coupon_amount: Joi.number().required(),
+    }),
+
+    getCoupanByIdPayload: Joi.object().keys({
+        coupon_id: Joi.number().required(),
+    }),
+
+    activeDeactiveCoupanPayload: Joi.object().keys({
+        coupon_id: Joi.number().required(),
+    }),
+
+    deleteCoupanPayload: Joi.object().keys({
+        coupon_id: Joi.number().required(),
+    }),
+
+
+
+
+
     addEditProviderComissionPayload: Joi.object().keys({
         comission_id: Joi.number().required(),
         provider_id: Joi.number().required()
@@ -125,6 +152,14 @@ exports.jois = {
         no_featured_service: Joi.number().allow(0).required(),
         is_active: Joi.number().allow(0).required(),
         is_deleted: Joi.number().allow(0).required(),
+    }),
+
+    getSubscriptionPlanByIdPayload: Joi.object().keys({
+        subscription_plan_id: Joi.number().required(),
+    }),
+
+    deleteSubscriptionPlanPayload: Joi.object().keys({
+        subscription_plan_id: Joi.number().required(),
     }),
 
 

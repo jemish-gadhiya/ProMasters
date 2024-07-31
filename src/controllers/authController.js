@@ -624,6 +624,35 @@ class AuthController {
         }
     }
 
+    deleteUserAccount = async (req, res) => {
+        try {
+            let { user_id } = req.body;
+
+            let userData = await dbReader.users.findOne({
+                where: {
+                    user_id: user_id
+                }
+            });
+            userData = JSON.parse(JSON.stringify(userData));
+            if (userData) {
+
+                await dbWriter.users.update({
+                    is_deleted: 1
+                }, {
+                    where: {
+                        user_id: user_id
+                    }
+                });
+
+                new SuccessResponse("User deleted successfully.", {}).send(res);
+            } else {
+                throw new Error("User data not found.");
+            }
+        } catch (e) {
+            ApiError.handle(new BadRequestError(e.message), res);
+        }
+    }
+
 
     //Manage tax details from admin panel 
     addEditServiceTax = async (req, res) => {
@@ -924,6 +953,148 @@ class AuthController {
     }
 
 
+    //Manage coupen details rom admin panel 
+    addEditCoupan = async (req, res) => {
+        try {
+            let { coupon_id = 0, coupon_code = "", coupon_amount = 0 } = req.body;
+            let { user_id, role } = req;
+
+            if (role !== 4) {
+                throw new Error("User don't have permission to perform this action.");
+            } else {
+                if (coupon_id === 0) {
+                    await dbWriter.coupan.create({
+                        coupon_code: coupon_code,
+                        coupon_amount: coupon_amount
+                    });
+
+                    new SuccessResponse("Coupan data added successfully.", {}).send(res);
+                } else {
+                    let coupanData = await dbReader.coupan.findOne({
+                        where: {
+                            coupon_id: coupon_id,
+                            is_deleted: 0
+                        }
+                    });
+                    coupanData = JSON.parse(JSON.stringify(coupanData));
+                    if (!coupanData) {
+                        throw new Error("Comission data not found.");
+                    } else {
+                        await dbWriter.comission.update({
+                            coupon_code: coupon_code,
+                            coupon_amount: coupon_amount
+                        }, {
+                            where: { coupon_id: coupon_id, }
+                        });
+
+                        new SuccessResponse("Coupan data updated successfully.", {}).send(res);
+                    }
+                }
+            }
+        } catch (e) {
+            ApiError.handle(new BadRequestError(e.message), res);
+        }
+    }
+
+    getAllCoupan = async (req, res) => {
+        try {
+            let { user_id, role } = req;
+
+            let coupanData = await dbReader.coupan.findAll({
+                where: {
+                    is_deleted: 0
+                }
+            });
+            coupanData = JSON.parse(JSON.stringify(coupanData));
+            new SuccessResponse("Coupan data get successfully.", { data: coupanData }).send(res);
+        } catch (e) {
+            ApiError.handle(new BadRequestError(e.message), res);
+        }
+    }
+
+    getCoupanById = async (req, res) => {
+        try {
+            let { coupon_id = 0 } = req.body;
+            let { user_id, role } = req;
+
+            let coupanData = await dbReader.coupan.findOne({
+                where: {
+                    coupon_id: coupon_id,
+                    is_deleted: 0
+                }
+            });
+            coupanData = JSON.parse(JSON.stringify(coupanData));
+            new SuccessResponse("Coupan data get successfully.", { data: coupanData }).send(res);
+        } catch (e) {
+            ApiError.handle(new BadRequestError(e.message), res);
+        }
+    }
+
+    activeDeactiveCoupan = async (req, res) => {
+        try {
+            let { coupon_id } = req.body;
+            let { user_id, role } = req;
+
+            if (role !== 4) {
+                throw new Error("User don't have permission to perform this action.");
+            } else {
+                let coupanData = await dbReader.coupan.findOne({
+                    where: {
+                        coupon_id: coupon_id,
+                        is_deleted: 0
+                    }
+                });
+                coupanData = JSON.parse(JSON.stringify(coupanData));
+                if (!coupanData) {
+                    throw new Error("Coupan data not found.");
+                } else {
+                    await dbWriter.coupan.update({
+                        is_active: (coupanData?.is_active === 1) ? 0 : 1
+                    }, {
+                        where: { coupon_id: coupon_id }
+                    });
+
+                    new SuccessResponse("Coupan data updated successfully.", {}).send(res);
+                }
+            }
+        } catch (e) {
+            ApiError.handle(new BadRequestError(e.message), res);
+        }
+    }
+
+    deleteCoupan = async (req, res) => {
+        try {
+            let { coupon_id } = req.body;
+            let { user_id, role } = req;
+
+            if (role !== 4) {
+                throw new Error("User don't have permission to perform this action.");
+            } else {
+                let coupanData = await dbReader.coupan.findOne({
+                    where: {
+                        coupon_id: coupon_id,
+                        is_deleted: 0
+                    }
+                });
+                coupanData = JSON.parse(JSON.stringify(coupanData));
+                if (!coupanData) {
+                    throw new Error("Coupan data not found.");
+                } else {
+                    await dbWriter.coupan.update({
+                        is_deleted: 1
+                    }, {
+                        where: { coupon_id: coupon_id }
+                    });
+
+                    new SuccessResponse("Coupan data deleted successfully.", {}).send(res);
+                }
+            }
+        } catch (e) {
+            ApiError.handle(new BadRequestError(e.message), res);
+        }
+    }
+
+
     //Manage providers from the admin panel
     listAllProviders = async (req, res) => {
         try {
@@ -994,12 +1165,33 @@ class AuthController {
                                 is_deleted: 0
                             }
                         }]
+                    }, {
+                        required: false,
+                        // saperate: true,
+                        model: dbReader.wallet,
+                        where: {
+                            is_deleted: 0
+                        }
                     }]
                 });
 
-                // providersData = JSON.parse(JSON.stringify(providersData));
+                providersData = JSON.parse(JSON.stringify(providersData));
 
-                new SuccessResponse("Provider data get successfully.", { data: providersData }).send(res);
+
+                let total_payable_amount = 0, total_paid_amount = 0
+                if (providersData) {
+                    for (let i = 0; i < providersData?.Wallets?.length; i++) {
+                        let wData = providersData?.Wallets[i];
+                        if (wData?.status === 1 && wData?.is_paid_by_admin === 0) {
+                            total_payable_amount = parseFloat(total_payable_amount) + parseFloat(wData?.amount)
+                        }
+                        if (wData?.status === 1 && wData?.is_paid_by_admin === 1) {
+                            total_paid_amount = parseFloat(total_paid_amount) + parseFloat(wData?.amount)
+                        }
+                    }
+                }
+
+                new SuccessResponse("Provider data get successfully.", { data: providersData, total_payable_amount: parseFloat(total_payable_amount).toFixed(2), total_paid_amount: parseFloat(total_paid_amount).toFixed(2) }).send(res);
             }
         } catch (e) {
             ApiError.handle(new BadRequestError(e.message), res);
@@ -1124,6 +1316,60 @@ class AuthController {
             planData = JSON.parse(JSON.stringify(planData));
             new SuccessResponse("Subscription plan data get successfully.", { data: planData }).send(res);
 
+        } catch (e) {
+            ApiError.handle(new BadRequestError(e.message), res);
+        }
+    }
+
+    getSubscriptionPlanById = async (req, res) => {
+        try {
+            let { subscription_plan_id } = req.body;
+            let { user_id, role } = req;
+
+            let planData = await dbReader.subscriptionPlan.findOne({
+                where: {
+                    subscription_plan_id: subscription_plan_id,
+                    is_deleted: 0
+                }
+            });
+            planData = JSON.parse(JSON.stringify(planData));
+            if (!planData) {
+                throw new Error("Subscription plan data not found.");
+            } else {
+                new SuccessResponse("Subscription plan data get successfully.", { data: planData }).send(res);
+            }
+        } catch (e) {
+            ApiError.handle(new BadRequestError(e.message), res);
+        }
+    }
+
+    deleteSubscriptionPlan = async (req, res) => {
+        try {
+            let { subscription_plan_id } = req.body;
+            let { user_id, role } = req;
+
+            if (role !== 4) {
+                throw new Error("User don't have permission to perform this action.");
+            } else {
+                let planData = await dbReader.subscriptionPlan.findOne({
+                    where: {
+                        subscription_plan_id: subscription_plan_id,
+                        is_deleted: 0
+                    }
+                });
+                planData = JSON.parse(JSON.stringify(planData));
+                if (!planData) {
+                    throw new Error("Subscription plan data not found.");
+                } else {
+                    await dbWriter.subscriptionPlan.update({
+                        is_deleted: 1
+                    }, {
+                        where: { subscription_plan_id: subscription_plan_id, }
+                    });
+
+                    new SuccessResponse("Subscription plan deleted successfully.", {}).send(res);
+                }
+            }
         } catch (e) {
             ApiError.handle(new BadRequestError(e.message), res);
         }

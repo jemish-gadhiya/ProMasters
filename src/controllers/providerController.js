@@ -1901,15 +1901,11 @@ class ProviderController {
                     if (!stripe_account_id) {
                         const account = await stripe.accounts.create({
                             type: 'express', // Use 'express' or 'standard' depending on your needs
-                            country: 'UAE', // Set the country code to UAE
+                            country: 'AE', // Set the country code to UAE
                             email: userData?.email,
                             capabilities: {
-                                card_payments: {
-                                    requested: true
-                                },
-                                transfers: {
-                                    requested: true
-                                },
+                                card_payments: { requested: true },
+                                transfers: { requested: true },
                             },
                         });
                         stripe_account_id = account.id;
@@ -1925,8 +1921,8 @@ class ProviderController {
                                     currency: 'aed',
                                     account_holder_name: userData?.name,
                                     account_holder_type: 'individual', // or 'company'
-                                    routing_number: routing_number, // Replace with the appropriate bank code or SWIFT code
-                                    account_number: account_number, // Replace with the appropriate bank account number
+                                    routing_number: routing_number,// Replace with the appropriate bank code or SWIFT code
+                                    account_number: account_number,// Replace with the appropriate bank account number
                                 },
                             }
                         );
