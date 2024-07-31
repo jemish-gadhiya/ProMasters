@@ -22,8 +22,11 @@ var crypto = new index_1.crypto_1();
 const jwt = require("jsonwebtoken");
 require('dotenv').config()
 const enumerationController = require("./enumurationController");
+const notificationController = require("./notificationController");
 var ObjectMail = new nodeMailerController_1();
 var EnumObject = new enumerationController();
+var NotificationObject = new notificationController();
+
 const {
     Op,
     where
@@ -725,31 +728,31 @@ class ProviderController {
             let serviceData = await dbReader.service.findAll({
                 where: serviceWhereConditions,
                 include: [{
-                    model: dbReader.category,
-                    where: {
-                        is_deleted: 0,
+                        model: dbReader.category,
+                        where: {
+                            is_deleted: 0,
+                        },
+                    }, {
+                        required: false,
+                        model: dbReader.serviceAttachment,
+                        where: {
+                            is_deleted: 0
+                        }
                     },
-                }, {
-                    required: false,
-                    model: dbReader.serviceAttachment,
-                    where: {
-                        is_deleted: 0
+                    {
+                        required: false,
+                        model: dbReader.users,
+                        where: {
+                            role: 2,
+                            is_deleted: 0
+                        }
+                    },
+                    {
+                        required: false,
+                        as: "service_rating",
+                        model: dbReader.serviceRating,
+                        where: serviceRatingWhereConditions
                     }
-                },
-                {
-                    required: false,
-                    model: dbReader.users,
-                    where: {
-                        role: 2,
-                        is_deleted: 0
-                    }
-                },
-                {
-                    required: false,
-                    as: "service_rating",
-                    model: dbReader.serviceRating,
-                    where: serviceRatingWhereConditions
-                }
                 ]
             });
             serviceData = JSON.parse(JSON.stringify(serviceData));
@@ -886,6 +889,36 @@ class ProviderController {
                     booking_service_status_updated_by: user_id
                 });
                 serviceBookingData = JSON.parse(JSON.stringify(serviceBookingData));
+                let userData = await dbReader.users.findOne({
+                    attributes: ['name'],
+                    where: {
+                        user_id: user_id
+                    }
+                })
+                let tokens = []
+                let device_token = await dbReader.usersLoginLogs.findAll({
+                    attributes: ['device_token'],
+                    where: {
+                        user_id: serviceData.user_id,
+                        is_deleted: 0,
+                        is_logout: 0
+                    }
+                })
+                if (device_token.length) {
+                    device_token = JSON.parse(JSON.stringify(device_token));
+                    device_token.forEach((element) => {
+                        if (element.device_token && !tokens.includes(element.device_token)) {
+                            tokens.push(element.device_token);
+                        }
+                    });
+                }
+                const message = {
+                    title: 'New Booking',
+                    body: `${userData.name} has booked ${serviceData.name} service`,
+                };
+
+                let notificatiom = NotificationObject.sendPushNotification(tokens, message)
+
                 new SuccessResponse("Service booked successfully.", {
                     data: serviceBookingData
                 }).send(res);
@@ -960,6 +993,71 @@ class ProviderController {
                 user_id: handyman_user_id,
                 created_at: new Date()
             })
+            let serviceData = await dbReader.service.findOne({
+                attributes: ['name'],
+                where: {
+                    service_id: service_id,
+                    is_deleted: 0
+                }
+            })
+            let userData = await dbReader.users.findOne({
+                attributes: ['name'],
+                where: {
+                    user_id: handyman_user_id
+                }
+            })
+            let tokens = [],
+                handymanTokens = []
+            let service_booking_detail = await dbReader.serviceBooking.findOne({
+                where: {
+                    service_booking_id: service_booking_id
+                }
+            })
+            let handyman_device_token = await dbReader.usersLoginLogs.findAll({
+                attributes: ['device_token'],
+                where: {
+                    user_id: handyman_user_id,
+                    is_deleted: 0,
+                    is_logout: 0
+                }
+            })
+            if (handyman_device_token.length) {
+                handyman_device_token = JSON.parse(JSON.stringify(handyman_device_token));
+                handyman_device_token.forEach((element) => {
+                    if (element.device_token && !handymanTokens.includes(element.device_token)) {
+                        handymanTokens.push(element.device_token);
+                    }
+                });
+            }
+            const message = {
+                title: 'Assigned Service',
+                body: `${serviceData.name} service has been assigned to you`,
+            };
+            let notificatiom = NotificationObject.sendPushNotification(handymanTokens, message)
+            serviceHandymanData = JSON.parse(JSON.stringify(serviceHandymanData))
+
+            //for user-notfication
+            let device_token = await dbReader.usersLoginLogs.findAll({
+                attributes: ['device_token'],
+                where: {
+                    user_id: service_booking_detail.booked_by,
+                    is_deleted: 0,
+                    is_logout: 0
+                }
+            })
+            if (device_token.length) {
+                device_token = JSON.parse(JSON.stringify(device_token));
+                device_token.forEach((element) => {
+                    if (element.device_token && !tokens.includes(element.device_token)) {
+                        tokens.push(element.device_token);
+                    }
+                });
+            }
+            const message1 = {
+                title: 'Assigned Service',
+                body: `${serviceData.name} service has been assigned to ${userData.name} handyman`,
+            };
+            NotificationObject.sendPushNotification(tokens, message1)
             serviceHandymanData = JSON.parse(JSON.stringify(serviceHandymanData))
             new SuccessResponse("Request Successful.", {
                 data: serviceHandymanData
@@ -1009,25 +1107,18 @@ class ProviderController {
         try {
             let {
                 status,
-                service_id
+                service_booking_id
             } = req.body
             let {
                 user_id,
                 role
             } = req;
 
-            let data = await dbReader.service.findOne({
+            let data = await dbReader.serviceBooking.findOne({
                 where: {
-                    service_id: service_id,
+                    service_booking_id: service_booking_id,
                     is_deleted: 0
                 },
-                include: [{
-                    required: true,
-                    model: dbReader.serviceBooking,
-                    where: {
-                        is_deleted: 0
-                    }
-                }]
             })
             data = JSON.parse(JSON.stringify(data))
             if (data) {
@@ -1035,10 +1126,48 @@ class ProviderController {
                     booking_status: status
                 }, {
                     where: {
-                        service_id: service_id,
+                        service_booking_id: service_booking_id,
                         is_deleted: 0
                     }
                 })
+                if (status == 1) {
+                    let serviceData = await dbReader.service.findOne({
+                        attributes: ['name'],
+                        where: {
+                            is_deleted: 0,
+                            service_id: data.service_id
+                        }
+                    })
+                    let userData = await dbReader.users.findOne({
+                        attributes: ['name'],
+                        where: {
+                            user_id: user_id
+                        }
+                    })
+                    let tokens = []
+                    let device_token = await dbReader.usersLoginLogs.findAll({
+                        attributes: ['device_token'],
+                        where: {
+                            user_id: data.booked_by,
+                            is_deleted: 0,
+                            is_logout: 0
+                        }
+                    })
+                    if (device_token.length) {
+                        device_token = JSON.parse(JSON.stringify(device_token));
+                        device_token.forEach((element) => {
+                            if (element.device_token && !tokens.includes(element.device_token)) {
+                                tokens.push(element.device_token);
+                            }
+                        });
+                    }
+                    const message = {
+                        title: 'Booking Accepted',
+                        body: `${userData.name} has accepted ${serviceData.name} service`,
+                    };
+
+                    let notificatiom = NotificationObject.sendPushNotification(tokens, message)
+                }
                 new SuccessResponse("Request Successful.", {}).send(res);
             } else {
                 throw new BadRequestError("Service Booking not found.")
@@ -1243,7 +1372,7 @@ class ProviderController {
                             user_id: user_id
                         }
                     }, {
-                        attributes: ["user_id", "name", 'email', "contact", "role", "photo", "address", "city", "state", "country",],
+                        attributes: ["user_id", "name", 'email', "contact", "role", "photo", "address", "city", "state", "country", ],
                         required: false,
                         model: dbReader.users,
                         where: {
@@ -1404,7 +1533,6 @@ class ProviderController {
                             service_booking_id: service_booking_id,
                         }
                     });
-
                     if (status === 2) { //If status is completed then add respective service amount to provider's wallet.
                         let provider_id = serviceBookingData?.Service?.user_id,
                             service_id = serviceBookingData?.Service?.service_id,
@@ -1417,6 +1545,28 @@ class ProviderController {
                         });
                     }
 
+                    let notificationStatus = status === 0 ? 'pending' : status === 1 ? 'in_progress' :  status === 2 ? 'completed' :  status === 3 ? 'cancelled' : ""
+                    let device_token = await dbReader.usersLoginLogs.findAll({
+                        attributes: ['device_token'],
+                        where: {
+                            user_id: [provider_id, serviceBookingData.booked_by],
+                            is_deleted: 0,
+                            is_logout: 0
+                        }
+                    })
+                    if (device_token.length) {
+                        device_token = JSON.parse(JSON.stringify(device_token));
+                        device_token.forEach((element) => {
+                            if (element.device_token && !tokens.includes(element.device_token)) {
+                                tokens.push(element.device_token);
+                            }
+                        });
+                    }
+                    const message = {
+                        title: 'Service Status',
+                        body: `Your service status is changed to ${notificationStatus}`,
+                    };
+                    NotificationObject.sendPushNotification(tokens, message)
                     new SuccessResponse("Status updated successfully.", {}).send(res);
                 }
             }

@@ -24,6 +24,14 @@ require('dotenv').config()
 const enumerationController = require("./enumurationController");
 var ObjectMail = new nodeMailerController_1();
 var EnumObject = new enumerationController();
+const admin = require('firebase-admin');
+const serviceAccount = require('../../urbanclone-13a69-firebase-adminsdk-7caf5-c4a27d4921.json');
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+});
+
+
 
 class NotificationController {
 
@@ -116,6 +124,71 @@ class NotificationController {
         }
     }
 
+    sendPushNotification (registrationTokens, message) {
+        const payload = {
+          notification: {
+            title: message.title,
+            body: message.body,
+          },
+          android: {
+            notification: {
+              icon: 'ProMaster', // Android-specific icon
+              color: '#f45342', // Android-specific color
+            },
+          },
+          apns: {
+            payload: {
+              aps: {
+                sound: 'default', // iOS-specific sound
+              },
+            },
+          },
+        };
+      
+        admin
+          .messaging()
+          .sendToDevice(registrationTokens, payload)
+          .then((response) => {
+            console.log('Successfully sent message:', response);
+            if (response.failureCount > 0) {
+              const failedTokens = [];
+              response.results.forEach((result, index) => {
+                const error = result.error;
+                if (error) {
+                  console.error(
+                    'Failure sending notification to',
+                    registrationTokens[index],
+                    error
+                  );
+                  failedTokens.push(registrationTokens[index]);
+                }
+              });
+              console.log('List of tokens that caused failures:', failedTokens);
+            }
+          })
+          .catch((error) => {
+            console.error('Error sending message:', error);
+          });
+      };
+      
+    // sendPushNotification = (registrationToken, message) => {
+    //     const payload = {
+    //       notification: {
+    //         title:message.title,
+    //         body: message.body,
+    //       },
+    //     };
+      
+    //     admin
+    //       .messaging()
+    //       .sendToDevice(registrationToken, payload)
+    //       .then((response) => {
+    //         console.log('Successfully sent message:', response);
+    //       })
+    //       .catch((error) => {
+    //         console.error('Error sending message:', error);
+    //       });
+    //   };
 }
 
 module.exports = NotificationController;
