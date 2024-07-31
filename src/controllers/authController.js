@@ -559,8 +559,8 @@ class AuthController {
     }
     updateUserDetail = async (req, res) => {
         try {
-            let { name, username, email, password, contact, city, state, country, address, photo } = req.body
-            password = crypto.encrypt(password.toString(), true).toString();
+            let { name, username, email, contact, city, state, country, address, photo } = req.body
+            // password = crypto.encrypt(password.toString(), true).toString();
             let {
                 user_id,
                 role
@@ -601,7 +601,7 @@ class AuthController {
                     name: name,
                     username: username,
                     email: email,
-                    password: password,
+                    // password: password,
                     contact: contact,
                     city: city,
                     state: state,
