@@ -568,15 +568,62 @@ class ProviderController {
                 user_id,
                 role
             } = req;
+
             let serviceData = await dbReader.service.findAll({
                 where: {
                     category_id: category_id,
                     is_deleted: 0
                 },
+                include: [{
+                    model: dbReader.category,
+                    where: {
+                        is_deleted: 0,
+                    },
+                }, {
+                    attributes: ['user_id', 'name', 'email', 'contact', 'photo'],
+                    model: dbReader.users,
+                    where: {
+                        role: 2,
+                        is_deleted: 0
+                    }
+                }, {
+                    required: false,
+                    model: dbReader.serviceAttachment,
+                    where: {
+                        is_deleted: 0
+                    }
+                }, {
+                    required: false,
+                    as: "service_rating",
+                    model: dbReader.serviceRating,
+                    where: {
+                        is_deleted: 0,
+                        rating_type: 1
+                    }
+                }]
             });
             serviceData = JSON.parse(JSON.stringify(serviceData));
+
+            console.log("serviceData :: ", serviceData);
+
+            var temp = [];
+            if (serviceData) {
+                for (let i = 0; i < serviceData?.length; i++) {
+
+                    let cnt = 0, avg_rating = 0;
+
+                    if (serviceData[i]?.service_rating?.length > 0) {
+                        for (let j = 0; j < serviceData[i]?.service_rating?.length; j++) {
+                            cnt = parseFloat(cnt) + parseFloat(serviceData[i]?.service_rating[j]?.rating)
+                        }
+                        avg_rating = parseFloat(parseFloat(cnt) / serviceData[i]?.service_rating?.length).toFixed(2);
+                    }
+                    temp.push({ ...serviceData[i], avaerage_rating: avg_rating })
+                }
+            }
+
             new SuccessResponse("Service get successfully.", {
-                data: serviceData
+                data: temp
             }).send(res);
         } catch (e) {
             ApiError.handle(new BadRequestError(e.message), res);
@@ -728,31 +775,31 @@ class ProviderController {
             let serviceData = await dbReader.service.findAll({
                 where: serviceWhereConditions,
                 include: [{
-                        model: dbReader.category,
-                        where: {
-                            is_deleted: 0,
-                        },
-                    }, {
-                        required: false,
-                        model: dbReader.serviceAttachment,
-                        where: {
-                            is_deleted: 0
-                        }
+                    model: dbReader.category,
+                    where: {
+                        is_deleted: 0,
                     },
-                    {
-                        required: false,
-                        model: dbReader.users,
-                        where: {
-                            role: 2,
-                            is_deleted: 0
-                        }
-                    },
-                    {
-                        required: false,
-                        as: "service_rating",
-                        model: dbReader.serviceRating,
-                        where: serviceRatingWhereConditions
+                }, {
+                    required: false,
+                    model: dbReader.serviceAttachment,
+                    where: {
+                        is_deleted: 0
                     }
+                },
+                {
+                    required: false,
+                    model: dbReader.users,
+                    where: {
+                        role: 2,
+                        is_deleted: 0
+                    }
+                },
+                {
+                    required: false,
+                    as: "service_rating",
+                    model: dbReader.serviceRating,
+                    where: serviceRatingWhereConditions
+                }
                 ]
             });
             serviceData = JSON.parse(JSON.stringify(serviceData));
@@ -1757,12 +1804,12 @@ class ProviderController {
                     booking_status: status
                 },
                 include: [{
-                    model:dbReader.serviceBookingHandyman,
-                    where:{
-                        user_id:user_id,
-                        is_deleted:0
+                    model: dbReader.serviceBookingHandyman,
+                    where: {
+                        user_id: user_id,
+                        is_deleted: 0
                     }
-                },{
+                }, {
                     model: dbReader.service,
                     where: {
                         is_deleted: 0
