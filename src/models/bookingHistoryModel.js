@@ -16,7 +16,7 @@ module.exports = function (sequelize, DataTypes) {
         description: DataTypes.STRING(256),
         assignedTo: {
             type: DataTypes.INTEGER,
-            allowNull: false,
+            defaultValue: 0,
         },
         is_deleted: {
             type: DataTypes.INTEGER,
@@ -42,6 +42,6 @@ module.exports = function (sequelize, DataTypes) {
         // BookingHistory.belongsTo(models.ServiceBooking, { foreignKey: 'service_booking_id' });
         // BookingHistory.belongsTo(models.User, { foreignKey: 'assignedTo' });
     };
-    
+
     return BookingHistory;
 };

@@ -58,7 +58,6 @@ class ProviderRoute extends ProviderController {
 
 
 
-
         router.post("/servicePaymentFromUser", validator(jois.servicePaymentFromUserPayload), tokenValidate, this.servicePaymentFromUser);
         router.post("/stripeWebHook", this.stripeWebHook);
 

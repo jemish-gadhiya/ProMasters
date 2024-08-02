@@ -859,6 +859,7 @@ class ProviderController {
 
             let couponData = await dbReader.coupan.findOne({
                 where: {
+                    coupon_id: coupan_id,
                     is_active: 1,
                     is_deleted: 0
                 }
@@ -894,6 +895,12 @@ class ProviderController {
                     where: {
                         user_id: user_id
                     }
+                });
+
+                await dbWriter.serviceBookingHistory.create({
+                    service_booking_id: serviceBookingData.service_booking_id,
+                    title: "New booking",
+                    description: "New booking added by " + userData.name,
                 })
                 let tokens = []
                 let device_token = await dbReader.usersLoginLogs.findAll({
@@ -930,7 +937,7 @@ class ProviderController {
                         booking_id: booking_id,
                         is_deleted: 0
                     }
-                })
+                });
                 new SuccessResponse("Service booking updated successfully.", {}).send(res);
             }
         } catch (e) {
@@ -1372,7 +1379,7 @@ class ProviderController {
                             user_id: user_id
                         }
                     }, {
-                        attributes: ["user_id", "name", 'email', "contact", "role", "photo", "address", "city", "state", "country", ],
+                        attributes: ["user_id", "name", 'email', "contact", "role", "photo", "address", "city", "state", "country",],
                         required: false,
                         model: dbReader.users,
                         where: {
@@ -1545,7 +1552,7 @@ class ProviderController {
                         });
                     }
 
-                    let notificationStatus = status === 0 ? 'pending' : status === 1 ? 'in_progress' :  status === 2 ? 'completed' :  status === 3 ? 'cancelled' : ""
+                    let notificationStatus = status === 0 ? 'pending' : status === 1 ? 'in_progress' : status === 2 ? 'completed' : status === 3 ? 'cancelled' : ""
                     let device_token = await dbReader.usersLoginLogs.findAll({
                         attributes: ['device_token'],
                         where: {
@@ -1728,7 +1735,7 @@ class ProviderController {
                 }]
             });
             serviceBookingData = JSON.parse(JSON.stringify(serviceBookingData));
-            new SuccessResponse("Request successful.", {
+            new SuccessResponse("Service history get successfully.", {
                 data: serviceBookingData
             }).send(res);
         } catch (e) {
