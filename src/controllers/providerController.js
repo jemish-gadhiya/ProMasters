@@ -1728,14 +1728,54 @@ class ProviderController {
                 }]
             });
             serviceBookingData = JSON.parse(JSON.stringify(serviceBookingData));
-            new SuccessResponse("Service history get successfully.", {
+            new SuccessResponse("Request successful.", {
                 data: serviceBookingData
             }).send(res);
         } catch (e) {
             ApiError.handle(new BadRequestError(e.message), res);
         }
     }
-
+    getHandymanAssignedServiceBookingByStatus = async (req, res) => {
+        try {
+            let {
+                status
+            } = req.body
+            let {
+                user_id,
+                role
+            } = req;
+            let serviceBookingData = await dbReader.serviceBooking.findAll({
+                where: {
+                    is_deleted: 0,
+                    booking_status: status
+                },
+                include: [{
+                    model:dbReader.serviceBookingHandyman,
+                    where:{
+                        user_id:user_id,
+                        is_deleted:0
+                    }
+                },{
+                    model: dbReader.service,
+                    where: {
+                        is_deleted: 0
+                    },
+                    include: [{
+                        model: dbReader.users,
+                        where: {
+                            is_deleted: 0
+                        }
+                    }]
+                }]
+            });
+            serviceBookingData = JSON.parse(JSON.stringify(serviceBookingData));
+            new SuccessResponse("Request successful.", {
+                data: serviceBookingData
+            }).send(res);
+        } catch (e) {
+            ApiError.handle(new BadRequestError(e.message), res);
+        }
+    }
     //Manage payment flow
     servicePaymentFromUser = async (req, res) => {
         try {
