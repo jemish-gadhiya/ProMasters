@@ -728,31 +728,31 @@ class ProviderController {
             let serviceData = await dbReader.service.findAll({
                 where: serviceWhereConditions,
                 include: [{
-                    model: dbReader.category,
-                    where: {
-                        is_deleted: 0,
+                        model: dbReader.category,
+                        where: {
+                            is_deleted: 0,
+                        },
+                    }, {
+                        required: false,
+                        model: dbReader.serviceAttachment,
+                        where: {
+                            is_deleted: 0
+                        }
                     },
-                }, {
-                    required: false,
-                    model: dbReader.serviceAttachment,
-                    where: {
-                        is_deleted: 0
+                    {
+                        required: false,
+                        model: dbReader.users,
+                        where: {
+                            role: 2,
+                            is_deleted: 0
+                        }
+                    },
+                    {
+                        required: false,
+                        as: "service_rating",
+                        model: dbReader.serviceRating,
+                        where: serviceRatingWhereConditions
                     }
-                },
-                {
-                    required: false,
-                    model: dbReader.users,
-                    where: {
-                        role: 2,
-                        is_deleted: 0
-                    }
-                },
-                {
-                    required: false,
-                    as: "service_rating",
-                    model: dbReader.serviceRating,
-                    where: serviceRatingWhereConditions
-                }
                 ]
             });
             serviceData = JSON.parse(JSON.stringify(serviceData));
@@ -890,7 +890,6 @@ class ProviderController {
                     booking_service_status_updated_by: user_id
                 });
                 serviceBookingData = JSON.parse(JSON.stringify(serviceBookingData));
-
                 let userData = await dbReader.users.findOne({
                     attributes: ['name'],
                     where: {
@@ -1743,7 +1742,47 @@ class ProviderController {
             ApiError.handle(new BadRequestError(e.message), res);
         }
     }
-
+    getHandymanAssignedServiceBookingByStatus = async (req, res) => {
+        try {
+            let {
+                status
+            } = req.body
+            let {
+                user_id,
+                role
+            } = req;
+            let serviceBookingData = await dbReader.serviceBooking.findAll({
+                where: {
+                    is_deleted: 0,
+                    booking_status: status
+                },
+                include: [{
+                    model:dbReader.serviceBookingHandyman,
+                    where:{
+                        user_id:user_id,
+                        is_deleted:0
+                    }
+                },{
+                    model: dbReader.service,
+                    where: {
+                        is_deleted: 0
+                    },
+                    include: [{
+                        model: dbReader.users,
+                        where: {
+                            is_deleted: 0
+                        }
+                    }]
+                }]
+            });
+            serviceBookingData = JSON.parse(JSON.stringify(serviceBookingData));
+            new SuccessResponse("Request successful.", {
+                data: serviceBookingData
+            }).send(res);
+        } catch (e) {
+            ApiError.handle(new BadRequestError(e.message), res);
+        }
+    }
     //Manage payment flow
     servicePaymentFromUser = async (req, res) => {
         try {
