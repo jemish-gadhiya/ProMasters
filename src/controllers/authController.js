@@ -76,7 +76,7 @@ class AuthController {
                     let email_otp = generateRandomNo(6).toString(),
                         sms_otp = "123456"//await generateRandomNo(6).toString();
 
-                    await dbWriter.users.create({
+                    let userData = await dbWriter.users.create({
                         name: name,
                         username: username,
                         email: email,
@@ -95,6 +95,29 @@ class AuthController {
                         email_otp: email_otp,
                         sms_otp: sms_otp
                     });
+
+                    if (role === 2) {
+                        let sub_plan_data = await dbReader.subscriptionPlan.findOne({
+                            where: {
+                                amount: 0,
+                                is_deleted: 0
+                            }
+                        });
+                        sub_plan_data = JSON.parse(JSON.stringify(sub_plan_data));
+
+
+                        if (sub_plan_data) {
+                            const currentDate = moment();
+                            const oneMonthLater = currentDate.add(1, 'months');
+                            const formattedDate = oneMonthLater.format('DD-MM-YYYY');
+                            await dbWriter.subscription.create({
+                                user_id: userData?.user_id,
+                                subscription_plan_id: sub_plan_data?.subscription_plan_id,
+                                amount: 0,
+                                due_date: formattedDate,
+                            });
+                        }
+                    }
 
                     let payload = {
                         email: email,

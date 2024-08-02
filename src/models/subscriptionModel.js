@@ -41,6 +41,12 @@ module.exports = function (sequelize, DataTypes) {
             foreignKey: 'subscription_id',
             sourceKey: 'subscription_id'
         });
+
+        Subscription.belongsTo(models.subscriptionPlan, {
+            foreignKey: 'subscription_plan_id',
+            targetKey: 'subscription_plan_id'
+        });
+
     };
 
     return Subscription;

@@ -50,6 +50,15 @@ exports.jois = {
         status: Joi.number().allow(0).required(),
     }),
 
+    paymentIntentForPurchaseSubscriptionPayload: Joi.object().keys({
+        subscription_plan_id: Joi.number().required()
+    }),
+
+    // purchaseSubscriptionPayload: Joi.object().keys({
+    //     subscription_plan_id: Joi.number().required(),
+    //     card_token: Joi.string().required(),
+    // }),
+
 
     servicePaymentFromUserPayload: Joi.object().keys({
         service_booking_id: Joi.number().required(),
