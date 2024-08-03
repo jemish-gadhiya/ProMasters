@@ -683,10 +683,10 @@ class ProviderController {
             } = req;
             let {
                 service_user_id = [],
-                rating,
-                min_amount,
-                max_amount,
-                category
+                    rating,
+                    min_amount,
+                    max_amount,
+                    category
             } = req.body;
 
             // Build the where conditions
@@ -785,44 +785,43 @@ class ProviderController {
                     user_id: user_id,
                     is_deleted: 0
                 },
-                include:[{
-                    model:dbReader.service,
-                    where:{
-                        is_deleted:0
+                include: [{
+                    model: dbReader.service,
+                    where: {
+                        is_deleted: 0
                     },
-                    include:[{
+                    include: [{
                         required: false,
                         model: dbReader.serviceBookingHandyman,
                         where: {
                             is_deleted: 0
                         },
-                        include:[
-                            {
-                                model: dbReader.users,
-                                attributes: ["user_id", "name", "username", "email", "photo", "is_active", "created_at"],
-                                where: {
-                                    is_deleted: 0,
-                                    is_active: 1
-                                },
+                        include: [{
+                            model: dbReader.users,
+                            attributes: ["user_id", "name", "username", "email", "photo", "is_active", "created_at"],
+                            where: {
+                                is_deleted: 0,
+                                is_active: 1
+                            },
                         }]
-                    },{
-                    as: "service_rating",
-                    model:dbReader.serviceRating,
-                    where:{
-                        is_deleted:0,
-                        rating_type:1
-                    }
-                },{
-                    model:dbReader.category,
-                    where:{
-                        is_deleted:0
-                    }
-                }]
-                },{
-                    model:dbReader.serviceRating,
-                    where:{
-                        is_deleted:0,
-                        rating_type:2
+                    }, {
+                        as: "service_rating",
+                        model: dbReader.serviceRating,
+                        where: {
+                            is_deleted: 0,
+                            rating_type: 1
+                        }
+                    }, {
+                        model: dbReader.category,
+                        where: {
+                            is_deleted: 0
+                        }
+                    }]
+                }, {
+                    model: dbReader.serviceRating,
+                    where: {
+                        is_deleted: 0,
+                        rating_type: 2
                     }
                 }]
             });
@@ -1440,7 +1439,7 @@ class ProviderController {
                             user_id: user_id
                         }
                     }, {
-                        attributes: ["user_id", "name", 'email', "contact", "role", "photo", "address", "city", "state", "country",],
+                        attributes: ["user_id", "name", 'email', "contact", "role", "photo", "address", "city", "state", "country", ],
                         required: false,
                         model: dbReader.users,
                         where: {
@@ -1806,46 +1805,65 @@ class ProviderController {
     getHandymanAssignedServiceBookingByStatus = async (req, res) => {
         try {
             let {
-                status
-            } = req.body
-            let {
                 user_id,
                 role
             } = req;
-            let whereCondition = 
-                {
-                    is_deleted: 0,
-                    booking_status: status
-                }
-            if(status == 3){
-                whereCondition = {
-                    is_deleted: 0,
-                }
-            }
-            let serviceBookingData = await dbReader.serviceBooking.findAll({
-                where: whereCondition,
+            let serviceData = await dbReader.service.findAll({
+                where: {
+                    is_deleted: 0
+                },
                 include: [{
-                    model:dbReader.serviceBookingHandyman,
-                    where:{
-                        user_id:user_id,
-                        is_deleted:0
+                    model: dbReader.users,
+                    where: {
+                        is_deleted: 0
                     }
-                },{
-                    model: dbReader.service,
+                }, {
+                    required: true,
+                    model: dbReader.serviceBooking,
                     where: {
                         is_deleted: 0
                     },
                     include: [{
-                        model: dbReader.users,
+                        model: dbReader.serviceBookingHandyman,
                         where: {
+                            user_id: user_id,
                             is_deleted: 0
+                        }
+                    }, {
+                        model: dbReader.users,
+                        attributes: ["user_id", "name", "username", "email", "photo", "is_active", "created_at"],
+                        where: {
+                            is_deleted: 0,
+                            is_active: 1
                         }
                     }]
                 }]
             });
-            serviceBookingData = JSON.parse(JSON.stringify(serviceBookingData));
+            serviceData = JSON.parse(JSON.stringify(serviceData));
+            // let serviceBookingData = await dbReader.serviceBooking.findAll({
+            //     where: whereCondition,
+            //     include: [{
+            //         model:dbReader.serviceBookingHandyman,
+            //         where:{
+            //             user_id:user_id,
+            //             is_deleted:0
+            //         }
+            //     },{
+            //         model: dbReader.service,
+            //         where: {
+            //             is_deleted: 0
+            //         },
+            //         include: [{
+            //             model: dbReader.users,
+            //             where: {
+            //                 is_deleted: 0
+            //             }
+            //         }]
+            //     }]
+            // });
+            // serviceBookingData = JSON.parse(JSON.stringify(serviceBookingData));
             new SuccessResponse("Request successful.", {
-                data: serviceBookingData
+                data: serviceData
             }).send(res);
         } catch (e) {
             ApiError.handle(new BadRequestError(e.message), res);
@@ -2019,8 +2037,12 @@ class ProviderController {
                             country: 'AE', // Set the country code to UAE
                             email: userData?.email,
                             capabilities: {
-                                card_payments: { requested: true },
-                                transfers: { requested: true },
+                                card_payments: {
+                                    requested: true
+                                },
+                                transfers: {
+                                    requested: true
+                                },
                             },
                         });
                         stripe_account_id = account.id;
@@ -2036,8 +2058,8 @@ class ProviderController {
                                     currency: 'aed',
                                     account_holder_name: userData?.name,
                                     account_holder_type: 'individual', // or 'company'
-                                    routing_number: routing_number,// Replace with the appropriate bank code or SWIFT code
-                                    account_number: account_number,// Replace with the appropriate bank account number
+                                    routing_number: routing_number, // Replace with the appropriate bank code or SWIFT code
+                                    account_number: account_number, // Replace with the appropriate bank account number
                                 },
                             }
                         );
