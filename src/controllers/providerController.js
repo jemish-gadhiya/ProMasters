@@ -1812,11 +1812,18 @@ class ProviderController {
                 user_id,
                 role
             } = req;
-            let serviceBookingData = await dbReader.serviceBooking.findAll({
-                where: {
+            let whereCondition = 
+                {
                     is_deleted: 0,
                     booking_status: status
-                },
+                }
+            if(status == 3){
+                whereCondition = {
+                    is_deleted: 0,
+                }
+            }
+            let serviceBookingData = await dbReader.serviceBooking.findAll({
+                where: whereCondition,
                 include: [{
                     model:dbReader.serviceBookingHandyman,
                     where:{
