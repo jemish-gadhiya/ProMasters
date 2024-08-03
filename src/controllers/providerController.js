@@ -786,11 +786,11 @@ class ProviderController {
                 role
             } = req;
             let {
-                service_user_id,
-                rating,
-                min_amount,
-                max_amount,
-                category
+                service_user_id = [],
+                    rating,
+                    min_amount,
+                    max_amount,
+                    category
             } = req.body;
 
             // Build the where conditions
@@ -798,7 +798,7 @@ class ProviderController {
                 is_deleted: 0
             };
 
-            if (service_user_id) {
+            if (service_user_id.length) {
                 serviceWhereConditions.user_id = service_user_id;
             }
 
@@ -832,31 +832,31 @@ class ProviderController {
             let serviceData = await dbReader.service.findAll({
                 where: serviceWhereConditions,
                 include: [{
-                    model: dbReader.category,
-                    where: {
-                        is_deleted: 0,
+                        model: dbReader.category,
+                        where: {
+                            is_deleted: 0,
+                        },
+                    }, {
+                        required: false,
+                        model: dbReader.serviceAttachment,
+                        where: {
+                            is_deleted: 0
+                        }
                     },
-                }, {
-                    required: false,
-                    model: dbReader.serviceAttachment,
-                    where: {
-                        is_deleted: 0
+                    {
+                        required: false,
+                        model: dbReader.users,
+                        where: {
+                            role: 2,
+                            is_deleted: 0
+                        }
+                    },
+                    {
+                        required: false,
+                        as: "service_rating",
+                        model: dbReader.serviceRating,
+                        where: serviceRatingWhereConditions
                     }
-                },
-                {
-                    required: false,
-                    model: dbReader.users,
-                    where: {
-                        role: 2,
-                        is_deleted: 0
-                    }
-                },
-                {
-                    required: false,
-                    as: "service_rating",
-                    model: dbReader.serviceRating,
-                    where: serviceRatingWhereConditions
-                }
                 ]
             });
             serviceData = JSON.parse(JSON.stringify(serviceData));
@@ -877,6 +877,66 @@ class ProviderController {
             ApiError.handle(new BadRequestError(e.message), res);
         }
     };
+    getProviderDetail = async (req, res) => {
+        try {
+            let {
+                user_id,
+                role
+            } = req;
+            let userData = await dbReader.users.findOne({
+                attributes: ["user_id", "name", "username", "email", "contact", "email", "role", "photo", "address", "city", "state", "country", "experience", "is_email_verified", "is_sms_verified", "is_active", "created_at"],
+                where: {
+                    user_id: user_id,
+                    is_deleted: 0
+                },
+                include: [{
+                    model: dbReader.service,
+                    where: {
+                        is_deleted: 0
+                    },
+                    include: [{
+                        required: false,
+                        model: dbReader.serviceBookingHandyman,
+                        where: {
+                            is_deleted: 0
+                        },
+                        include: [{
+                            model: dbReader.users,
+                            attributes: ["user_id", "name", "username", "email", "photo", "is_active", "created_at"],
+                            where: {
+                                is_deleted: 0,
+                                is_active: 1
+                            },
+                        }]
+                    }, {
+                        as: "service_rating",
+                        model: dbReader.serviceRating,
+                        where: {
+                            is_deleted: 0,
+                            rating_type: 1
+                        }
+                    }, {
+                        model: dbReader.category,
+                        where: {
+                            is_deleted: 0
+                        }
+                    }]
+                }, {
+                    model: dbReader.serviceRating,
+                    where: {
+                        is_deleted: 0,
+                        rating_type: 2
+                    }
+                }]
+            });
+            userData = JSON.parse(JSON.stringify(userData));
+            new SuccessResponse("Get provider detail successfully.", {
+                ...userData
+            }).send(res);
+        } catch (e) {
+            ApiError.handle(new BadRequestError(e.message), res);
+        }
+    }
 
     addServiceBooking = async (req, res) => {
         try {
@@ -1483,7 +1543,7 @@ class ProviderController {
                             user_id: user_id
                         }
                     }, {
-                        attributes: ["user_id", "name", 'email', "contact", "role", "photo", "address", "city", "state", "country",],
+                        attributes: ["user_id", "name", 'email', "contact", "role", "photo", "address", "city", "state", "country", ],
                         required: false,
                         model: dbReader.users,
                         where: {
@@ -1849,47 +1909,70 @@ class ProviderController {
     getHandymanAssignedServiceBookingByStatus = async (req, res) => {
         try {
             let {
-                status
-            } = req.body
-            let {
                 user_id,
                 role
             } = req;
-            let serviceBookingData = await dbReader.serviceBooking.findAll({
+            let serviceData = await dbReader.service.findAll({
                 where: {
-                    is_deleted: 0,
-                    booking_status: status
+                    is_deleted: 0
                 },
                 include: [{
-                    model: dbReader.serviceBookingHandyman,
+                    model: dbReader.users,
                     where: {
-                        user_id: user_id,
                         is_deleted: 0
                     }
                 }, {
-                    model: dbReader.service,
+                    required: true,
+                    model: dbReader.serviceBooking,
                     where: {
                         is_deleted: 0
                     },
                     include: [{
-                        model: dbReader.users,
+                        model: dbReader.serviceBookingHandyman,
                         where: {
+                            user_id: user_id,
                             is_deleted: 0
+                        }
+                    }, {
+                        model: dbReader.users,
+                        attributes: ["user_id", "name", "username", "email", "photo", "is_active", "created_at"],
+                        where: {
+                            is_deleted: 0,
+                            is_active: 1
                         }
                     }]
                 }]
             });
-            serviceBookingData = JSON.parse(JSON.stringify(serviceBookingData));
+            serviceData = JSON.parse(JSON.stringify(serviceData));
+            // let serviceBookingData = await dbReader.serviceBooking.findAll({
+            //     where: whereCondition,
+            //     include: [{
+            //         model:dbReader.serviceBookingHandyman,
+            //         where:{
+            //             user_id:user_id,
+            //             is_deleted:0
+            //         }
+            //     },{
+            //         model: dbReader.service,
+            //         where: {
+            //             is_deleted: 0
+            //         },
+            //         include: [{
+            //             model: dbReader.users,
+            //             where: {
+            //                 is_deleted: 0
+            //             }
+            //         }]
+            //     }]
+            // });
+            // serviceBookingData = JSON.parse(JSON.stringify(serviceBookingData));
             new SuccessResponse("Request successful.", {
-                data: serviceBookingData
+                data: serviceData
             }).send(res);
         } catch (e) {
             ApiError.handle(new BadRequestError(e.message), res);
         }
     }
-
-
-
     //Manage payment flow
     paymentIntentForPurchaseSubscription = async (req, res) => {
         try {
