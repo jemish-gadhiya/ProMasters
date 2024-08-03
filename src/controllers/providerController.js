@@ -2231,6 +2231,8 @@ class ProviderController {
         }
     }
 
+
+    //Old Approach Create stripe account for user and link bank with it and store it with the user details.
     createProviderStripeAccount = async (req, res) => {
         try {
             let {
@@ -2306,6 +2308,50 @@ class ProviderController {
                         stripe_bank_account_id: stripe_bank_account_id
                     }).send(res);
                 }
+            }
+        } catch (e) {
+            ApiError.handle(new BadRequestError(e.message), res);
+        }
+    }
+
+
+    //New approach to save bank account number and bank account routing number with user data
+    saveBankAccountAndRoutingDetails = async (req, res) => {
+        try {
+            let {
+                account_number,
+                routing_number
+            } = req.body;
+            let {
+                user_id,
+                role
+            } = req;
+
+            let userData = await dbReader.users.findOne({
+                where: {
+                    user_id: user_id,
+                    is_deleted: 0
+                }
+            });
+            userData = JSON.parse(JSON.stringify(userData));
+            if (!userData) {
+                throw new Error("User data not found.");
+            } else {
+
+
+                await dbWriter.users.update({
+                    bank_account_number: account_number,
+                    routing_number: routing_number
+                }, {
+                    where: {
+                        user_id: user_id
+                    }
+                });
+
+                new SuccessResponse("Bank details  updated successfully.", {
+                    bank_account_number: account_number,
+                    routing_number: routing_number
+                }).send(res);
             }
         } catch (e) {
             ApiError.handle(new BadRequestError(e.message), res);

@@ -65,13 +65,18 @@ exports.jois = {
     }),
 
 
-    transferToProviderPayload: Joi.object().keys({
-        user_id: Joi.number().required(),
-        amount: Joi.number().required(),
-    }),
+    // transferToProviderPayload: Joi.object().keys({
+    //     user_id: Joi.number().required(),
+    //     amount: Joi.number().required(),
+    // }),
 
     createProviderStripeAccountPayload: Joi.object().keys({
         routing_number: Joi.string().required(),
         account_number: Joi.string().required(),
+    }),
+
+    saveBankAccountAndRoutingDetailsPayload: Joi.object().keys({
+        account_number: Joi.string().required(),
+        routing_number: Joi.string().required(),
     }),
 }

@@ -1408,21 +1408,24 @@ class AuthController {
             } else {
 
                 let providerData = await dbReader.users.findOne({
-                    attributes: ["user_id", "name", "username", "email", "contact", "email", "role", "photo", "address", "city", "state", "country", "experience", "is_email_verified", "is_sms_verified", "is_active", "created_at"],
+                    attributes: ["user_id", "name", "username", "email", "contact", "email", "role", "photo", "address", "city", "state", "country", "experience", "is_email_verified", "is_sms_verified", "stripe_account_id", "stripe_bank_account_id", "routing_number", "bank_account_number", "is_active", "created_at"],
                     where: {
-                        user_id: user_id,
+                        user_id: provider_id,
                         is_deleted: 0
                     }
                 });
                 providerData = JSON.parse(JSON.stringify(providerData));
 
+                //console.log("provider data are :::: ", providerData);
+
                 if (providerData.stripe_account_id && providerData.stripe_bank_account_id) {
                     //Need to develop flow here for send payment to provider once client give payment gateway information
+
                     let paymentData = await stripe.payouts.create({
                         amount: amount,
                         currency: 'aed',
-                        destination: bankAccount.id,
-                        stripe_account: bankAccount.account,
+                        destination: providerData.stripe_account_id,
+                        stripe_account: providerData.stripe_bank_account_id,
                     });
 
                     let data = await dbWriter.wallet.create({
@@ -1433,7 +1436,63 @@ class AuthController {
                         description: JSON.stringify(paymentData)
                     });
 
-                    new SuccessResponse("Payment done successfully.", {}).send(res);
+                    new SuccessResponse("Payment done successfully.", { data }).send(res);
+
+
+
+
+
+
+
+
+
+                    // const token = await stripe.tokens.create({
+                    //     bank_account: {
+                    //         country: 'AE',
+                    //         currency: 'aed',
+                    //         account_holder_name: providerData?.name,
+                    //         account_holder_type: 'individual',
+                    //         account_number: "AE070331234567890123456"
+                    //         // account_number: providerData?.bank_account_number,
+                    //         // routing_number: providerData?.routing_number,
+                    //     },
+                    // });
+
+
+                    // console.log("token :::: ", token);
+
+                    // if (token?.id) {
+
+                    //     const paymentData = await stripe.payouts.create({
+                    //         amount: amount, // Amount in cents
+                    //         currency: 'aed',
+                    //         destination: token?.id,
+                    //         method: 'instant', // Optional, can be 'standard' or 'instant'
+                    //     });
+
+                    //     console.log("paymentData data are :::: ", paymentData);
+
+
+                    //     let paymentData = await stripe.payouts.create({
+                    //         amount: amount,
+                    //         currency: 'aed',
+                    //         destination: bankAccount.id,
+                    //         stripe_account: bankAccount.account,
+                    //     });
+
+                    //     let data = await dbWriter.wallet.create({
+                    //         provider_id: provider_id,
+                    //         service_id: 0,
+                    //         amount: amount,
+                    //         is_paid_by_admin: 1,
+                    //         description: JSON.stringify(paymentData)
+                    //     });
+
+                    //     new SuccessResponse("Payment done successfully.", { data }).send(res);
+
+                    // } else {
+                    //     throw new Error("Invalid user bank account details.");
+                    // }
                 } else {
                     throw new Error("User's bank account is not set up.");
                 }

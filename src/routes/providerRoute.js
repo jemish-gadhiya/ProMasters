@@ -66,6 +66,10 @@ class ProviderRoute extends ProviderController {
 
 
         router.post("/createProviderStripeAccount", validator(jois.createProviderStripeAccountPayload), tokenValidate, this.createProviderStripeAccount);
+
+
+        //This API is for for testing and reference, this is not in use
+        router.post("/saveBankAccountAndRoutingDetails", validator(jois.saveBankAccountAndRoutingDetailsPayload), tokenValidate, this.saveBankAccountAndRoutingDetails);
         //router.post("/transferToProvider", validator(jois.transferToProviderPayload), tokenValidate, this.transferToProvider);
 
     }
