@@ -76,7 +76,7 @@ class AuthController {
                     let email_otp = generateRandomNo(6).toString(),
                         sms_otp = "123456"//await generateRandomNo(6).toString();
 
-                    await dbWriter.users.create({
+                    let userData = await dbWriter.users.create({
                         name: name,
                         username: username,
                         email: email,
@@ -95,6 +95,29 @@ class AuthController {
                         email_otp: email_otp,
                         sms_otp: sms_otp
                     });
+
+                    if (role === 2) {
+                        let sub_plan_data = await dbReader.subscriptionPlan.findOne({
+                            where: {
+                                amount: 0,
+                                is_deleted: 0
+                            }
+                        });
+                        sub_plan_data = JSON.parse(JSON.stringify(sub_plan_data));
+
+
+                        if (sub_plan_data) {
+                            const currentDate = moment();
+                            const oneMonthLater = currentDate.add(1, 'months');
+                            const formattedDate = oneMonthLater.format('DD-MM-YYYY');
+                            await dbWriter.subscription.create({
+                                user_id: userData?.user_id,
+                                subscription_plan_id: sub_plan_data?.subscription_plan_id,
+                                amount: 0,
+                                due_date: formattedDate,
+                            });
+                        }
+                    }
 
                     let payload = {
                         email: email,
@@ -1385,21 +1408,24 @@ class AuthController {
             } else {
 
                 let providerData = await dbReader.users.findOne({
-                    attributes: ["user_id", "name", "username", "email", "contact", "email", "role", "photo", "address", "city", "state", "country", "experience", "is_email_verified", "is_sms_verified", "is_active", "created_at"],
+                    attributes: ["user_id", "name", "username", "email", "contact", "email", "role", "photo", "address", "city", "state", "country", "experience", "is_email_verified", "is_sms_verified", "stripe_account_id", "stripe_bank_account_id", "routing_number", "bank_account_number", "is_active", "created_at"],
                     where: {
-                        user_id: user_id,
+                        user_id: provider_id,
                         is_deleted: 0
                     }
                 });
                 providerData = JSON.parse(JSON.stringify(providerData));
 
+                //console.log("provider data are :::: ", providerData);
+
                 if (providerData.stripe_account_id && providerData.stripe_bank_account_id) {
                     //Need to develop flow here for send payment to provider once client give payment gateway information
+
                     let paymentData = await stripe.payouts.create({
                         amount: amount,
                         currency: 'aed',
-                        destination: bankAccount.id,
-                        stripe_account: bankAccount.account,
+                        destination: providerData.stripe_account_id,
+                        stripe_account: providerData.stripe_bank_account_id,
                     });
 
                     let data = await dbWriter.wallet.create({
@@ -1410,7 +1436,63 @@ class AuthController {
                         description: JSON.stringify(paymentData)
                     });
 
-                    new SuccessResponse("Payment done successfully.", {}).send(res);
+                    new SuccessResponse("Payment done successfully.", { data }).send(res);
+
+
+
+
+
+
+
+
+
+                    // const token = await stripe.tokens.create({
+                    //     bank_account: {
+                    //         country: 'AE',
+                    //         currency: 'aed',
+                    //         account_holder_name: providerData?.name,
+                    //         account_holder_type: 'individual',
+                    //         account_number: "AE070331234567890123456"
+                    //         // account_number: providerData?.bank_account_number,
+                    //         // routing_number: providerData?.routing_number,
+                    //     },
+                    // });
+
+
+                    // console.log("token :::: ", token);
+
+                    // if (token?.id) {
+
+                    //     const paymentData = await stripe.payouts.create({
+                    //         amount: amount, // Amount in cents
+                    //         currency: 'aed',
+                    //         destination: token?.id,
+                    //         method: 'instant', // Optional, can be 'standard' or 'instant'
+                    //     });
+
+                    //     console.log("paymentData data are :::: ", paymentData);
+
+
+                    //     let paymentData = await stripe.payouts.create({
+                    //         amount: amount,
+                    //         currency: 'aed',
+                    //         destination: bankAccount.id,
+                    //         stripe_account: bankAccount.account,
+                    //     });
+
+                    //     let data = await dbWriter.wallet.create({
+                    //         provider_id: provider_id,
+                    //         service_id: 0,
+                    //         amount: amount,
+                    //         is_paid_by_admin: 1,
+                    //         description: JSON.stringify(paymentData)
+                    //     });
+
+                    //     new SuccessResponse("Payment done successfully.", { data }).send(res);
+
+                    // } else {
+                    //     throw new Error("Invalid user bank account details.");
+                    // }
                 } else {
                     throw new Error("User's bank account is not set up.");
                 }

@@ -15,10 +15,7 @@ module.exports = function (sequelize, DataTypes) {
         payment_type: DataTypes.STRING(256),
         status: {
             type: DataTypes.INTEGER,
-            defaultValue: 0,
-            validate: {
-                isIn: [[0, 1]], // Validate status field against specific values
-            },
+            defaultValue: 0 // 0-fail, 1- success
         },
         transaction_id: DataTypes.STRING(256),
         receipt: DataTypes.STRING(256),

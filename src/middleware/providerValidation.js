@@ -50,19 +50,33 @@ exports.jois = {
         status: Joi.number().allow(0).required(),
     }),
 
+    paymentIntentForPurchaseSubscriptionPayload: Joi.object().keys({
+        subscription_plan_id: Joi.number().required()
+    }),
+
+    // purchaseSubscriptionPayload: Joi.object().keys({
+    //     subscription_plan_id: Joi.number().required(),
+    //     card_token: Joi.string().required(),
+    // }),
+
 
     servicePaymentFromUserPayload: Joi.object().keys({
         service_booking_id: Joi.number().required(),
     }),
 
 
-    transferToProviderPayload: Joi.object().keys({
-        user_id: Joi.number().required(),
-        amount: Joi.number().required(),
-    }),
+    // transferToProviderPayload: Joi.object().keys({
+    //     user_id: Joi.number().required(),
+    //     amount: Joi.number().required(),
+    // }),
 
     createProviderStripeAccountPayload: Joi.object().keys({
         routing_number: Joi.string().required(),
         account_number: Joi.string().required(),
+    }),
+
+    saveBankAccountAndRoutingDetailsPayload: Joi.object().keys({
+        account_number: Joi.string().required(),
+        routing_number: Joi.string().required(),
     }),
 }

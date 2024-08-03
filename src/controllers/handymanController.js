@@ -45,6 +45,61 @@ class ProviderController {
                 if (userData) {
                     throw new Error("Email address already registered.");
                 } else {
+
+                    let sub_data = await dbReader.subscription.findOne({
+                        where: {
+                            user_id: user_id,
+                            is_deleted: 0
+                        },
+                        include: [{
+                            require: true,
+                            model: dbReader.subscriptionPlan,
+                            where: {
+                                is_deleted: 0,
+                            },
+                        }]
+                    });
+                    sub_data = JSON.parse(JSON.stringify(sub_data));
+
+                    console.log("sub_data ::: ", sub_data);
+
+                    if (sub_data) {
+                        let tot_handyman_data = await dbReader.users.findAll({
+                            where: {
+                                provider_id: user_id,
+                                is_deleted: 0
+                            }
+                        });
+                        tot_handyman_data = JSON.parse(JSON.stringify(tot_handyman_data));
+
+                        console.log("tot_handyman_data :::: ", tot_handyman_data);
+                        if (tot_handyman_data?.length) {
+                            if (tot_handyman_data?.length >= sub_data?.SubscriptionPlan?.no_handyman) {
+                                throw new Error("Create handyman limit reached.");
+                            }
+                        }
+                    } else {
+                        let sub_plan_data = await dbReader.subscriptionPlan.findOne({
+                            where: {
+                                amount: 0,
+                                is_deleted: 0
+                            }
+                        });
+                        sub_plan_data = JSON.parse(JSON.stringify(sub_plan_data));
+
+                        if (sub_plan_data) {
+                            const currentDate = moment();
+                            const oneMonthLater = currentDate.add(1, 'months');
+                            const formattedDate = oneMonthLater.format('DD-MM-YYYY');
+                            await dbWriter.subscription.create({
+                                user_id: user_id,
+                                subscription_plan_id: sub_plan_data?.subscription_plan_id,
+                                amount: 0,
+                                due_date: formattedDate,
+                            });
+                        }
+                    }
+
                     let userNameData = await dbReader.users.findOne({
                         attributes: ["user_id", "email", "username", "is_deleted"],
                         where: {

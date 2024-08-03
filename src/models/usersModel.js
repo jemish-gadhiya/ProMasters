@@ -58,6 +58,14 @@ module.exports = function (sequelize, DataTypes) {
             type: DataTypes.TEXT,
             defaultValue: "",
         },
+        bank_account_number: {
+            type: DataTypes.TEXT,
+            defaultValue: "",
+        },
+        routing_number: {
+            type: DataTypes.TEXT,
+            defaultValue: "",
+        },
         is_deleted: {
             type: DataTypes.INTEGER,
             defaultValue: 0,

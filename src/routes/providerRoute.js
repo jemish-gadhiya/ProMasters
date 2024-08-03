@@ -58,12 +58,19 @@ class ProviderRoute extends ProviderController {
         router.post("/getHandymanAssignedServiceBookingByStatus", tokenValidate, this.getHandymanAssignedServiceBookingByStatus);
 
 
+        router.post("/paymentIntentForPurchaseSubscription", tokenValidate, validator(jois.paymentIntentForPurchaseSubscriptionPayload), this.paymentIntentForPurchaseSubscription);
+        //router.post("/purchaseSubscription", tokenValidate, validator(jois.purchaseSubscriptionPayload), this.purchaseSubscription);
+
 
         router.post("/servicePaymentFromUser", validator(jois.servicePaymentFromUserPayload), tokenValidate, this.servicePaymentFromUser);
         router.post("/stripeWebHook", this.stripeWebHook);
 
 
         router.post("/createProviderStripeAccount", validator(jois.createProviderStripeAccountPayload), tokenValidate, this.createProviderStripeAccount);
+
+
+        //This API is for for testing and reference, this is not in use
+        router.post("/saveBankAccountAndRoutingDetails", validator(jois.saveBankAccountAndRoutingDetailsPayload), tokenValidate, this.saveBankAccountAndRoutingDetails);
         //router.post("/transferToProvider", validator(jois.transferToProviderPayload), tokenValidate, this.transferToProvider);
 
     }

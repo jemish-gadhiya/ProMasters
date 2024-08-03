@@ -26,6 +26,7 @@ const notificationController = require("./notificationController");
 var ObjectMail = new nodeMailerController_1();
 var EnumObject = new enumerationController();
 var NotificationObject = new notificationController();
+const moment = require('moment');
 
 const {
     Op,
@@ -440,6 +441,64 @@ class ProviderController {
                 throw new Error("User don't have permission to perform this action.");
             } else {
                 if (service_id === 0) {
+                    let sub_data = await dbReader.subscription.findOne({
+                        where: {
+                            user_id: user_id,
+                            is_deleted: 0
+                        },
+                        include: [{
+                            require: true,
+                            model: dbReader.subscriptionPlan,
+                            where: {
+                                is_deleted: 0,
+                            },
+                        }]
+                    });
+                    sub_data = JSON.parse(JSON.stringify(sub_data));
+
+                    if (sub_data) {
+                        let tot_service_data = await dbReader.service.findAll({
+                            where: {
+                                user_id: user_id,
+                                is_deleted: 0
+                            }
+                        });
+                        tot_service_data = JSON.parse(JSON.stringify(tot_service_data));
+
+
+                        if (tot_service_data?.length) {
+                            if (tot_service_data?.length >= sub_data?.SubscriptionPlan?.no_service) {
+                                throw new Error("Create service limit reached.");
+                            }
+
+                            let no_of_featured_services = tot_service_data?.map(e => e?.is_featured == 1)?.length;
+                            if (no_of_featured_services >= sub_data?.SubscriptionPlan?.no_featured_service) {
+                                throw new Error("Create featured service limit reached.");
+                            }
+                        }
+                    } else {
+                        let sub_plan_data = await dbReader.subscriptionPlan.findOne({
+                            where: {
+                                amount: 0,
+                                is_deleted: 0
+                            }
+                        });
+                        sub_plan_data = JSON.parse(JSON.stringify(sub_plan_data));
+
+
+                        if (sub_plan_data) {
+                            const currentDate = moment();
+                            const oneMonthLater = currentDate.add(1, 'months');
+                            const formattedDate = oneMonthLater.format('DD-MM-YYYY');
+                            await dbWriter.subscription.create({
+                                user_id: user_id,
+                                subscription_plan_id: sub_plan_data?.subscription_plan_id,
+                                amount: 0,
+                                due_date: formattedDate,
+                            });
+                        }
+                    }
+
                     let newService = await dbWriter.service.create({
                         name: service_name,
                         description: description,
@@ -568,15 +627,60 @@ class ProviderController {
                 user_id,
                 role
             } = req;
+
             let serviceData = await dbReader.service.findAll({
                 where: {
                     category_id: category_id,
                     is_deleted: 0
                 },
+                include: [{
+                    model: dbReader.category,
+                    where: {
+                        is_deleted: 0,
+                    },
+                }, {
+                    attributes: ['user_id', 'name', 'email', 'contact', 'photo'],
+                    model: dbReader.users,
+                    where: {
+                        role: 2,
+                        is_deleted: 0
+                    }
+                }, {
+                    required: false,
+                    model: dbReader.serviceAttachment,
+                    where: {
+                        is_deleted: 0
+                    }
+                }, {
+                    required: false,
+                    as: "service_rating",
+                    model: dbReader.serviceRating,
+                    where: {
+                        is_deleted: 0,
+                        rating_type: 1
+                    }
+                }]
             });
             serviceData = JSON.parse(JSON.stringify(serviceData));
+
+            var temp = [];
+            if (serviceData) {
+                for (let i = 0; i < serviceData?.length; i++) {
+
+                    let cnt = 0, avg_rating = 0;
+
+                    if (serviceData[i]?.service_rating?.length > 0) {
+                        for (let j = 0; j < serviceData[i]?.service_rating?.length; j++) {
+                            cnt = parseFloat(cnt) + parseFloat(serviceData[i]?.service_rating[j]?.rating)
+                        }
+                        avg_rating = parseFloat(parseFloat(cnt) / serviceData[i]?.service_rating?.length).toFixed(2);
+                    }
+                    temp.push({ ...serviceData[i], avaerage_rating: avg_rating })
+                }
+            }
+
             new SuccessResponse("Service get successfully.", {
-                data: serviceData
+                data: temp
             }).send(res);
         } catch (e) {
             ApiError.handle(new BadRequestError(e.message), res);
@@ -899,7 +1003,7 @@ class ProviderController {
                 }
             }
 
-            console.log("==>comission data are :: ", comissionData);
+            // console.log("==>comission data are :: ", comissionData);
 
             let taxData = await dbReader.tax.findOne({
                 where: {
@@ -1870,6 +1974,174 @@ class ProviderController {
         }
     }
     //Manage payment flow
+    paymentIntentForPurchaseSubscription = async (req, res) => {
+        try {
+            let {
+                subscription_plan_id
+            } = req.body;
+
+            let {
+                user_id,
+                role
+            } = req;
+
+            if (role !== 2) {
+                throw new Error("User don't have permission to perform this action.");
+            } else {
+
+                let userData = await dbReader.users.findOne({
+                    where: {
+                        user_id: user_id,
+                        is_deleted: 0
+                    }
+                });
+                userData = JSON.parse(JSON.stringify(userData));
+                if (!userData) {
+                    throw new Error("User data not found.");
+                } else {
+                    let sub_data = await dbReader.subscriptionPlan.findOne({
+                        where: {
+                            subscription_plan_id: subscription_plan_id,
+                            is_deleted: 0
+                        }
+                    });
+                    sub_data = JSON.parse(JSON.stringify(sub_data));
+
+                    if (sub_data) {
+                        const amountInFils = Math.round(parseFloat(sub_data?.amount) * 100);
+                        const paymentIntent = await stripe.paymentIntents.create({
+                            amount: amountInFils,
+                            currency: "aed",
+                            payment_method_types: ['card'],
+                        });
+
+
+                        // Create subscription record
+                        const currentDate = moment();
+                        const oneMonthLater = currentDate.add(1, 'months');
+                        const formattedDate = oneMonthLater.format('DD-MM-YYYY');
+                        const subscription_data = await dbWriter.subscription.create({
+                            user_id: user_id,
+                            subscription_plan_id: subscription_plan_id,
+                            amount: sub_data?.amount,
+                            due_date: formattedDate,
+                            is_deleted: 1
+                        });
+
+                        await dbWriter.subscriptionPayment.create({
+                            subscription_id: subscription_data?.subscription_id,
+                            payment_type: "card",
+                            status: 0,
+                            transaction_id: paymentIntent.client_secret,
+                            receipt: "",
+                            card_details: ""
+                        });
+
+                        res.status(200).json({
+                            clientSecret: paymentIntent.client_secret,
+                            data: paymentIntent
+                        });
+                    } else {
+                        throw new Error("Subscription plan data not found.");
+                    }
+                }
+            }
+        } catch (e) {
+            ApiError.handle(new BadRequestError(e.message), res);
+        }
+    }
+
+
+    // purchaseSubscription = async (req, res) => {
+    //     try {
+    //         let {
+    //             subscription_plan_id,
+    //             card_token
+    //         } = req.body;
+
+    //         let {
+    //             user_id,
+    //             role
+    //         } = req;
+
+    //         if (role !== 2) {
+    //             throw new Error("User don't have permission to perform this action.");
+    //         } else {
+
+    //             let userData = await dbReader.users.findOne({
+    //                 where: {
+    //                     user_id: user_id,
+    //                     is_deleted: 0
+    //                 }
+    //             });
+    //             userData = JSON.parse(JSON.stringify(userData));
+    //             if (!userData) {
+    //                 throw new Error("User data not found.");
+    //             } else {
+    //                 let sub_data = await dbReader.subscriptionPlan.findOne({
+    //                     where: {
+    //                         subscription_plan_id: subscription_plan_id,
+    //                         is_deleted: 0
+    //                     }
+    //                 });
+    //                 sub_data = JSON.parse(JSON.stringify(sub_data));
+
+    //                 if (sub_data) {
+
+    //                     const charge = await stripe.charges.create({
+    //                         amount: sub_data?.amount, // $50.00 in cents
+    //                         currency: 'aed',
+    //                         source: card_token,
+    //                         description: 'Subscription - ' + userData?.email,
+    //                     });
+
+
+    //                     console.log("charge data are ::::: ", charge);
+
+    //                     if (charge && charge?.id) {
+
+    //                         // Create subscription record
+    //                         const currentDate = moment();
+    //                         const oneMonthLater = currentDate.add(1, 'months');
+    //                         const formattedDate = oneMonthLater.format('DD-MM-YYYY');
+    //                         const subscription_data = await dbWriter.subscription.create({
+    //                             user_id: user_id,
+    //                             subscription_plan_id: subscription_plan_id,
+    //                             amount: sub_data?.amount,
+    //                             due_date: formattedDate,
+    //                         });
+
+    //                         //Create subscription success payment record
+    //                         await dbWriter.subscriptionPayment.create({
+    //                             subscription_id: subscription_data?.subscription_id,
+    //                             payment_type: "card",
+    //                             status: 1,
+    //                             transaction_id: charge?.id,
+    //                             receipt: charge,
+    //                             card_details: charge
+    //                         });
+    //                     } else {
+    //                         console.log("charge :: ", charge);
+    //                         throw new Error("payment fail");
+    //                     }
+    //                 } else {
+    //                     throw new Error("Subscription plan data not found.");
+    //                 }
+    //             }
+    //         }
+    //     } catch (e) {
+    //         ApiError.handle(new BadRequestError(e.message), res);
+    //     }
+    // }
+
+
+
+
+
+
+
+
+
     servicePaymentFromUser = async (req, res) => {
         try {
             let {
@@ -1972,25 +2244,68 @@ class ProviderController {
 
             const paymentWebHookData = event.data.object;
             if (event.type === 'payment_intent.succeeded' || event.type === 'charge.succeeded') {
-                await dbWriter.serviceBookingPayment.update({
-                    payment_intent_id: "",
-                    payment_status: 1,
-                    description: JSON.stringify(paymentWebHookData),
-                }, {
+                let serviceBookingData = await dbReader.serviceBookingPayment.findOne({
                     where: {
-                        payment_intent_id: paymentIntent.id,
+                        payment_intent_id: paymentWebHookData.id,
                     }
                 });
-            } else if (event.type === 'payment_intent.succeeded' || event.type === 'charge.succeeded') {
-                await dbWriter.serviceBookingPayment.update({
-                    payment_intent_id: "",
-                    payment_status: 2,
-                    description: JSON.stringify(paymentWebHookData),
-                }, {
+                serviceBookingData = JSON.parse(JSON.stringify(serviceBookingData));
+                if (serviceBookingData) {
+                    await dbWriter.serviceBookingPayment.update({
+                        payment_intent_id: "",
+                        payment_status: 1,
+                        description: JSON.stringify(paymentWebHookData),
+                    }, {
+                        where: {
+                            payment_intent_id: paymentWebHookData.id,
+                        }
+                    });
+                }
+
+                let subscriptionData = await dbReader.subscriptionPayment.findOne({
                     where: {
-                        payment_intent_id: paymentIntent.id,
+                        transaction_id: paymentWebHookData.id,
                     }
                 });
+                subscriptionData = JSON.parse(JSON.stringify(subscriptionData));
+                if (subscriptionData) {
+                    await dbWriter.subscriptionPayment.update({
+                        transaction_id: "",
+                        payment_status: 1,
+                        receipt: JSON.stringify(paymentWebHookData)
+                    }, {
+                        where: {
+                            transaction_id: paymentWebHookData.id,
+                        }
+                    });
+
+                    await dbWriter.subscription.update({
+                        is_deleted: 0
+                    }, {
+                        where: {
+                            subscription_id: subscriptionData?.subscription_id,
+                        }
+                    });
+                }
+            } else if (event.type === 'payment_intent.payment_failed' || event.type === 'charge.failed') {
+
+                let serviceBookingData = await dbReader.serviceBookingPayment.findOne({
+                    where: {
+                        payment_intent_id: paymentWebHookData.id,
+                    }
+                });
+                serviceBookingData = JSON.parse(JSON.stringify(serviceBookingData));
+                if (serviceBookingData) {
+                    await dbWriter.serviceBookingPayment.update({
+                        payment_intent_id: "",
+                        payment_status: 2,
+                        description: JSON.stringify(paymentWebHookData),
+                    }, {
+                        where: {
+                            payment_intent_id: paymentWebHookData.id,
+                        }
+                    });
+                }
             }
 
             res.status(200).end();
@@ -2000,7 +2315,7 @@ class ProviderController {
     }
 
 
-
+    //Old Approach Create stripe account for user and link bank with it and store it with the user details.
     createProviderStripeAccount = async (req, res) => {
         try {
             let {
@@ -2037,12 +2352,8 @@ class ProviderController {
                             country: 'AE', // Set the country code to UAE
                             email: userData?.email,
                             capabilities: {
-                                card_payments: {
-                                    requested: true
-                                },
-                                transfers: {
-                                    requested: true
-                                },
+                                card_payments: { requested: true },
+                                transfers: { requested: true },
                             },
                         });
                         stripe_account_id = account.id;
@@ -2058,8 +2369,8 @@ class ProviderController {
                                     currency: 'aed',
                                     account_holder_name: userData?.name,
                                     account_holder_type: 'individual', // or 'company'
-                                    routing_number: routing_number, // Replace with the appropriate bank code or SWIFT code
-                                    account_number: account_number, // Replace with the appropriate bank account number
+                                    routing_number: routing_number,// Replace with the appropriate bank code or SWIFT code
+                                    account_number: account_number,// Replace with the appropriate bank account number
                                 },
                             }
                         );
@@ -2080,6 +2391,50 @@ class ProviderController {
                         stripe_bank_account_id: stripe_bank_account_id
                     }).send(res);
                 }
+            }
+        } catch (e) {
+            ApiError.handle(new BadRequestError(e.message), res);
+        }
+    }
+
+
+    //New approach to save bank account number and bank account routing number with user data
+    saveBankAccountAndRoutingDetails = async (req, res) => {
+        try {
+            let {
+                account_number,
+                routing_number
+            } = req.body;
+            let {
+                user_id,
+                role
+            } = req;
+
+            let userData = await dbReader.users.findOne({
+                where: {
+                    user_id: user_id,
+                    is_deleted: 0
+                }
+            });
+            userData = JSON.parse(JSON.stringify(userData));
+            if (!userData) {
+                throw new Error("User data not found.");
+            } else {
+
+
+                await dbWriter.users.update({
+                    bank_account_number: account_number,
+                    routing_number: routing_number
+                }, {
+                    where: {
+                        user_id: user_id
+                    }
+                });
+
+                new SuccessResponse("Bank details  updated successfully.", {
+                    bank_account_number: account_number,
+                    routing_number: routing_number
+                }).send(res);
             }
         } catch (e) {
             ApiError.handle(new BadRequestError(e.message), res);
