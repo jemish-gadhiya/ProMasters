@@ -682,7 +682,7 @@ class ProviderController {
                 role
             } = req;
             let {
-                service_user_id,
+                service_user_id = [],
                 rating,
                 min_amount,
                 max_amount,
@@ -694,7 +694,7 @@ class ProviderController {
                 is_deleted: 0
             };
 
-            if (service_user_id) {
+            if (service_user_id.length) {
                 serviceWhereConditions.user_id = service_user_id;
             }
 
@@ -773,6 +773,67 @@ class ProviderController {
             ApiError.handle(new BadRequestError(e.message), res);
         }
     };
+    getProviderDetail = async (req, res) => {
+        try {
+            let {
+                user_id,
+                role
+            } = req;
+            let userData = await dbReader.users.findOne({
+                attributes: ["user_id", "name", "username", "email", "contact", "email", "role", "photo", "address", "city", "state", "country", "experience", "is_email_verified", "is_sms_verified", "is_active", "created_at"],
+                where: {
+                    user_id: user_id,
+                    is_deleted: 0
+                },
+                include:[{
+                    model:dbReader.service,
+                    where:{
+                        is_deleted:0
+                    },
+                    include:[{
+                        required: false,
+                        model: dbReader.serviceBookingHandyman,
+                        where: {
+                            is_deleted: 0
+                        },
+                        include:[
+                            {
+                                model: dbReader.users,
+                                attributes: ["user_id", "name", "username", "email", "photo", "is_active", "created_at"],
+                                where: {
+                                    is_deleted: 0,
+                                    is_active: 1
+                                },
+                        }]
+                    },{
+                    as: "service_rating",
+                    model:dbReader.serviceRating,
+                    where:{
+                        is_deleted:0,
+                        rating_type:1
+                    }
+                },{
+                    model:dbReader.category,
+                    where:{
+                        is_deleted:0
+                    }
+                }]
+                },{
+                    model:dbReader.serviceRating,
+                    where:{
+                        is_deleted:0,
+                        rating_type:2
+                    }
+                }]
+            });
+            userData = JSON.parse(JSON.stringify(userData));
+            new SuccessResponse("Get provider detail successfully.", {
+                ...userData
+            }).send(res);
+        } catch (e) {
+            ApiError.handle(new BadRequestError(e.message), res);
+        }
+    }
 
     addServiceBooking = async (req, res) => {
         try {
