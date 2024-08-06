@@ -396,7 +396,7 @@ class ProviderController {
                     tot_earning = parseFloat(tot_earning) + (parseFloat(pData?.service_amount * pData?.booking_service_qty) - pData?.discount_amount - pData?.commission_amount - pData?.coupen_amount - pData?.tax_amount);
 
                     if (pData?.Service?.service_rating) {
-                        tot_ratings = tot_ratings.concat(pData?.Service?.service_rating);
+                        tot_ratings = tot_ratings.push(pData?.Service?.service_rating);
                     }
 
                     if (moment(pData?.booking_datetime).format("DD-MM-YYYY") > moment().format("DD-MM-YYYY")) {
