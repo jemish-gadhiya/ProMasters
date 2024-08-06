@@ -374,7 +374,8 @@ class ProviderController {
                             as: "service_rating",
                             model: dbReader.serviceRating,
                             where: {
-                                is_deleted: 0
+                                is_deleted: 0,
+                                rating_type: 1
                             },
                             include: [{
                                 attributes: ["user_id", "name", "email", "contact", "photo"],
@@ -395,8 +396,20 @@ class ProviderController {
                     let pData = handymanTotServiceDoneData[i];
                     tot_earning = parseFloat(tot_earning) + (parseFloat(pData?.service_amount * pData?.booking_service_qty) - pData?.discount_amount - pData?.commission_amount - pData?.coupen_amount - pData?.tax_amount);
 
+                    // if (pData?.Service?.service_rating) {
+                    //     tot_ratings = tot_ratings.concat(pData?.Service?.service_rating);
+                    // }
+
                     if (pData?.Service?.service_rating) {
-                        tot_ratings = tot_ratings.push(pData?.Service?.service_rating);
+                        let flag = 0;
+                        for (let j = 0; j < tot_ratings?.length; j++) {
+                            if (tot_ratings[j]?.rating_reciever_id === pData?.service_id) {
+                                flag = 1;
+                            }
+                        }
+                        if (flag === 0) {
+                            tot_ratings = tot_ratings.concat(pData?.Service?.service_rating);
+                        }
                     }
 
                     if (moment(pData?.booking_datetime).format("DD-MM-YYYY") > moment().format("DD-MM-YYYY")) {
