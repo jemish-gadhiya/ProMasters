@@ -787,10 +787,10 @@ class ProviderController {
             } = req;
             let {
                 service_user_id = [],
-                    rating,
-                    min_amount,
-                    max_amount,
-                    category
+                rating,
+                min_amount,
+                max_amount,
+                category
             } = req.body;
 
             // Build the where conditions
@@ -832,31 +832,31 @@ class ProviderController {
             let serviceData = await dbReader.service.findAll({
                 where: serviceWhereConditions,
                 include: [{
-                        model: dbReader.category,
-                        where: {
-                            is_deleted: 0,
-                        },
-                    }, {
-                        required: false,
-                        model: dbReader.serviceAttachment,
-                        where: {
-                            is_deleted: 0
-                        }
+                    model: dbReader.category,
+                    where: {
+                        is_deleted: 0,
                     },
-                    {
-                        required: false,
-                        model: dbReader.users,
-                        where: {
-                            role: 2,
-                            is_deleted: 0
-                        }
-                    },
-                    {
-                        required: false,
-                        as: "service_rating",
-                        model: dbReader.serviceRating,
-                        where: serviceRatingWhereConditions
+                }, {
+                    required: false,
+                    model: dbReader.serviceAttachment,
+                    where: {
+                        is_deleted: 0
                     }
+                },
+                {
+                    required: false,
+                    model: dbReader.users,
+                    where: {
+                        role: 2,
+                        is_deleted: 0
+                    }
+                },
+                {
+                    required: false,
+                    as: "service_rating",
+                    model: dbReader.serviceRating,
+                    where: serviceRatingWhereConditions
+                }
                 ]
             });
             serviceData = JSON.parse(JSON.stringify(serviceData));
@@ -1543,7 +1543,7 @@ class ProviderController {
                             user_id: user_id
                         }
                     }, {
-                        attributes: ["user_id", "name", 'email', "contact", "role", "photo", "address", "city", "state", "country", ],
+                        attributes: ["user_id", "name", 'email', "contact", "role", "photo", "address", "city", "state", "country",],
                         required: false,
                         model: dbReader.users,
                         where: {
@@ -1704,9 +1704,10 @@ class ProviderController {
                             service_booking_id: service_booking_id,
                         }
                     });
+                    let provider_id = serviceBookingData?.Service?.user_id;
                     if (status === 2) { //If status is completed then add respective service amount to provider's wallet.
-                        let provider_id = serviceBookingData?.Service?.user_id,
-                            service_id = serviceBookingData?.Service?.service_id,
+                        //let provider_id = serviceBookingData?.Service?.user_id,
+                        let service_id = serviceBookingData?.Service?.service_id,
                             amount = (serviceBookingData?.service_amount * serviceBookingData?.booking_service_qty) - serviceBookingData?.discount_amount - serviceBookingData?.commission_amount - serviceBookingData?.coupen_amount - serviceBookingData?.tax_amount;
 
                         await dbWriter.wallet.create({
@@ -1725,6 +1726,7 @@ class ProviderController {
                             is_logout: 0
                         }
                     })
+                    let tokens = [];
                     if (device_token.length) {
                         device_token = JSON.parse(JSON.stringify(device_token));
                         device_token.forEach((element) => {
@@ -1837,11 +1839,41 @@ class ProviderController {
                             is_deleted: 0
                         }
                     }]
+                }, {
+                    attributes: ['user_id', 'name', 'email', 'contact', 'photo'],
+                    model: dbReader.users,
+                    where: {
+                        role: 2,
+                        is_deleted: 0
+                    }
+                }, {
+                    required: false,
+                    as: "service_rating",
+                    model: dbReader.serviceRating,
+                    where: {
+                        is_deleted: 0,
+                        rating_type: 1
+                    }
                 }]
             });
             serviceData = JSON.parse(JSON.stringify(serviceData));
+
+
+            let cnt = 0, avg_rating = 0, temp = [];
+
+            if (serviceData?.service_rating?.length > 0) {
+                for (let j = 0; j < serviceData?.service_rating?.length; j++) {
+                    cnt = parseFloat(cnt) + parseFloat(serviceData?.service_rating[j]?.rating)
+                }
+                avg_rating = parseFloat(parseFloat(cnt) / serviceData?.service_rating?.length).toFixed(2);
+            }
+            temp.push({ ...serviceData, avaerage_rating: avg_rating })
+
+
+
+
             new SuccessResponse("Service get successfully.", {
-                data: serviceData
+                data: temp
             }).send(res);
         } catch (e) {
             ApiError.handle(new BadRequestError(e.message), res);
