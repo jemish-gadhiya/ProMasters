@@ -822,7 +822,7 @@ class ProviderController {
 
             let serviceRatingWhereConditions = {
                 is_deleted: 0,
-                rating_type: 0
+                rating_type: 1
             };
 
             if (rating) {
@@ -861,17 +861,24 @@ class ProviderController {
             });
             serviceData = JSON.parse(JSON.stringify(serviceData));
             //console.log("serviceData", serviceData);
+            let temp = [];
             serviceData.forEach((e) => {
-                if (e.service_rating.length) {
-                    let total_rating = 0
-                    e.service_rating.forEach((ele) => {
-                        total_rating = total_rating + parseFloat(ele.rating)
+                let average_rating = 0;
+                if (e?.service_rating.length) {
+                    let total_rating = 0;
+                    e?.service_rating?.forEach((ele) => {
+                        total_rating = parseFloat(total_rating) + parseFloat(ele.rating)
                     })
-                    e.total_rating = parseFloat(total_rating / e.service_rating.length)
+                    average_rating = parseFloat(parseFloat(total_rating) / e.service_rating.length);
                 }
+
+                temp.push({
+                    ...e,
+                    average_rating: average_rating
+                });
             })
             new SuccessResponse("Service retrieved successfully.", {
-                data: serviceData
+                data: temp
             }).send(res);
         } catch (e) {
             ApiError.handle(new BadRequestError(e.message), res);
