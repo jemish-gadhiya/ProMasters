@@ -1818,7 +1818,7 @@ class ProviderController {
                         },
                         include: [{
                             model: dbReader.users,
-                            attributes: ["user_id", "name", "username", "email", "photo", "is_active", "created_at"],
+                            attributes: ["user_id", "name", "username", "email", "contact", "photo", "is_active", "created_at"],
                             where: {
                                 is_deleted: 0,
                                 is_active: 1
@@ -1827,7 +1827,8 @@ class ProviderController {
                                 required: false,
                                 model: dbReader.serviceRating,
                                 where: {
-                                    is_deleted: 0
+                                    is_deleted: 0,
+                                    rating_type: 3
                                 }
                             }]
                         }]
@@ -1847,7 +1848,7 @@ class ProviderController {
                         }
                     }]
                 }, {
-                    attributes: ['user_id', 'name', 'email', 'contact', 'photo'],
+                    attributes: ['user_id', 'name', 'email', 'contact', 'photo', 'address', 'city', 'state', 'country', 'username'],
                     model: dbReader.users,
                     where: {
                         role: 2,
@@ -1867,7 +1868,6 @@ class ProviderController {
 
 
             let cnt = 0, avg_rating = 0, temp = [];
-
             if (serviceData?.service_rating?.length > 0) {
                 for (let j = 0; j < serviceData?.service_rating?.length; j++) {
                     cnt = parseFloat(cnt) + parseFloat(serviceData?.service_rating[j]?.rating)
@@ -1875,8 +1875,6 @@ class ProviderController {
                 avg_rating = parseFloat(parseFloat(cnt) / serviceData?.service_rating?.length).toFixed(2);
             }
             temp.push({ ...serviceData, avaerage_rating: avg_rating })
-
-
 
 
             new SuccessResponse("Service get successfully.", {
