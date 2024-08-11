@@ -696,6 +696,7 @@ class ProviderController {
                 user_id,
                 role
             } = req;
+
             let serviceData = await dbReader.service.findOne({
                 where: {
                     service_id: service_id,
@@ -726,24 +727,38 @@ class ProviderController {
                     }
                 }, {
                     required: false,
+                    model: dbReader.favouritedService,
+                    where: {
+                        is_deleted: 0,
+                        user_id: user_id
+                    }
+                }, {
+                    required: false,
                     as: "service_rating",
                     model: dbReader.serviceRating,
                     where: {
                         is_deleted: 0,
                         rating_type: 1
-                    }
+                    },
+                    include: [{
+                        required: false,
+                        model: dbReader.users,
+                        attributes: ["user_id", "name", "username", "email", "photo", "is_active", "created_at"],
+                        where: {
+                            is_deleted: 0,
+                            is_active: 1
+                        }
+                    }]
                 }]
             });
             serviceData = JSON.parse(JSON.stringify(serviceData));
-            // serviceData.forEach((e) => {
+            let total_rating = 0;
             if (serviceData.service_rating.length) {
-                let total_rating = 0
                 serviceData.service_rating.forEach((ele) => {
                     total_rating = total_rating + parseFloat(ele.rating)
                 })
-                serviceData.total_rating = parseFloat(total_rating / serviceData.service_rating.length)
             }
-            // })
+            serviceData.total_rating = parseFloat(total_rating) ? parseFloat(total_rating / serviceData.service_rating.length) : 0;
             new SuccessResponse("Service get successfully.", {
                 ...serviceData
             }).send(res);
@@ -768,11 +783,37 @@ class ProviderController {
                     where: {
                         is_deleted: 0
                     }
+                }, {
+                    required: false,
+                    as: "service_rating",
+                    model: dbReader.serviceRating,
+                    where: {
+                        is_deleted: 0,
+                        rating_type: 1
+                    }
                 }]
             });
             serviceData = JSON.parse(JSON.stringify(serviceData));
+
+            let cnt = 0, avg_rating = 0, temp = [];
+
+            for (let i = 0; i < serviceData?.length; i++) {
+                if (serviceData[i]?.service_rating?.length > 0) {
+                    for (let j = 0; j < serviceData[i]?.service_rating?.length; j++) {
+                        cnt = parseFloat(cnt) + parseFloat(serviceData[i]?.service_rating[j]?.rating)
+                    }
+                    avg_rating = parseFloat(parseFloat(cnt) / serviceData[i]?.service_rating?.length).toFixed(2);
+                }
+                temp.push({ ...serviceData[i], avaerage_rating: avg_rating })
+            }
+
+
+
+
+
+
             new SuccessResponse("Service get successfully.", {
-                data: serviceData
+                data: temp
             }).send(res);
         } catch (e) {
             ApiError.handle(new BadRequestError(e.message), res);
@@ -1867,18 +1908,44 @@ class ProviderController {
             serviceData = JSON.parse(JSON.stringify(serviceData));
 
 
-            let cnt = 0, avg_rating = 0, temp = [];
+            let cnt = 0, avg_rating = 0, temp = null;
             if (serviceData?.service_rating?.length > 0) {
                 for (let j = 0; j < serviceData?.service_rating?.length; j++) {
                     cnt = parseFloat(cnt) + parseFloat(serviceData?.service_rating[j]?.rating)
                 }
                 avg_rating = parseFloat(parseFloat(cnt) / serviceData?.service_rating?.length).toFixed(2);
             }
-            temp.push({ ...serviceData, avaerage_rating: avg_rating })
+            temp = { ...serviceData, avaerage_rating: avg_rating };
 
+
+
+            let newData = [];
+            if (serviceData?.ServiceBookings?.length > 0) {
+                for (let i = 0; i < serviceData?.ServiceBookings?.length; i++) {
+
+                    for (let j = 0; j < serviceData?.ServiceBookings[i]?.ServiceBookingHandymans?.length; j++) {
+
+                        let handyman_user_avg_rating = 0, c = 0, tmp = { ...serviceData?.ServiceBookings[i]?.ServiceBookingHandymans[j]?.User };
+                        if (serviceData?.ServiceBookings[i]?.ServiceBookingHandymans[j]?.User?.ServiceRatings?.length > 0) {
+                            for (let k = 0; k < serviceData?.ServiceBookings[i]?.ServiceBookingHandymans[j]?.User?.ServiceRatings?.length; k++) {
+
+                                c = parseFloat(c) + parseFloat(serviceData?.ServiceBookings[i]?.ServiceBookingHandymans[j]?.User?.ServiceRatings[k]?.rating);
+
+                            }
+                            handyman_user_avg_rating = parseFloat(parseFloat(c) / serviceData?.ServiceBookings[i]?.ServiceBookingHandymans[j]?.User?.ServiceRatings?.length).toFixed(2);
+                        }
+                        tmp = { ...serviceData?.ServiceBookings[i]?.ServiceBookingHandymans[j], avaerage_rating: handyman_user_avg_rating };
+                        newData.push(tmp);
+                    }
+
+                }
+            }
+
+
+            let returnData = { ...temp, ServiceBookings: newData };
 
             new SuccessResponse("Service get successfully.", {
-                data: temp
+                data: returnData
             }).send(res);
         } catch (e) {
             ApiError.handle(new BadRequestError(e.message), res);

@@ -23,6 +23,7 @@ const jwt = require("jsonwebtoken");
 const moment = require('moment');
 require('dotenv').config()
 const enumerationController = require("./enumurationController");
+const { required } = require('joi');
 var ObjectMail = new nodeMailerController_1();
 var EnumObject = new enumerationController();
 
@@ -344,6 +345,7 @@ class ProviderController {
             ApiError.handle(new BadRequestError(e.message), res);
         }
     }
+
     getDashboardDetailForHandyman = async (req, res) => {
         try {
             let { user_id, role } = req;
@@ -432,6 +434,65 @@ class ProviderController {
                     }
                 }).send(res);
             }
+        } catch (e) {
+            ApiError.handle(new BadRequestError(e.message), res);
+        }
+    }
+
+    handyManEarningInsight = async (req, res) => {
+        try {
+            let { handyman_user_id } = req.body;
+            let { user_id, role } = req;
+
+
+            let handymanTotServiceDoneData = await dbReader.serviceBooking.findAll({
+                where: {
+                    is_deleted: 0,
+                    booking_service_status: 2
+                },
+                include: [{
+                    required: true,
+                    model: dbReader.serviceBookingHandyman,
+                    where: {
+                        user_id: handyman_user_id,
+                        is_deleted: 0
+                    }
+                }, {
+                    required: false,
+                    model: dbReader.serviceBookingPayment,
+                    // where: {
+                    //     payment_status
+                    // }
+                }, {
+                    required: false,
+                    model: dbReader.service,
+                    where: {
+                        is_deleted: 0
+                    },
+                    include: [{
+                        required: false,
+                        as: "service_rating",
+                        model: dbReader.serviceRating,
+                        where: {
+                            is_deleted: 0,
+                            rating_type: 1
+                        },
+                        include: [{
+                            attributes: ["user_id", "name", "email", "contact", "photo"],
+                            required: false,
+                            model: dbReader.users,
+                            where: {
+                                is_deleted: 0
+                            },
+                        }]
+                    }]
+                }]
+            });
+            handymanTotServiceDoneData = JSON.parse(JSON.stringify(handymanTotServiceDoneData));
+
+            new SuccessResponse("Get data successfully.", {
+                ...handymanTotServiceDoneData
+            }).send(res);
         } catch (e) {
             ApiError.handle(new BadRequestError(e.message), res);
         }

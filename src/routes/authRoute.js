@@ -23,6 +23,7 @@ class AuthRoute extends AuthController {
         router.post("/frontEndErrorLog", this.frontEndErrorLog);
         router.get("/getUserDetail", tokenValidate, this.getUserDetail);
         router.post("/updateUserDetail", tokenValidate, this.updateUserDetail);
+        router.post("/getUserDetailById", tokenValidate, validator(jois.getUserDetailByIdPayload), this.getUserDetailById);
         router.post("/deleteUserAccount", validator(jois.deleteUserAccountPayload), tokenValidate, this.deleteUserAccount);
 
         //Manage tax from admin panel

@@ -42,4 +42,8 @@ exports.jois = {
     activateDeactivateHandymanPayload: Joi.object().keys({
         handyman_user_id: Joi.number().required(),
     }),
+
+    handyManEarningInsightPayload: Joi.object().keys({
+        handyman_user_id: Joi.number().required(),
+    }),
 }

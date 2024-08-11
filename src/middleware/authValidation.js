@@ -70,6 +70,10 @@ exports.jois = {
         contact: Joi.string().required(),
     }),
 
+    getUserDetailByIdPayload: Joi.object().keys({
+        user_id: Joi.number().required(),
+    }),
+
     deleteUserAccountPayload: Joi.object().keys({
         user_id: Joi.number().required(),
     }),
