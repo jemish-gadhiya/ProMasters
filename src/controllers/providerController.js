@@ -1902,11 +1902,17 @@ class ProviderController {
                     where: {
                         is_deleted: 0,
                         rating_type: 1
-                    }
+                    },
+                    include: [{
+                        attributes: ['user_id', 'name', 'email', 'contact', 'photo', 'address', 'city', 'state', 'country', 'username'],
+                        model: dbReader.users,
+                        where: {
+                            is_deleted: 0
+                        }
+                    }]
                 }]
             });
             serviceData = JSON.parse(JSON.stringify(serviceData));
-
 
             let cnt = 0, avg_rating = 0, temp = null;
             if (serviceData?.service_rating?.length > 0) {
@@ -1917,30 +1923,27 @@ class ProviderController {
             }
             temp = { ...serviceData, avaerage_rating: avg_rating };
 
-
-
             let newData = [];
             if (serviceData?.ServiceBookings?.length > 0) {
                 for (let i = 0; i < serviceData?.ServiceBookings?.length; i++) {
 
+                    let temp_service_booking_handyman = [];
                     for (let j = 0; j < serviceData?.ServiceBookings[i]?.ServiceBookingHandymans?.length; j++) {
-
-                        let handyman_user_avg_rating = 0, c = 0, tmp = { ...serviceData?.ServiceBookings[i]?.ServiceBookingHandymans[j]?.User };
+                        let handyman_user_avg_rating = 0, c = 0;//, tmp = { ...serviceData?.ServiceBookings[i]?.ServiceBookingHandymans[j]?.User };
                         if (serviceData?.ServiceBookings[i]?.ServiceBookingHandymans[j]?.User?.ServiceRatings?.length > 0) {
                             for (let k = 0; k < serviceData?.ServiceBookings[i]?.ServiceBookingHandymans[j]?.User?.ServiceRatings?.length; k++) {
-
                                 c = parseFloat(c) + parseFloat(serviceData?.ServiceBookings[i]?.ServiceBookingHandymans[j]?.User?.ServiceRatings[k]?.rating);
-
                             }
                             handyman_user_avg_rating = parseFloat(parseFloat(c) / serviceData?.ServiceBookings[i]?.ServiceBookingHandymans[j]?.User?.ServiceRatings?.length).toFixed(2);
                         }
-                        tmp = { ...serviceData?.ServiceBookings[i]?.ServiceBookingHandymans[j], avaerage_rating: handyman_user_avg_rating };
-                        newData.push(tmp);
-                    }
+                        // tmp = { ...serviceData?.ServiceBookings[i], avaerage_rating: handyman_user_avg_rating };
+                        // newData.push(tmp);
 
+                        temp_service_booking_handyman.push({ ...serviceData?.ServiceBookings[i]?.ServiceBookingHandymans[j], avaerage_rating: handyman_user_avg_rating });
+                    }
+                    newData.push({ ...serviceData?.ServiceBookings[i], ServiceBookingHandymans: temp_service_booking_handyman });
                 }
             }
-
 
             let returnData = { ...temp, ServiceBookings: newData };
 
