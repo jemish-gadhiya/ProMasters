@@ -77,6 +77,11 @@ module.exports = function (sequelize, DataTypes) {
             foreignKey: 'rating_reciever_id',
             sourceKey: 'service_id'
         });
+        Service.belongsTo(models.favouritedService, {
+            foreignKey: 'service_id',
+            targetKey: 'service_id'
+        });
+
     };
 
     return Service;

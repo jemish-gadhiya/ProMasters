@@ -30,6 +30,7 @@ var ObjectMail = new nodeMailerController_1();
 var EnumObject = new enumerationController();
 
 const Stripe = require('stripe');
+const { required } = require('joi');
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 class AuthController {
 
@@ -580,6 +581,99 @@ class AuthController {
             ApiError.handle(new BadRequestError(e.message), res);
         }
     }
+
+    getUserDetailById = async (req, res) => {
+        try {
+            let { user_id } = req.body;
+            let {
+                role
+            } = req;
+            let userData = await dbReader.users.findOne({
+                attributes: ["user_id", "name", "username", "email", "contact", "email", "role", "photo", "address", "city", "state", "country", "experience", "is_email_verified", "is_sms_verified", "is_active", "created_at"],
+                where: {
+                    user_id: user_id,
+                    is_deleted: 0
+                },
+                include: [{
+                    required: false,
+                    model: dbReader.serviceRating,
+                    where: {
+                        is_deleted: 0,
+                        rating_type: (role === 2) ? 2 : 3
+                    }
+                }, {
+                    required: false,
+                    model: dbReader.service,
+                    include: [
+                        {
+                            model: dbReader.category,
+                            where: {
+                                is_deleted: 0,
+                            },
+                        }, {
+                            required: false,
+                            model: dbReader.serviceAttachment,
+                            where: {
+                                is_deleted: 0
+                            }
+                        },
+                        {
+                            required: false,
+                            model: dbReader.users,
+                            attributes: ["user_id", "name", "username", "email", "photo", "is_active", "created_at"],
+                            where: {
+                                role: 2,
+                                is_deleted: 0
+                            }
+                        },
+                        {
+                            required: false,
+                            as: "service_rating",
+                            model: dbReader.serviceRating,
+                            where: {
+                                rating_type: 1
+                            }
+                        }
+                    ]
+                }],
+            });
+            userData = JSON.parse(JSON.stringify(userData));
+
+            let total_rating = 0;
+            if (userData.ServiceRatings.length) {
+                userData.ServiceRatings.forEach((ele) => {
+                    total_rating = total_rating + parseFloat(ele.rating)
+                })
+            }
+            userData.average_user_rating = parseFloat(total_rating) ? parseFloat(total_rating / userData.ServiceRatings.length) : 0;
+
+            let temp = [], cnt = 0, avg_rating = 0
+            if (userData?.Services.length) {
+
+
+                for (let i = 0; i < userData?.Services?.length; i++) {
+                    if (userData?.Services[i]?.service_rating?.length > 0) {
+                        for (let j = 0; j < userData?.Services[i]?.service_rating?.length; j++) {
+                            cnt = parseFloat(cnt) + parseFloat(userData?.Services[i]?.service_rating[j]?.rating)
+                        }
+                        avg_rating = parseFloat(parseFloat(cnt) / userData?.Services[i]?.service_rating?.length).toFixed(2);
+                    }
+                    temp.push({ ...userData?.Services[i], avaerage_rating: avg_rating })
+                }
+
+            }
+
+            userData.Services = temp;
+            delete userData.ServiceRatings;
+
+            new SuccessResponse("Get user detail successfully.", {
+                ...userData
+            }).send(res);
+        } catch (e) {
+            ApiError.handle(new BadRequestError(e.message), res);
+        }
+    }
+
     updateUserDetail = async (req, res) => {
         try {
             let { name, username, email, contact, city, state, country, address, photo } = req.body

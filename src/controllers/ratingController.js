@@ -123,7 +123,7 @@ class RatingController {
         }
     }
 
-    
+
     editRating = async (req, res) => {
         try {
             let {
@@ -247,17 +247,46 @@ class RatingController {
                             is_deleted: 0,
                             rating_type: 1
                         }
-                    },{
+                    }, {
                         model: dbReader.category,
                         where: {
                             is_deleted: 0,
                         },
+                    }, {
+                        required: false,
+                        model: dbReader.users,
+                        attributes: ["user_id", "name", "username", "email", "photo", "is_active", "created_at"],
+                        where: {
+                            is_deleted: 0,
+                            is_active: 1,
+                            role: 2
+                        }
                     }]
                 }]
-            })
-            favouritedServiceData = JSON.parse(JSON.stringify(favouritedServiceData))
+            });
+            favouritedServiceData = JSON.parse(JSON.stringify(favouritedServiceData));
+
+
+
+            let temp = [], avg_rating = 0;
+
+            for (let i = 0; i < favouritedServiceData?.length; i++) {
+
+                let cnt = 0;
+                avg_rating = 0;
+                if (favouritedServiceData[i]?.Service?.service_rating?.length > 0) {
+                    for (let j = 0; j < favouritedServiceData[i]?.Service?.service_rating?.length; j++) {
+                        cnt = parseFloat(cnt) + parseFloat(favouritedServiceData[i]?.Service?.service_rating[j]?.rating);
+                    }
+                    avg_rating = parseFloat(parseFloat(cnt) / favouritedServiceData[i]?.Service?.service_rating?.length).toFixed(2);
+                }
+                // let data = { ...favouritedServiceData[i], avaerage_rating: avg_rating };
+                let data = { ...favouritedServiceData[i], Service: { ...favouritedServiceData[i]?.Service, avaerage_rating: avg_rating } };
+                temp.push(data);
+            }
+
             new SuccessResponse("Request successful.", {
-                data: favouritedServiceData
+                data: temp
             }).send(res);
 
         } catch (e) {
