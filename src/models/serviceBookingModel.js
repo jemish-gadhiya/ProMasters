@@ -103,7 +103,10 @@ module.exports = function (sequelize, DataTypes) {
             targetKey: 'service_booking_id'
         });
 
-
+        ServiceBooking.belongsTo(models.coupan, {
+            foreignKey: 'coupen_id',
+            targetKey: 'coupon_id'
+        });
     };
 
     return ServiceBooking;

@@ -1,4 +1,7 @@
 'use strict';
+
+const { from } = require("form-data");
+
 module.exports = function (sequelize, DataTypes) {
     var UserAvailability = sequelize.define('UserAvailability', {
         user_availibility_id: {
@@ -14,6 +17,14 @@ module.exports = function (sequelize, DataTypes) {
         },
         date: {
             type: DataTypes.DATE,
+            allowNull: false,
+        },
+        from_time: {
+            type: DataTypes.TIME,
+            allowNull: false,
+        },
+        to_time: {
+            type: DataTypes.TIME,
             allowNull: false,
         },
         is_deleted: {
