@@ -171,6 +171,16 @@ class ProviderController {
                     }
                 });
                 addressData = JSON.parse(JSON.stringify(addressData));
+                let serviceAddressData = await dbReader.service.findAll({
+                    where: {
+                        service_address_id: service_address_id,
+                        is_deleted: 0
+                    }
+                });
+                serviceAddressData = JSON.parse(JSON.stringify(serviceAddressData));
+                if(serviceAddressData.length > 0){
+                    throw new Error(`This service address is associated to ${serviceAddressData.length} service.`);
+                } 
                 if (!addressData) {
                     throw new Error("Service address not found.");
                 } else {
@@ -600,6 +610,16 @@ class ProviderController {
                 }
             });
             serviceData = JSON.parse(JSON.stringify(serviceData));
+            let serviceBookingData = await dbReader.serviceBooking.findAll({
+                where: {
+                    service_id: service_id,
+                    is_deleted: 0
+                }
+            });
+            serviceBookingData = JSON.parse(JSON.stringify(serviceBookingData));
+            if(serviceBookingData.length > 0){
+                throw new Error(`This service has ${serviceBookingData.length} service booking.`);
+            } 
             if (!serviceData) {
                 throw new Error("Service data not found.");
             } else {
@@ -696,7 +716,6 @@ class ProviderController {
                 user_id,
                 role
             } = req;
-
             let serviceData = await dbReader.service.findOne({
                 where: {
                     service_id: service_id,
@@ -806,11 +825,6 @@ class ProviderController {
                 }
                 temp.push({ ...serviceData[i], avaerage_rating: avg_rating })
             }
-
-
-
-
-
 
             new SuccessResponse("Service get successfully.", {
                 data: temp
@@ -1179,7 +1193,9 @@ class ProviderController {
                 availibility_date.forEach((e) => {
                     arr.push({
                         user_id: user_id,
-                        date: e.date
+                        date: e.date,
+                        from_time: e.from,
+                        to_time:e.to
                     })
                 })
             }
@@ -1853,6 +1869,12 @@ class ProviderController {
                     },
                     include: [{
                         required: false,
+                        model: dbReader.coupan,
+                        where: {
+                            is_deleted: 0
+                        }
+                    },{
+                        required: false,
                         model: dbReader.serviceBookingHandyman,
                         where: {
                             is_deleted: 0
@@ -1876,7 +1898,7 @@ class ProviderController {
                     }, {
                         required: false,
                         model: dbReader.users,
-                        attributes: ["user_id", "name", "username", "email", "photo", "is_active", "created_at"],
+                        attributes: ["user_id", "name", "username", "email", "photo","contact", "is_active", "created_at"],
                         where: {
                             is_deleted: 0,
                             is_active: 1
