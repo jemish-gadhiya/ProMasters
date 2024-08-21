@@ -17,7 +17,7 @@
     "ejs": "^3.1.8",
     "enum": "^3.0.4",
     "express": "~4.16.1",
-    "firebase-admin": "^12.3.0",
+    "firebase-admin": "^12.3.1",
     "http-errors": "~1.6.3",
     "jade": "~1.11.0",
     "joi": "^17.8.3",
