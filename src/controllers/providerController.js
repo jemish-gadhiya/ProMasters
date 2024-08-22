@@ -727,6 +727,12 @@ class ProviderController {
                         is_deleted: 0,
                     },
                 }, {
+                    required:false,
+                    model: dbReader.serviceAddress,
+                    where: {
+                        is_deleted: 0,
+                    },
+                }, {
                     model: dbReader.users,
                     where: {
                         role: 2,
@@ -1294,6 +1300,11 @@ class ProviderController {
             };
             NotificationObject.sendPushNotification(tokens, message1)
             serviceHandymanData = JSON.parse(JSON.stringify(serviceHandymanData))
+            await dbWriter.serviceBookingHistory.create({
+                service_booking_id: service_booking_id,
+                title: "Assign Handyman",
+                description: `${serviceData.name} service has been assigned to ${userData.name} handyman`,
+            })
             new SuccessResponse("Request Successful.", {
                 data: serviceHandymanData
             }).send(res);
@@ -1804,6 +1815,14 @@ class ProviderController {
                         body: `Your service status is changed to ${notificationStatus}`,
                     };
                     NotificationObject.sendPushNotification(tokens, message)
+                    if(status === 2){
+                        await dbWriter.serviceBookingHistory.create({
+                            service_booking_id: service_booking_id,
+                            title: "Completed Service",
+                            description: `Your service status is changed to ${notificationStatus}`,
+                        })
+                    }
+                    
                     new SuccessResponse("Status updated successfully.", {}).send(res);
                 }
             }
