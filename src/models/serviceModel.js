@@ -68,6 +68,10 @@ module.exports = function (sequelize, DataTypes) {
             foreignKey: 'category_id',
             targetKey: 'category_id'
         });
+        Service.belongsTo(models.serviceAddress, {
+            foreignKey: 'service_address_id',
+            targetKey: 'service_address_id'
+        });
         Service.belongsTo(models.serviceBookingHandyman, {
             foreignKey: 'service_id',
             targetKey: 'service_id'
