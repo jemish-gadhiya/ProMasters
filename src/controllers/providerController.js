@@ -1274,6 +1274,7 @@ class ProviderController {
                 title: 'Assigned Service',
                 body: `${serviceData.name} service has been assigned to you`,
             };
+console.log("handymanTokens",handymanTokens)
             let notificatiom = NotificationObject.sendPushNotification(handymanTokens, message)
             serviceHandymanData = JSON.parse(JSON.stringify(serviceHandymanData))
 

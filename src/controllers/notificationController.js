@@ -124,52 +124,55 @@ class NotificationController {
         }
     }
 
-    sendPushNotification (registrationTokens, message) {
-        const payload = {
-          notification: {
+    sendPushNotification(registrationTokens, message) {
+    const payload = {
+        notification: {
             title: message.title,
             body: message.body,
-          },
-          android: {
+        },
+        android: {
             notification: {
-              icon: 'ProMaster', // Android-specific icon
-              color: '#f45342', // Android-specific color
+                icon: 'ProMaster', // Android-specific icon
+                color: '#f45342', // Android-specific color
             },
-          },
-          apns: {
+        },
+        apns: {
             payload: {
-              aps: {
-                sound: 'default', // iOS-specific sound
-              },
+                aps: {
+                    sound: 'default', // iOS-specific sound
+                },
             },
-          },
-        };
-      
-        admin
-          .messaging()
-          .sendToDevice(registrationTokens, payload)
-          .then((response) => {
+        },
+        tokens: registrationTokens, // Use `tokens` for multicast
+    };
+
+    admin
+        .messaging()
+        .sendMulticast(payload) // Use `sendMulticast` instead of `send`
+        .then((response) => {
             console.log('Successfully sent message:', response);
             if (response.failureCount > 0) {
-              const failedTokens = [];
-              response.results.forEach((result, index) => {
-                const error = result.error;
-                if (error) {
-                  console.error(
-                    'Failure sending notification to',
-                    registrationTokens[index],
-                    error
-                  );
-                  failedTokens.push(registrationTokens[index]);
-                }
-              });
-              console.log('List of tokens that caused failures:', failedTokens);
+                const failedTokens = [];
+                response.responses.forEach((result, index) => {
+                    const error = result.error;
+                    if (error) {
+                        console.error(
+                            'Failure sending notification to',
+                            registrationTokens[index],
+                            error
+                        );
+                        failedTokens.push(registrationTokens[index]);
+                    }
+                });
+                console.log('List of tokens that caused failures:', failedTokens);
             }
-          })
-          .catch((error) => {
+        })
+        .catch((error) => {
             console.error('Error sending message:', error);
-          });
-      };
+        });
+}
+
+
       
     // sendPushNotification = (registrationToken, message) => {
     //     const payload = {
