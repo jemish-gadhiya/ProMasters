@@ -491,7 +491,7 @@ class ProviderController {
             handymanTotServiceDoneData = JSON.parse(JSON.stringify(handymanTotServiceDoneData));
 
             new SuccessResponse("Get data successfully.", {
-                ...handymanTotServiceDoneData
+                data : handymanTotServiceDoneData
             }).send(res);
         } catch (e) {
             ApiError.handle(new BadRequestError(e.message), res);
