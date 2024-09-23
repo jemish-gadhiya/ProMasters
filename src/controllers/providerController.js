@@ -178,9 +178,9 @@ class ProviderController {
                     }
                 });
                 serviceAddressData = JSON.parse(JSON.stringify(serviceAddressData));
-                if(serviceAddressData.length > 0){
+                if (serviceAddressData.length > 0) {
                     throw new Error(`This service address is associated to ${serviceAddressData.length} service.`);
-                } 
+                }
                 if (!addressData) {
                     throw new Error("Service address not found.");
                 } else {
@@ -617,9 +617,9 @@ class ProviderController {
                 }
             });
             serviceBookingData = JSON.parse(JSON.stringify(serviceBookingData));
-            if(serviceBookingData.length > 0){
+            if (serviceBookingData.length > 0) {
                 throw new Error(`This service has ${serviceBookingData.length} service booking.`);
-            } 
+            }
             if (!serviceData) {
                 throw new Error("Service data not found.");
             } else {
@@ -687,7 +687,8 @@ class ProviderController {
             if (serviceData) {
                 for (let i = 0; i < serviceData?.length; i++) {
 
-                    let cnt = 0, avg_rating = 0;
+                    let cnt = 0,
+                        avg_rating = 0;
 
                     if (serviceData[i]?.service_rating?.length > 0) {
                         for (let j = 0; j < serviceData[i]?.service_rating?.length; j++) {
@@ -695,7 +696,10 @@ class ProviderController {
                         }
                         avg_rating = parseFloat(parseFloat(cnt) / serviceData[i]?.service_rating?.length).toFixed(2);
                     }
-                    temp.push({ ...serviceData[i], avaerage_rating: avg_rating })
+                    temp.push({
+                        ...serviceData[i],
+                        avaerage_rating: avg_rating
+                    })
                 }
             }
 
@@ -727,7 +731,7 @@ class ProviderController {
                         is_deleted: 0,
                     },
                 }, {
-                    required:false,
+                    required: false,
                     model: dbReader.serviceAddress,
                     where: {
                         is_deleted: 0,
@@ -820,7 +824,9 @@ class ProviderController {
             });
             serviceData = JSON.parse(JSON.stringify(serviceData));
 
-            let cnt = 0, avg_rating = 0, temp = [];
+            let cnt = 0,
+                avg_rating = 0,
+                temp = [];
 
             for (let i = 0; i < serviceData?.length; i++) {
                 if (serviceData[i]?.service_rating?.length > 0) {
@@ -829,7 +835,10 @@ class ProviderController {
                     }
                     avg_rating = parseFloat(parseFloat(cnt) / serviceData[i]?.service_rating?.length).toFixed(2);
                 }
-                temp.push({ ...serviceData[i], avaerage_rating: avg_rating })
+                temp.push({
+                    ...serviceData[i],
+                    avaerage_rating: avg_rating
+                })
             }
 
             new SuccessResponse("Service get successfully.", {
@@ -848,10 +857,10 @@ class ProviderController {
             } = req;
             let {
                 service_user_id = [],
-                rating,
-                min_amount,
-                max_amount,
-                category
+                    rating,
+                    min_amount,
+                    max_amount,
+                    category
             } = req.body;
 
             // Build the where conditions
@@ -893,36 +902,37 @@ class ProviderController {
             let serviceData = await dbReader.service.findAll({
                 where: serviceWhereConditions,
                 include: [{
-                    model: dbReader.category,
-                    where: {
-                        is_deleted: 0,
+                        model: dbReader.category,
+                        where: {
+                            is_deleted: 0,
+                        },
+                    }, {
+                        required: false,
+                        model: dbReader.serviceAttachment,
+                        where: {
+                            is_deleted: 0
+                        }
                     },
-                }, {
-                    required: false,
-                    model: dbReader.serviceAttachment,
-                    where: {
-                        is_deleted: 0
+                    {
+                        required: false,
+                        model: dbReader.users,
+                        where: {
+                            role: 2,
+                            is_deleted: 0
+                        }
+                    },
+                    {
+                        required: false,
+                        as: "service_rating",
+                        model: dbReader.serviceRating,
+                        where: serviceRatingWhereConditions
                     }
-                },
-                {
-                    required: false,
-                    model: dbReader.users,
-                    where: {
-                        role: 2,
-                        is_deleted: 0
-                    }
-                },
-                {
-                    required: false,
-                    as: "service_rating",
-                    model: dbReader.serviceRating,
-                    where: serviceRatingWhereConditions
-                }
                 ]
             });
             serviceData = JSON.parse(JSON.stringify(serviceData));
             //console.log("serviceData", serviceData);
             let temp = [];
+            let discountedServices = [];
             serviceData.forEach((e) => {
                 let average_rating = 0;
                 if (e?.service_rating.length) {
@@ -932,6 +942,9 @@ class ProviderController {
                     })
                     average_rating = parseFloat(parseFloat(total_rating) / e.service_rating.length);
                 }
+                if (e.discount && e.discount > 0) {
+                    discountedServices.push(e);
+                }
 
                 temp.push({
                     ...e,
@@ -939,7 +952,8 @@ class ProviderController {
                 });
             })
             new SuccessResponse("Service retrieved successfully.", {
-                data: temp
+                data: temp,
+                discounted_services: discountedServices
             }).send(res);
         } catch (e) {
             ApiError.handle(new BadRequestError(e.message), res);
@@ -1157,6 +1171,12 @@ class ProviderController {
                 };
 
                 let notificatiom = NotificationObject.sendPushNotification(tokens, message)
+                let notificationData = await dbReader.notification.create({
+                    user_id: serviceData.user_id,
+                    title: 'New Booking',
+                    description: `${userData.name} has booked ${serviceData.name} service`,
+                    is_read: 0
+                })
 
                 new SuccessResponse("Service booked successfully.", {
                     data: serviceBookingData
@@ -1201,7 +1221,7 @@ class ProviderController {
                         user_id: user_id,
                         date: e.date,
                         from_time: e.from,
-                        to_time:e.to
+                        to_time: e.to
                     })
                 })
             }
@@ -1276,6 +1296,12 @@ class ProviderController {
             };
             let notificatiom = NotificationObject.sendPushNotification(handymanTokens, message)
             serviceHandymanData = JSON.parse(JSON.stringify(serviceHandymanData))
+            let notificationData = await dbReader.notification.create({
+                user_id: handyman_user_id,
+                title: 'Assigned Service',
+                description: `${serviceData.name} service has been assigned to you`,
+                is_read: 0
+            })
 
             //for user-notfication
             let device_token = await dbReader.usersLoginLogs.findAll({
@@ -1304,6 +1330,12 @@ class ProviderController {
                 service_booking_id: service_booking_id,
                 title: "Assign Handyman",
                 description: `${serviceData.name} service has been assigned to ${userData.name} handyman`,
+            })
+            let notificationData1 = await dbReader.notification.create({
+                user_id: service_booking_detail.booked_by,
+                title: 'Assigned Handyman',
+                description: `${serviceData.name} service has been assigned to ${userData.name} handyman`,
+                is_read: 0
             })
             new SuccessResponse("Request Successful.", {
                 data: serviceHandymanData
@@ -1413,6 +1445,12 @@ class ProviderController {
                     };
 
                     let notificatiom = NotificationObject.sendPushNotification(tokens, message)
+                    let notificationData = await dbReader.notification.create({
+                        user_id: data.booked_by,
+                        title: 'Booking Accepted',
+                        description: `${userData.name} has accepted ${serviceData.name} service`,
+                        is_read: 0
+                    })
                 }
                 new SuccessResponse("Request Successful.", {}).send(res);
             } else {
@@ -1618,7 +1656,7 @@ class ProviderController {
                             user_id: user_id
                         }
                     }, {
-                        attributes: ["user_id", "name", 'email', "contact", "role", "photo", "address", "city", "state", "country",],
+                        attributes: ["user_id", "name", 'email', "contact", "role", "photo", "address", "city", "state", "country", ],
                         required: false,
                         model: dbReader.users,
                         where: {
@@ -1815,14 +1853,20 @@ class ProviderController {
                         body: `Your service status is changed to ${notificationStatus}`,
                     };
                     NotificationObject.sendPushNotification(tokens, message)
-                    if(status === 2){
+                    let notificationData = await dbReader.notification.create({
+                        user_id: data.booked_by,
+                        title: 'Booking Accepted',
+                        description: `${userData.name} has accepted ${serviceData.name} service`,
+                        is_read: 0
+                    })
+                    if (status === 2) {
                         await dbWriter.serviceBookingHistory.create({
                             service_booking_id: service_booking_id,
                             title: "Completed Service",
                             description: `Your service status is changed to ${notificationStatus}`,
                         })
                     }
-                    
+
                     new SuccessResponse("Status updated successfully.", {}).send(res);
                 }
             }
@@ -1892,7 +1936,7 @@ class ProviderController {
                         where: {
                             is_deleted: 0
                         }
-                    },{
+                    }, {
                         required: false,
                         model: dbReader.serviceBookingHandyman,
                         where: {
@@ -1917,7 +1961,7 @@ class ProviderController {
                     }, {
                         required: false,
                         model: dbReader.users,
-                        attributes: ["user_id", "name", "username", "email", "photo","contact", "is_active", "created_at"],
+                        attributes: ["user_id", "name", "username", "email", "photo", "contact", "is_active", "created_at"],
                         where: {
                             is_deleted: 0,
                             is_active: 1
@@ -1955,14 +1999,19 @@ class ProviderController {
             });
             serviceData = JSON.parse(JSON.stringify(serviceData));
 
-            let cnt = 0, avg_rating = 0, temp = null;
+            let cnt = 0,
+                avg_rating = 0,
+                temp = null;
             if (serviceData?.service_rating?.length > 0) {
                 for (let j = 0; j < serviceData?.service_rating?.length; j++) {
                     cnt = parseFloat(cnt) + parseFloat(serviceData?.service_rating[j]?.rating)
                 }
                 avg_rating = parseFloat(parseFloat(cnt) / serviceData?.service_rating?.length).toFixed(2);
             }
-            temp = { ...serviceData, avaerage_rating: avg_rating };
+            temp = {
+                ...serviceData,
+                avaerage_rating: avg_rating
+            };
 
             let newData = [];
             if (serviceData?.ServiceBookings?.length > 0) {
@@ -1970,7 +2019,8 @@ class ProviderController {
 
                     let temp_service_booking_handyman = [];
                     for (let j = 0; j < serviceData?.ServiceBookings[i]?.ServiceBookingHandymans?.length; j++) {
-                        let handyman_user_avg_rating = 0, c = 0;//, tmp = { ...serviceData?.ServiceBookings[i]?.ServiceBookingHandymans[j]?.User };
+                        let handyman_user_avg_rating = 0,
+                            c = 0; //, tmp = { ...serviceData?.ServiceBookings[i]?.ServiceBookingHandymans[j]?.User };
                         if (serviceData?.ServiceBookings[i]?.ServiceBookingHandymans[j]?.User?.ServiceRatings?.length > 0) {
                             for (let k = 0; k < serviceData?.ServiceBookings[i]?.ServiceBookingHandymans[j]?.User?.ServiceRatings?.length; k++) {
                                 c = parseFloat(c) + parseFloat(serviceData?.ServiceBookings[i]?.ServiceBookingHandymans[j]?.User?.ServiceRatings[k]?.rating);
@@ -1980,13 +2030,22 @@ class ProviderController {
                         // tmp = { ...serviceData?.ServiceBookings[i], avaerage_rating: handyman_user_avg_rating };
                         // newData.push(tmp);
 
-                        temp_service_booking_handyman.push({ ...serviceData?.ServiceBookings[i]?.ServiceBookingHandymans[j], avaerage_rating: handyman_user_avg_rating });
+                        temp_service_booking_handyman.push({
+                            ...serviceData?.ServiceBookings[i]?.ServiceBookingHandymans[j],
+                            avaerage_rating: handyman_user_avg_rating
+                        });
                     }
-                    newData.push({ ...serviceData?.ServiceBookings[i], ServiceBookingHandymans: temp_service_booking_handyman });
+                    newData.push({
+                        ...serviceData?.ServiceBookings[i],
+                        ServiceBookingHandymans: temp_service_booking_handyman
+                    });
                 }
             }
 
-            let returnData = { ...temp, ServiceBookings: newData };
+            let returnData = {
+                ...temp,
+                ServiceBookings: newData
+            };
 
             new SuccessResponse("Service get successfully.", {
                 data: returnData
@@ -2500,8 +2559,12 @@ class ProviderController {
                             country: 'AE', // Set the country code to UAE
                             email: userData?.email,
                             capabilities: {
-                                card_payments: { requested: true },
-                                transfers: { requested: true },
+                                card_payments: {
+                                    requested: true
+                                },
+                                transfers: {
+                                    requested: true
+                                },
                             },
                         });
                         stripe_account_id = account.id;
@@ -2517,8 +2580,8 @@ class ProviderController {
                                     currency: 'aed',
                                     account_holder_name: userData?.name,
                                     account_holder_type: 'individual', // or 'company'
-                                    routing_number: routing_number,// Replace with the appropriate bank code or SWIFT code
-                                    account_number: account_number,// Replace with the appropriate bank account number
+                                    routing_number: routing_number, // Replace with the appropriate bank code or SWIFT code
+                                    account_number: account_number, // Replace with the appropriate bank account number
                                 },
                             }
                         );
