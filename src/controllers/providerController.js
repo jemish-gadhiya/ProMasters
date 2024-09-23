@@ -1175,7 +1175,8 @@ class ProviderController {
                     user_id: serviceData.user_id,
                     title: 'New Booking',
                     description: `${userData.name} has booked ${serviceData.name} service`,
-                    is_read: 0
+                    is_read: 0,
+                    service_id:serviceData.service_id
                 })
 
                 new SuccessResponse("Service booked successfully.", {
@@ -1300,7 +1301,8 @@ class ProviderController {
                 user_id: handyman_user_id,
                 title: 'Assigned Service',
                 description: `${serviceData.name} service has been assigned to you`,
-                is_read: 0
+                is_read: 0,
+                service_id:serviceData.service_id
             })
 
             //for user-notfication
@@ -1335,7 +1337,8 @@ class ProviderController {
                 user_id: service_booking_detail.booked_by,
                 title: 'Assigned Handyman',
                 description: `${serviceData.name} service has been assigned to ${userData.name} handyman`,
-                is_read: 0
+                is_read: 0,
+                service_id:serviceData.service_id
             })
             new SuccessResponse("Request Successful.", {
                 data: serviceHandymanData
@@ -1449,7 +1452,8 @@ class ProviderController {
                         user_id: data.booked_by,
                         title: 'Booking Accepted',
                         description: `${userData.name} has accepted ${serviceData.name} service`,
-                        is_read: 0
+                        is_read: 0,
+                        service_id:serviceData.service_id
                     })
                 }
                 new SuccessResponse("Request Successful.", {}).send(res);
@@ -1857,7 +1861,8 @@ class ProviderController {
                         user_id: data.booked_by,
                         title: 'Booking Accepted',
                         description: `${userData.name} has accepted ${serviceData.name} service`,
-                        is_read: 0
+                        is_read: 0,
+                        service_id:serviceData.service_id
                     })
                     if (status === 2) {
                         await dbWriter.serviceBookingHistory.create({

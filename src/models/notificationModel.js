@@ -14,6 +14,10 @@ module.exports = function (sequelize, DataTypes) {
         },
         title: DataTypes.STRING(256),
         description: DataTypes.STRING(256),
+        service_id: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+        },
         is_read: {
             type: DataTypes.INTEGER,
             defaultValue: 0,
@@ -39,7 +43,10 @@ module.exports = function (sequelize, DataTypes) {
     Notification.associate = function (models) {
         // Define associations here if needed
         // For example, if there's a relationship with users:
-        // Notification.belongsTo(models.User, { foreignKey: 'user_id' });
+        Notification.belongsTo(models.service, {
+            foreignKey: 'service_id',
+            targetKey: 'service_id'
+        });
     };
     
     return Notification;
