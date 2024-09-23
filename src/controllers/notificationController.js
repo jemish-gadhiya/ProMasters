@@ -28,7 +28,7 @@ const admin = require('firebase-admin');
 const serviceAccount = require('../../urbanclone-13a69-firebase-adminsdk-7caf5-c4a27d4921.json');
 
 admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
+    credential: admin.credential.cert(serviceAccount),
 });
 
 
@@ -46,7 +46,22 @@ class NotificationController {
                 where: {
                     user_id: user_id,
                     is_deleted: 0
-                }
+                },
+                include: [{
+                    required: false,
+                    model: dbReader.service,
+                    where: {
+                        is_deleted: 0
+                    },
+                    include: [{
+                        required: false,
+                        model: dbReader.serviceBooking,
+                        where: {
+                            is_deleted: 0,
+                            booked_by: user_id
+                        },
+                    }]
+                }]
             })
             notificationData = JSON.parse(JSON.stringify(notificationData))
             new SuccessResponse("Request successful.", {
@@ -90,7 +105,7 @@ class NotificationController {
             }, {
                 where: {
                     user_id: user_id,
-                    is_deleted:0
+                    is_deleted: 0
                 }
             })
             new SuccessResponse("Request successful.", {}).send(res);
@@ -113,8 +128,8 @@ class NotificationController {
             }, {
                 where: {
                     user_id: user_id,
-                    notification_id:notification_id,
-                    is_deleted:0
+                    notification_id: notification_id,
+                    is_deleted: 0
                 }
             })
             new SuccessResponse("Request successful.", {}).send(res);
@@ -124,53 +139,53 @@ class NotificationController {
         }
     }
 
-    sendPushNotification (registrationTokens, message) {
+    sendPushNotification(registrationTokens, message) {
         const payload = {
-          notification: {
-            title: message.title,
-            body: message.body,
-          },
-          android: {
             notification: {
-              icon: 'ProMaster', // Android-specific icon
-              color: '#f45342', // Android-specific color
+                title: message.title,
+                body: message.body,
             },
-          },
-          apns: {
-            payload: {
-              aps: {
-                sound: 'default', // iOS-specific sound
-              },
+            android: {
+                notification: {
+                    icon: 'ProMaster', // Android-specific icon
+                    color: '#f45342', // Android-specific color
+                },
             },
-          },
+            apns: {
+                payload: {
+                    aps: {
+                        sound: 'default', // iOS-specific sound
+                    },
+                },
+            },
         };
-      
+
         admin
-          .messaging()
-          .sendToDevice(registrationTokens, payload)
-          .then((response) => {
-            console.log('Successfully sent message:', response);
-            if (response.failureCount > 0) {
-              const failedTokens = [];
-              response.results.forEach((result, index) => {
-                const error = result.error;
-                if (error) {
-                  console.error(
-                    'Failure sending notification to',
-                    registrationTokens[index],
-                    error
-                  );
-                  failedTokens.push(registrationTokens[index]);
+            .messaging()
+            .sendToDevice(registrationTokens, payload)
+            .then((response) => {
+                console.log('Successfully sent message:', response);
+                if (response.failureCount > 0) {
+                    const failedTokens = [];
+                    response.results.forEach((result, index) => {
+                        const error = result.error;
+                        if (error) {
+                            console.error(
+                                'Failure sending notification to',
+                                registrationTokens[index],
+                                error
+                            );
+                            failedTokens.push(registrationTokens[index]);
+                        }
+                    });
+                    console.log('List of tokens that caused failures:', failedTokens);
                 }
-              });
-              console.log('List of tokens that caused failures:', failedTokens);
-            }
-          })
-          .catch((error) => {
-            console.error('Error sending message:', error);
-          });
-      };
-      
+            })
+            .catch((error) => {
+                console.error('Error sending message:', error);
+            });
+    };
+
     // sendPushNotification = (registrationToken, message) => {
     //     const payload = {
     //       notification: {
@@ -178,7 +193,7 @@ class NotificationController {
     //         body: message.body,
     //       },
     //     };
-      
+
     //     admin
     //       .messaging()
     //       .sendToDevice(registrationToken, payload)
