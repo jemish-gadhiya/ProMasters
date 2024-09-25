@@ -1176,8 +1176,8 @@ class ProviderController {
                     title: 'New Booking',
                     description: `${userData.name} has booked ${serviceData.name} service`,
                     is_read: 0,
-                    service_id:serviceData.service_id,
-                    service_booking_id:serviceBookingData.service_booking_id
+                    service_id: serviceData.service_id,
+                    service_booking_id: serviceBookingData.service_booking_id
                 })
 
                 new SuccessResponse("Service booked successfully.", {
@@ -1257,7 +1257,7 @@ class ProviderController {
                 created_at: new Date()
             })
             let serviceData = await dbReader.service.findOne({
-                attributes: ['name'],
+                attributes: ['name','service_id'],
                 where: {
                     service_id: service_id,
                     is_deleted: 0
@@ -1303,7 +1303,7 @@ class ProviderController {
                 title: 'Assigned Service',
                 description: `${serviceData.name} service has been assigned to you`,
                 is_read: 0,
-                service_id:serviceData.service_id,
+                service_id: serviceData.service_id,
                 service_booking_id: service_booking_id
             })
 
@@ -1340,7 +1340,7 @@ class ProviderController {
                 title: 'Assigned Handyman',
                 description: `${serviceData.name} service has been assigned to ${userData.name} handyman`,
                 is_read: 0,
-                service_id:serviceData.service_id,
+                service_id: serviceData.service_id,
                 service_booking_id: service_booking_id
             })
             new SuccessResponse("Request Successful.", {
@@ -1456,8 +1456,8 @@ class ProviderController {
                         title: 'Booking Accepted',
                         description: `${userData.name} has accepted ${serviceData.name} service`,
                         is_read: 0,
-                        service_id:data.service_id,
-                        service_booking_id:service_booking_id
+                        service_id: data.service_id,
+                        service_booking_id: service_booking_id
                     })
                 }
                 new SuccessResponse("Request Successful.", {}).send(res);
@@ -1861,14 +1861,29 @@ class ProviderController {
                         body: `Your service status is changed to ${notificationStatus}`,
                     };
                     NotificationObject.sendPushNotification(tokens, message)
-                    let notificationData = await dbReader.notification.create({
-                        user_id: data.booked_by,
-                        title: 'Booking Accepted',
-                        description: `${userData.name} has accepted ${serviceData.name} service`,
-                        is_read: 0,
-                        service_id:serviceData.service_id,
-                        service_booking_id: service_booking_id
+                    let user_ids = [provider_id, serviceBookingData.booked_by]
+                    let arr = []
+                    user_ids.forEach((e) => {
+                        arr.push({
+                            user_id: e,
+                            title: 'Booking Accepted',
+                            description: `${userData.name} has accepted ${serviceData.name} service`,
+                            is_read: 0,
+                            service_id: serviceData.service_id,
+                            service_booking_id: service_booking_id
+                        })
                     })
+                    if (arr.length) {
+                        await dbReader.notification.bulkCreate(arr)
+                    }
+                    // let notificationData = await dbReader.notification.create({
+                    //     user_id: data.booked_by,
+                    //     title: 'Booking Accepted',
+                    //     description: `${userData.name} has accepted ${serviceData.name} service`,
+                    //     is_read: 0,
+                    //     service_id: serviceData.service_id,
+                    //     service_booking_id: service_booking_id
+                    // })
                     if (status === 2) {
                         await dbWriter.serviceBookingHistory.create({
                             service_booking_id: service_booking_id,
