@@ -18,6 +18,10 @@ module.exports = function (sequelize, DataTypes) {
             type: DataTypes.INTEGER,
             allowNull: false,
         },
+        service_booking_id: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+        },
         is_read: {
             type: DataTypes.INTEGER,
             defaultValue: 0,
