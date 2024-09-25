@@ -1176,7 +1176,8 @@ class ProviderController {
                     title: 'New Booking',
                     description: `${userData.name} has booked ${serviceData.name} service`,
                     is_read: 0,
-                    service_id:serviceData.service_id
+                    service_id:serviceData.service_id,
+                    service_booking_id:serviceBookingData.service_booking_id
                 })
 
                 new SuccessResponse("Service booked successfully.", {
@@ -1302,7 +1303,8 @@ class ProviderController {
                 title: 'Assigned Service',
                 description: `${serviceData.name} service has been assigned to you`,
                 is_read: 0,
-                service_id:serviceData.service_id
+                service_id:serviceData.service_id,
+                service_booking_id: service_booking_id
             })
 
             //for user-notfication
@@ -1338,7 +1340,8 @@ class ProviderController {
                 title: 'Assigned Handyman',
                 description: `${serviceData.name} service has been assigned to ${userData.name} handyman`,
                 is_read: 0,
-                service_id:serviceData.service_id
+                service_id:serviceData.service_id,
+                service_booking_id: service_booking_id
             })
             new SuccessResponse("Request Successful.", {
                 data: serviceHandymanData
@@ -1453,7 +1456,8 @@ class ProviderController {
                         title: 'Booking Accepted',
                         description: `${userData.name} has accepted ${serviceData.name} service`,
                         is_read: 0,
-                        service_id:serviceData.service_id
+                        service_id:data.service_id,
+                        service_booking_id:service_booking_id
                     })
                 }
                 new SuccessResponse("Request Successful.", {}).send(res);
@@ -1862,7 +1866,8 @@ class ProviderController {
                         title: 'Booking Accepted',
                         description: `${userData.name} has accepted ${serviceData.name} service`,
                         is_read: 0,
-                        service_id:serviceData.service_id
+                        service_id:serviceData.service_id,
+                        service_booking_id: service_booking_id
                     })
                     if (status === 2) {
                         await dbWriter.serviceBookingHistory.create({
