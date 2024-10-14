@@ -1257,7 +1257,7 @@ class ProviderController {
                 created_at: new Date()
             })
             let serviceData = await dbReader.service.findOne({
-                attributes: ['name','service_id'],
+                attributes: ['name', 'service_id'],
                 where: {
                     service_id: service_id,
                     is_deleted: 0
@@ -1813,7 +1813,12 @@ class ProviderController {
                     }]
                 });
                 serviceBookingData = JSON.parse(JSON.stringify(serviceBookingData));
-
+                let userData = await dbReader.users.findOne({
+                    where: {
+                        user_id: user_id
+                    }
+                })
+                userData = JSON.parse(JSON.stringify(userData))
                 if (!serviceBookingData) {
                     throw new Error("Service booking data not found.");
                 } else {
@@ -1826,10 +1831,10 @@ class ProviderController {
                         }
                     });
                     let provider_id = serviceBookingData?.Service?.user_id;
+                    let service_id = serviceBookingData?.Service?.service_id
                     if (status === 2) { //If status is completed then add respective service amount to provider's wallet.
                         //let provider_id = serviceBookingData?.Service?.user_id,
-                        let service_id = serviceBookingData?.Service?.service_id,
-                            amount = (serviceBookingData?.service_amount * serviceBookingData?.booking_service_qty) - serviceBookingData?.discount_amount - serviceBookingData?.commission_amount - serviceBookingData?.coupen_amount - serviceBookingData?.tax_amount;
+                        amount = (serviceBookingData?.service_amount * serviceBookingData?.booking_service_qty) - serviceBookingData?.discount_amount - serviceBookingData?.commission_amount - serviceBookingData?.coupen_amount - serviceBookingData?.tax_amount;
 
                         await dbWriter.wallet.create({
                             provider_id: provider_id,
@@ -1863,6 +1868,12 @@ class ProviderController {
                     NotificationObject.sendPushNotification(tokens, message)
                     let user_ids = [provider_id, serviceBookingData.booked_by]
                     let arr = []
+                    let serviceData = await dbReader.service.findOne({
+                        where: {
+                            service_id: service_id
+                        }
+                    })
+                    serviceData = JSON.parse(JSON.stringify(serviceData))
                     user_ids.forEach((e) => {
                         arr.push({
                             user_id: e,
