@@ -1834,7 +1834,7 @@ class ProviderController {
                     let service_id = serviceBookingData?.Service?.service_id
                     if (status === 2) { //If status is completed then add respective service amount to provider's wallet.
                         //let provider_id = serviceBookingData?.Service?.user_id,
-                        amount = (serviceBookingData?.service_amount * serviceBookingData?.booking_service_qty) - serviceBookingData?.discount_amount - serviceBookingData?.commission_amount - serviceBookingData?.coupen_amount - serviceBookingData?.tax_amount;
+                        let amount = (serviceBookingData?.service_amount * serviceBookingData?.booking_service_qty) - serviceBookingData?.discount_amount - serviceBookingData?.commission_amount - serviceBookingData?.coupen_amount - serviceBookingData?.tax_amount;
 
                         await dbWriter.wallet.create({
                             provider_id: provider_id,
