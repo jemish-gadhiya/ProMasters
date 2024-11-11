@@ -1296,7 +1296,7 @@ class ProviderController {
                 title: 'Assigned Service',
                 body: `${serviceData.name} service has been assigned to you`,
             };
-            let notificatiom = NotificationObject.sendPushNotification(handymanTokens, message)
+            // let notificatiom = NotificationObject.sendPushNotification(handymanTokens, message)
             serviceHandymanData = JSON.parse(JSON.stringify(serviceHandymanData))
             let notificationData = await dbReader.notification.create({
                 user_id: handyman_user_id,
@@ -1328,7 +1328,7 @@ class ProviderController {
                 title: 'Assigned Service',
                 body: `${serviceData.name} service has been assigned to ${userData.name} handyman`,
             };
-            NotificationObject.sendPushNotification(tokens, message1)
+            // NotificationObject.sendPushNotification(tokens, message1)
             serviceHandymanData = JSON.parse(JSON.stringify(serviceHandymanData))
             await dbWriter.serviceBookingHistory.create({
                 service_booking_id: service_booking_id,
