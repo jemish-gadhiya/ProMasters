@@ -761,6 +761,14 @@ class AuthController {
                     }
                 });
 
+                await dbWriter.usersLoginLogs.update({
+                    access_token: ''
+                }, {
+                    where: {
+                        user_id: user_id
+                    }
+                });
+
                 new SuccessResponse("User deleted successfully.", {}).send(res);
             } else {
                 throw new Error("User data not found.");
